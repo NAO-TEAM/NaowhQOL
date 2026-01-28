@@ -1,2 +1,2 @@
-# Project-W
-Project-W: Private alpha. Tracking and cooldowns under development.
+# SENTINEL UI
+SENTINEL UI: Private alpha. Cooldown manager under development.
