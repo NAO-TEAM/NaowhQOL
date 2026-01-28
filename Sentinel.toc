@@ -1,0 +1,10 @@
+## Interface: 120000
+## Title: |cFF00FF00Sentinel|r
+## SavedVariables: SentinelDB
+
+Core\Init.lua
+Data\Widgets.lua
+Ui\MainFrame.lua
+Ui\Sidebar.lua
+Ui\Options.lua
+Sentinel.lua
