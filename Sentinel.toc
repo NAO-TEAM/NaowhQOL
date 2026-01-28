@@ -7,4 +7,5 @@ Data\Widgets.lua
 Ui\MainFrame.lua
 Ui\Sidebar.lua
 Ui\Options.lua
+Ui\CooldownOptions.lua
 Sentinel.lua
