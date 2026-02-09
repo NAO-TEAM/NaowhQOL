@@ -85,12 +85,12 @@ function ns:InitFocusCastBar()
             onChange = onUpdate
         })
 
+        -- bgAlpha stored as 0-1, slider shows 0-100
         local bgAlphaSlider = W:CreateAdvancedSlider(appContent,
             W.Colorize(L["FOCUS_BG_OPACITY"], C.ORANGE), 0, 100, -125, 5, true,
-            function(val) db.bgAlpha = val / 100; onUpdate() end)
+            function(val) db.bgAlpha = val / 100; onUpdate() end,
+            { value = (db.bgAlpha ~= nil and db.bgAlpha or 0.8) * 100 })
         PlaceSlider(bgAlphaSlider, appContent, 0, -125)
-        -- bgAlpha stored as 0-1, slider shows 0-100
-        bgAlphaSlider:SetValue((db.bgAlpha ~= nil and db.bgAlpha or 0.8) * 100)
 
         appContent:SetHeight(185)
         appWrap:RecalcHeight()

@@ -1217,15 +1217,16 @@ function ns:InitOptOptions()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local queueInitVal = tonumber(GetCVar("SpellQueueWindow")) or 130
         local queueSlider = W:CreateAdvancedSlider(advContent,
             W.Colorize("Spell Queue Window (ms)", C.BLUE), 50, 500, -5, 1, false,
             function(val)
                 SetCVar("SpellQueueWindow", val)
                 if not NaowhQOL then NaowhQOL = {} end
                 NaowhQOL.spellQueueWindow = val
-            end)
+            end,
+            { value = queueInitVal })
         PlaceSlider(queueSlider, advContent, 110, -5)
-        queueSlider:SetValue(tonumber(GetCVar("SpellQueueWindow")) or 130)
 
         local recommendText = advContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         recommendText:SetPoint("TOP", queueSlider:GetParent(), "BOTTOM", 0, 5)

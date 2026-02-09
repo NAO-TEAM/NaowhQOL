@@ -154,8 +154,8 @@ function ns:InitModuleOptions()
 
         local threshSlider = W:CreateAdvancedSlider(durContent,
             L["MODULES_DURABILITY_THRESHOLD"], 30, 80, -140, 5, true,
-            function(val) db.durabilityThreshold = val end)
-        threshSlider:SetValue(db.durabilityThreshold or 50)
+            function(val) db.durabilityThreshold = val end,
+            { value = db.durabilityThreshold or 50 })
 
         durContent:SetHeight(180)
         durWrap:RecalcHeight()

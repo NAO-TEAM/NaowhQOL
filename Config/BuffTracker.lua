@@ -180,27 +180,27 @@ function ns:InitBuffTracker()
 
         local iconSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["COMMON_LABEL_ICON_SIZE"], C.ORANGE), 24, 64, -175, 1, false,
-            function(val) db.iconSize = val; refresh() end)
+            function(val) db.iconSize = val; refresh() end,
+            { value = db.iconSize })
         PlaceSlider(iconSlider, dspContent, 0, -175)
-        iconSlider:SetValue(db.iconSize)
 
         local spacingSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["BUFFTRACKER_SPACING"], C.ORANGE), 0, 20, -175, 1, false,
-            function(val) db.spacing = val; refresh() end)
+            function(val) db.spacing = val; refresh() end,
+            { value = db.spacing })
         PlaceSlider(spacingSlider, dspContent, 240, -175)
-        spacingSlider:SetValue(db.spacing)
 
         local textSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["COMMON_LABEL_TEXT_SIZE"], C.ORANGE), 8, 24, -235, 1, false,
-            function(val) db.textSize = val; refresh() end)
+            function(val) db.textSize = val; refresh() end,
+            { value = db.textSize })
         PlaceSlider(textSlider, dspContent, 0, -235)
-        textSlider:SetValue(db.textSize)
 
         local rowSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["BUFFTRACKER_ICONS_PER_ROW"], C.ORANGE), 1, 20, -235, 1, false,
-            function(val) db.maxIconsPerRow = val; refresh() end)
+            function(val) db.maxIconsPerRow = val; refresh() end,
+            { value = db.maxIconsPerRow })
         PlaceSlider(rowSlider, dspContent, 240, -235)
-        rowSlider:SetValue(db.maxIconsPerRow)
 
         local reset = W:CreateButton(dspContent, { text = "Reset to Defaults", onClick = function() StaticPopup_Show("NAOWH_BUFFTRACKER_RESET") end })
         reset:SetPoint("TOPLEFT", 10, -300)

@@ -105,12 +105,12 @@ function ns:InitGcdTracker()
             { db = db, key = "spacing", moduleName = "gcdTracker" })
         PlaceSlider(spacingSlider, dspContent, 0, -65)
 
+        -- fadeStart stored as 0-1, slider shows 0-100
         local fadeSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["GCD_FADE_START"], C.ORANGE), 0, 100, -65, 5, true,
-            function(val) db.fadeStart = val / 100 end)
+            function(val) db.fadeStart = val / 100 end,
+            { value = (db.fadeStart ~= nil and db.fadeStart or 0.5) * 100 })
         PlaceSlider(fadeSlider, dspContent, 240, -65)
-        -- fadeStart stored as 0-1, slider shows 0-100
-        fadeSlider:SetValue((db.fadeStart ~= nil and db.fadeStart or 0.5) * 100)
 
         db.direction = db.direction or "RIGHT"
         W:CreateDropdown(dspContent, {

@@ -196,12 +196,12 @@ function ns:InitCrosshair()
             onChange = refresh
         })
 
+        -- Opacity stored as 0-1, slider shows 0-100
         local opacSlider = W:CreateAdvancedSlider(appContent,
             W.Colorize(L["CROSSHAIR_OPACITY"], C.ORANGE), 0, 100, -40, 5, true,
-            function(val) db.opacity = val / 100; refresh() end)
+            function(val) db.opacity = val / 100; refresh() end,
+            { value = (db.opacity ~= nil and db.opacity or 0.8) * 100 })
         PlaceSlider(opacSlider, appContent, 0, -40)
-        -- Opacity stored as 0-1, slider shows 0-100
-        opacSlider:SetValue((db.opacity ~= nil and db.opacity or 0.8) * 100)
 
         local color2Btn, color2Preview
 
