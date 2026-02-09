@@ -7,7 +7,7 @@ A lightweight Quality of Life addon for World of Warcraft focused on performance
 
 ## What is NaowhQOL?
 
-NaowhQOL is a performance and gameplay-focused addon designed to improve your World of Warcraft experience by enhancing system performance, gameplay clarity, and player awareness — without changing your UI or adding visual clutter.
+NaowhQOL is a performance and gameplay-focused addon designed to improve your World of Warcraft experience by enhancing system performance, gameplay clarity, and player awareness without changing your UI or adding visual clutter.
 
 This is not a UI pack.
 This is not a visual overhaul.
@@ -90,7 +90,7 @@ World of Warcraft/_retail_/Interface/AddOns/
 ```
 
 3. Restart the game
-4. Configure using `/naowhqol`
+4. Configure using `/nao`
 
 
 ## Distribution
