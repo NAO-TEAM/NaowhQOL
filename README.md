@@ -54,7 +54,7 @@ This is a modular Quality of Life system.
 * Advanced optimizations
 * Misc utilities
 
-## 🎯 Why NaowhQOL?
+## Why NaowhQOL?
 
 Because most addons focus on visuals.
 NaowhQOL focuses on **performance, clarity, and gameplay stability**.
@@ -68,7 +68,7 @@ It helps you:
 * Reduce visual noise
 * Play smoother in high-pressure content
 
-## 🧠 Philosophy
+## Philosophy
 
 NaowhQOL is not about customization.
 NaowhQOL is not about visuals.
@@ -80,7 +80,7 @@ NaowhQOL is about clarity.
 
 > Clean gameplay. Stable performance. Competitive clarity.
 
-## ⚙️ Installation
+## Installation
 
 1. Download the latest release
 2. Extract into:
@@ -130,7 +130,7 @@ The source code is published for **distribution and usage only**.
 See `LICENSE.md` for full legal terms.
 
 
-## 📄 Third-Party Libraries
+## Third-Party Libraries
 
 This project includes third-party libraries under their original licenses
 (MIT, LGPL, BSD, etc).
@@ -139,7 +139,7 @@ These libraries are **not covered** by the NaowhQOL proprietary license.
 
 See `THIRD_PARTY_LICENSES.md` for details.
 
-## 📬 Contact
+## Contact
 
 For:
 
