@@ -68,16 +68,6 @@ It helps you:
 * Reduce visual noise
 * Play smoother in high-pressure content
 
-## Philosophy
-
-NaowhQOL is not about customization.
-NaowhQOL is not about visuals.
-NaowhQOL is not about UI clutter.
-
-NaowhQOL is about optimization.
-NaowhQOL is about efficiency.
-NaowhQOL is about clarity.
-
 > Clean gameplay. Stable performance. Competitive clarity.
 
 ## Installation
