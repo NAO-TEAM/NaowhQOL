@@ -1,0 +1,73 @@
+## Interface: 120000, 110207
+## Title: |cff0091edNaowh|r|cffffa300QOL|r
+## Notes: Quality of Life improvements
+## SavedVariables: NaowhQOL
+## AddonCompartmentFunc: NaowhQOL_OnAddonCompartmentClick
+## IconTexture: 136243
+Libs/LibStub/LibStub.lua
+Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
+Libs/LibSharedMedia-3.0/lib.xml
+Libs/LibRangeCheck-3.0/LibRangeCheck-3.0.lua
+Version.lua
+Core.lua
+Core/Localization.lua
+Locales/enUS.lua
+Data/Widgets.lua
+Data/SoundList.lua
+Data/FontList.lua
+Data/BarStyleList.lua
+Data/ZoneUtil.lua
+Data/SpecUtil.lua
+Data/GroupUtil.lua
+Data/DisplayUtils.lua
+Data/SettingsIO.lua
+Data/StaticPopups.lua
+Data/LayoutUtil.lua
+Core/Init.lua
+Core/PerfMonitor.lua
+UI/MainFrame.lua
+UI/Sidebar.lua
+Modules/CombatTimerDisplay.lua
+Modules/CombatAlertDisplay.lua
+Modules/EasyItemDestroy.lua
+Modules/FasterLoot.lua
+Modules/DisableLootWarnings.lua
+Modules/HideUIClutter.lua
+Modules/Dragonriding.lua
+Modules/CrosshairDisplay.lua
+Modules/BuffMonitorDisplay.lua
+Modules/ConsumableCheckerDisplay.lua
+Modules/CombatLoggerDisplay.lua
+Modules/GcdTrackerDisplay.lua
+Modules/StealthReminderDisplay.lua
+Modules/RangeCheckDisplay.lua
+Modules/EmoteDetection.lua
+Modules/FocusCastBarDisplay.lua
+Modules/DurabilityDisplay.lua
+Modules/AutoKeystone.lua
+Modules/SkipQueueConfirm.lua
+Modules/DeathReleaseProtection.lua
+Modules/AuctionHouseFilter.lua
+Modules/TalentReminder.lua
+Modules/EquipmentReminder.lua
+Modules/SlashCommands.lua
+Config/Profiler.lua
+Config/MouseCursor.lua
+Config/Optimizations.lua
+Config/CombatTimer.lua
+Config/CombatAlert.lua
+Config/Crosshair.lua
+Config/BuffMonitor.lua
+Config/ConsumableChecker.lua
+Config/Dragonriding.lua
+Config/CombatLogger.lua
+Config/GcdTracker.lua
+Config/StealthReminder.lua
+Config/RangeCheck.lua
+Config/EmoteDetection.lua
+Config/FocusCastBar.lua
+Config/TalentReminder.lua
+Config/EquipmentReminder.lua
+Config/Modules.lua
+Config/ImportExport.lua
+Config/SlashCommands.lua

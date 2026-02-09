@@ -1,0 +1,67 @@
+local addonName, ns = ...
+
+ns.SoundList = {
+    { name = "Achievement Unlocked",    id = 13833 },
+    { name = "Alarm Clock Warning 1",   id = 18871 },
+    { name = "Alarm Clock Warning 2",   id = 12867 },
+    { name = "Alarm Clock Warning 3",   id = 12889 },
+    { name = "Battleground Countdown",  id = 25477 },
+    { name = "Battleground Start",      id = 25478 },
+    { name = "BNet Toast",              id = 18019 },
+    { name = "Bonus Roll End",          id = 31581 },
+    { name = "Bonus Roll Start",        id = 31579 },
+    { name = "Challenge Complete",      id = 74526 },
+    { name = "Challenge Keystone Up",   id = 74437 },
+    { name = "Challenge New Record",    id = 33338 },
+    { name = "Epic Loot Toast",         id = 31578 },
+    { name = "Fishing Reel In",         id = 3407 },
+    { name = "Flag Captured",           id = 8174 },
+    { name = "GM Chat Warning",         id = 15273 },
+    { name = "Group Finder App",        id = 47615 },
+    { name = "Honor Rank Up",           id = 77003 },
+    { name = "Item Repair",             id = 7994 },
+    { name = "Legendary Loot Toast",    id = 63971 },
+    { name = "Level Up",                id = 888  },
+    { name = "LFG Denied",              id = 17341 },
+    { name = "LFG Rewards",             id = 17316 },
+    { name = "LFG Role Check",          id = 17317 },
+    { name = "Loot Coin",               id = 120  },
+    { name = "Loss of Control",         id = 34468 },
+    { name = "Map Ping",                id = 3175 },
+    { name = "Mission Complete",        id = 44294 },
+    { name = "Mission Success Cheers",  id = 74702 },
+    { name = "Personal Loot Banner",    id = 50893 },
+    { name = "Pet Battle Start",        id = 31584 },
+    { name = "Power Aura",              id = 23287 },
+    { name = "PVP Enter Queue",         id = 8458 },
+    { name = "PVP Through Queue",       id = 8459 },
+    { name = "Quest Auto Complete",     id = 23404 },
+    { name = "Quest Complete",          id = 878  },
+    { name = "Quest List Open",         id = 875  },
+    { name = "Raid Boss Defeated",      id = 50111 },
+    { name = "Raid Boss Emote Warning", id = 12197 },
+    { name = "Raid Boss Whisper",       id = 37666 },
+    { name = "Raid Warning",            id = 8959 },
+    { name = "Ready Check",             id = 8960 },
+    { name = "Recipe Learned Toast",    id = 73919 },
+    { name = "Scenario Ending",         id = 31754 },
+    { name = "Scenario Stage End",      id = 31757 },
+    { name = "Store Unwrap",            id = 64329 },
+    { name = "Talent Ready Check",      id = 73281 },
+    { name = "Talent Ready Toast",      id = 73280 },
+    { name = "Talent Select",           id = 73279 },
+    { name = "Tell Message",            id = 3081 },
+    { name = "Tutorial Popup",          id = 7355 },
+    { name = "Warforged Loot Toast",    id = 51561 },
+    { name = "Warmode Activate",        id = 118563 },
+    { name = "World Quest Complete",    id = 73277 },
+    { name = "World Quest Start",       id = 73275 },
+}
+
+-- Lookup: id -> name
+local nameByID = {}
+for _, s in ipairs(ns.SoundList) do nameByID[s.id] = s.name end
+
+function ns.SoundList.GetName(id)
+    return nameByID[id] or ("Unknown (" .. tostring(id) .. ")")
+end
