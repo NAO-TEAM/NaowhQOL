@@ -753,6 +753,25 @@ function ns.Widgets:CreateColorPicker(parent, opts)
         1
     )
 
+    -- Class color reference box
+    local classColor = ns.Widgets.GetPlayerClassColor()
+    local classBox = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    classBox:SetSize(26, 26)
+    classBox:SetPoint("LEFT", preview, "RIGHT", 6, 0)
+    classBox:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+        edgeFile = "Interface\\Buttons\\WHITE8x8",
+        edgeSize = 1,
+    })
+    classBox:SetBackdropBorderColor(0, 0, 0, 1)
+    classBox:SetBackdropColor(classColor.r, classColor.g, classColor.b, 1)
+    classBox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText("Class Color", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+    classBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
     btn:SetScript("OnClick", function()
         local _, classFile = UnitClass("player")
         ColorPickerFrame:SetupColorPickerAndShow({
@@ -774,7 +793,7 @@ function ns.Widgets:CreateColorPicker(parent, opts)
         })
     end)
 
-    return btn, preview
+    return btn, preview, classBox
 end
 
 -- Custom styled dropdown matching addon theme
