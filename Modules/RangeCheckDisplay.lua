@@ -52,10 +52,12 @@ function rangeFrame:UpdateDisplay()
         rangeFrame:SetBackdrop(FRAME_BACKDROP)
         rangeFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
         rangeFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+        rangeFrame:EnableMouse(true)
         if rangeResizeHandle then rangeResizeHandle:Show() end
         rangeFrame:Show()
     else
         rangeFrame:SetBackdrop(nil)
+        rangeFrame:EnableMouse(false)
         if rangeResizeHandle then rangeResizeHandle:Hide() end
     end
 

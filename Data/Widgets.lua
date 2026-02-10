@@ -1254,7 +1254,7 @@ end
 
 function ns.Widgets:CreateSoundPicker(parent, x, y, currentSound, onSelect)
     -- currentSound can be: number (legacy ID), {id=N}, or {path="..."}
-    local VISIBLE_ROWS = 6
+    local VISIBLE_ROWS = 12
     local ROW_H = 20
     local FILTER_H = 20
     local WIDTH = 260
@@ -1510,7 +1510,7 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentSound, onSelect)
 end
 
 function ns.Widgets:CreateFontPicker(parent, x, y, currentPath, onSelect)
-    local VISIBLE_ROWS = 6
+    local VISIBLE_ROWS = 12
     local ROW_H = 22
     local WIDTH = 260
     local PREVIEW_SIZE = 12
@@ -1952,7 +1952,7 @@ function ns.Widgets.CreateResizeHandle(parent, opts)
 
     parent:SetResizable(true)
     parent:SetResizeBounds(
-        opts.minW or 150, opts.minH or 40,
+        opts.minW or 150, opts.minH or 20,
         opts.maxW or 600, opts.maxH or 200
     )
 
