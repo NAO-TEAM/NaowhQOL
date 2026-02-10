@@ -112,6 +112,14 @@ function alertFrame:UpdateDisplay()
     local db = NaowhQOL.emoteDetection
     if not db then return end
 
+    -- Early exit if disabled
+    if not db.enabled then
+        alertFrame:SetBackdrop(nil)
+        if resizeHandle then resizeHandle:Hide() end
+        alertFrame:Hide()
+        return
+    end
+
     if db.unlock then
         alertFrame:SetBackdrop(UNLOCK_BACKDROP)
         alertFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
@@ -135,6 +143,7 @@ function alertFrame:UpdateDisplay()
     else
         alertFrame:SetBackdrop(nil)
         if resizeHandle then resizeHandle:Hide() end
+        alertFrame:Hide()
     end
 
     if not alertFrame.initialized then
@@ -149,10 +158,6 @@ function alertFrame:UpdateDisplay()
 
     local iconSize = math.floor(alertFrame:GetHeight() * 0.8)
     iconTex:SetSize(iconSize, iconSize)
-
-    if not db.enabled and not db.unlock then
-        alertFrame:Hide()
-    end
 end
 
 ------------------------------------------------------------

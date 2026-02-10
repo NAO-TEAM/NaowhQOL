@@ -37,7 +37,7 @@ end
 local NAOWH_FONT = "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf"
 
 local COMBAT_TIMER_DEFAULTS = {
-    enabled = true, unlock = false, font = NAOWH_FONT,
+    enabled = false, unlock = false, font = NAOWH_FONT,
     colorR = 1, colorG = 1, colorB = 1, point = "CENTER",
     x = 0, y = -200, width = 400, height = 100, hidePrefix = false,
     instanceOnly = false, chatReport = true, stickyTimer = false,
@@ -46,7 +46,7 @@ local COMBAT_TIMER_DEFAULTS = {
 local COMBAT_ALERT_DEFAULTS = {
     enabled = true, unlock = false, font = NAOWH_FONT,
     enterR = 0, enterG = 1, enterB = 0, leaveR = 1, leaveG = 0, leaveB = 0,
-    point = "CENTER", x = 0, y = 200, width = 300, height = 80,
+    point = "CENTER", x = 0, y = 100, width = 200, height = 50,
     enterText = "++ Combat", leaveText = "-- Combat",
     -- Enter combat audio (audioMode: "none", "sound", "tts")
     enterAudioMode = "none", enterSoundID = 8959,
@@ -74,11 +74,11 @@ local CROSSHAIR_DEFAULTS = {
 }
 
 local COMBAT_LOGGER_DEFAULTS = {
-    enabled = true,
+    enabled = false,
 }
 
 local DRAGONRIDING_DEFAULTS = {
-    enabled = false, barWidth = 36, speedHeight = 14, chargeHeight = 14,
+    enabled = true, barWidth = 36, speedHeight = 14, chargeHeight = 14,
     gap = 0, showSpeedText = true, swapPosition = false, hideWhenGroundedFull = false,
     showSecondWind = true, showWhirlingSurge = true, colorPreset = "Classic",
     unlocked = false, point = "BOTTOM", posX = 0, posY = 200,
@@ -94,7 +94,7 @@ local DRAGONRIDING_DEFAULTS = {
 }
 
 local BUFF_MONITOR_DEFAULTS = {
-    enabled = false, unlock = false, soundID = 8959, soundEnabled = true,
+    enabled = true, unlock = false, soundID = 8959, soundEnabled = true,
     colorR = 1, colorG = 0.2, colorB = 0.8, iconPoint = "CENTER", iconX = 0, iconY = 100, iconSize = 40,
     raidBuffsEnabled = true, raidIconSize = 40, raidIconPoint = "TOP", raidIconX = 0, raidIconY = -100, unlockRaid = false,
     raidLabelFontSize = 9, raidLabelColorR = 0.7, raidLabelColorG = 0.7, raidLabelColorB = 0.7,
@@ -103,7 +103,7 @@ local BUFF_MONITOR_DEFAULTS = {
 }
 
 local CONSUMABLE_CHECKER_DEFAULTS = {
-    enabled = false, unlock = false, iconSize = 40, iconPoint = "CENTER", iconX = 0, iconY = 150,
+    enabled = true, unlock = false, iconSize = 40, iconPoint = "TOP", iconX = 0, iconY = -140,
     normalDungeon = true, heroicDungeon = true, mythicDungeon = true, mythicPlus = false,
     lfr = true, normalRaid = true, heroicRaid = true, mythicRaid = true,
     soundEnabled = true, soundID = 8959, colorR = 1, colorG = 0.2, colorB = 0.8,
@@ -140,7 +140,7 @@ local RANGE_CHECK_DEFAULTS = {
 
 local EMOTE_DETECTION_DEFAULTS = {
     enabled = true, unlock = false, font = NAOWH_FONT,
-    point = "CENTER", x = 0, y = 0, width = 200, height = 60, fontSize = 16,
+    point = "TOP", x = 0, y = -50, width = 200, height = 60, fontSize = 16,
     textR = 1, textG = 1, textB = 1, emotePattern = "prepares,places", soundOn = true, soundID = 8959,
     autoEmoteEnabled = true, autoEmoteCooldown = 2,
 }
@@ -159,7 +159,7 @@ local FOCUS_CAST_BAR_DEFAULTS = {
 }
 
 local TALENT_REMINDER_DEFAULTS = {
-    enabled = true,
+    enabled = false,
 }
 
 local RAID_ALERTS_DEFAULTS = {
@@ -171,7 +171,7 @@ local POISON_REMINDER_DEFAULTS = {
 }
 
 local EQUIPMENT_REMINDER_DEFAULTS = {
-    enabled = true,
+    enabled = false,
     showOnInstance = true,
     showOnReadyCheck = true,
     autoHideDelay = 10,
@@ -182,7 +182,7 @@ local EQUIPMENT_REMINDER_DEFAULTS = {
 }
 
 local CURSOR_TRACKER_DEFAULTS = {
-    enabled = true,
+    enabled = false,
     size = 48,
     shape = "ring.tga",
     color = { r = 1.0, g = 0.66, b = 0.0 },
@@ -289,7 +289,7 @@ local function InitializeDB()
     -- Dragonriding
     NaowhQOL.dragonriding = NaowhQOL.dragonriding or {}
     local dr = NaowhQOL.dragonriding
-    if dr.enabled == nil then dr.enabled = false end
+    if dr.enabled == nil then dr.enabled = true end
     if dr.barWidth == nil then dr.barWidth = 36 end
     if dr.speedHeight == nil then dr.speedHeight = 14 end
     if dr.chargeHeight == nil then dr.chargeHeight = 14 end
@@ -332,17 +332,17 @@ local function InitializeDB()
     NaowhQOL.misc = NaowhQOL.misc or {}
     local misc = NaowhQOL.misc
     if misc.autoFillDelete == nil then misc.autoFillDelete = true end
-    if misc.fasterLoot == nil then misc.fasterLoot = false end
-    if misc.suppressLootWarnings == nil then misc.suppressLootWarnings = false end
+    if misc.fasterLoot == nil then misc.fasterLoot = true end
+    if misc.suppressLootWarnings == nil then misc.suppressLootWarnings = true end
     if misc.hideAlerts == nil then misc.hideAlerts = false end
     if misc.hideTalkingHead == nil then misc.hideTalkingHead = false end
     if misc.hideEventToasts == nil then misc.hideEventToasts = false end
     if misc.hideZoneText == nil then misc.hideZoneText = false end
     if misc.autoRepair == nil then misc.autoRepair = false end
     if misc.guildRepair == nil then misc.guildRepair = false end
-    if misc.durabilityWarning == nil then misc.durabilityWarning = false end
-    if misc.durabilityThreshold == nil then misc.durabilityThreshold = 50 end
-    if misc.autoSlotKeystone == nil then misc.autoSlotKeystone = false end
+    if misc.durabilityWarning == nil then misc.durabilityWarning = true end
+    if misc.durabilityThreshold == nil then misc.durabilityThreshold = 30 end
+    if misc.autoSlotKeystone == nil then misc.autoSlotKeystone = true end
     if misc.skipQueueConfirm == nil then misc.skipQueueConfirm = false end
     if misc.deathReleaseProtection == nil then misc.deathReleaseProtection = false end
     if misc.ahCurrentExpansion == nil then misc.ahCurrentExpansion = false end
@@ -350,7 +350,7 @@ local function InitializeDB()
     -- Buff Monitor
     NaowhQOL.buffMonitor = NaowhQOL.buffMonitor or {}
     local bm = NaowhQOL.buffMonitor
-    if bm.enabled      == nil then bm.enabled      = false    end
+    if bm.enabled      == nil then bm.enabled      = true     end
     if bm.unlock       == nil then bm.unlock       = false    end
     if bm.soundID      == nil then bm.soundID      = 8959     end
     if bm.soundEnabled == nil then bm.soundEnabled = true     end
@@ -418,12 +418,12 @@ local function InitializeDB()
     -- Consumable Checker (standalone module)
     NaowhQOL.consumableChecker = NaowhQOL.consumableChecker or {}
     local cc = NaowhQOL.consumableChecker
-    if cc.enabled          == nil then cc.enabled          = false    end
+    if cc.enabled          == nil then cc.enabled          = true     end
     if cc.unlock           == nil then cc.unlock           = false    end
     if cc.iconSize         == nil then cc.iconSize         = 40       end
-    if cc.iconPoint        == nil then cc.iconPoint        = "CENTER" end
+    if cc.iconPoint        == nil then cc.iconPoint        = "TOP"    end
     if cc.iconX            == nil then cc.iconX            = 0        end
-    if cc.iconY            == nil then cc.iconY            = 150      end
+    if cc.iconY            == nil then cc.iconY            = -140     end
     if cc.normalDungeon    == nil then cc.normalDungeon    = true     end
     if cc.heroicDungeon    == nil then cc.heroicDungeon    = true     end
     if cc.mythicDungeon    == nil then cc.mythicDungeon    = true     end
@@ -593,9 +593,9 @@ local function InitializeDB()
     if ra.enabled          == nil then ra.enabled          = true               end
     if ra.unlock           == nil then ra.unlock           = false              end
     if ra.font             == nil then ra.font             = NAOWH_FONT end
-    if ra.point            == nil then ra.point            = "CENTER"           end
+    if ra.point            == nil then ra.point            = "TOP"              end
     if ra.x                == nil then ra.x                = 0                  end
-    if ra.y                == nil then ra.y                = 0                  end
+    if ra.y                == nil then ra.y                = -50                end
     if ra.width            == nil then ra.width            = 200                end
     if ra.height           == nil then ra.height           = 60                 end
     if ra.fontSize         == nil then ra.fontSize         = 16                 end
@@ -661,7 +661,7 @@ local function InitializeDB()
     -- Talent Reminder
     NaowhQOL.talentReminder = NaowhQOL.talentReminder or {}
     local tr = NaowhQOL.talentReminder
-    if tr.enabled == nil then tr.enabled = true end
+    if tr.enabled == nil then tr.enabled = false end
     tr.loadouts = tr.loadouts or {}
 
     -- Slash Commands

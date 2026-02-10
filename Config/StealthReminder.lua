@@ -233,7 +233,7 @@ function ns:InitStealthReminder()
         stanceUnlockCB:SetShown(db.stanceEnabled)
 
         local combatOnlyCB = W:CreateCheckbox(stanceKillArea, {
-            label = L["COMMON_SECTION_BEHAVIOR"],
+            label = L["GCD_COMBAT_ONLY"],
             db = db, key = "stanceCombatOnly",
             x = 15, y = -62,
             template = "ChatConfigCheckButtonTemplate",
@@ -263,7 +263,7 @@ function ns:InitStealthReminder()
         })
 
         W:CreateColorPicker(stColContent, {
-            label = L["STEALTH_WRONG_COLOR"], db = db,
+            label = L["COMMON_LABEL_TEXT_COLOR"], db = db,
             rKey = "stanceWarnR", gKey = "stanceWarnG", bKey = "stanceWarnB",
             x = 10, y = -5,
             onChange = refreshStance

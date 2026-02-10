@@ -6,6 +6,9 @@ local C = ns.COLORS
 
 local panelCache = {}
 
+-- Forward declarations for dialog functions
+local CreateAddDialog, ShowAddDialog
+
 -- Build the UI panel
 local function BuildPanel(parent)
     local sf, sc = W:CreateScrollFrame(parent, 800)
@@ -311,7 +314,7 @@ local function RefreshFrameList(popup, filter)
     listContent:SetHeight(math.max(math.abs(y), 10))
 end
 
-local function CreateAddDialog()
+CreateAddDialog = function()
     local popup = CreateFrame("Frame", "NaowhQOL_AddCommandDialog", UIParent, "BackdropTemplate")
     popup:SetSize(350, 380)
     popup:SetPoint("CENTER")
@@ -540,7 +543,7 @@ local function CreateAddDialog()
     addDialog = popup
 end
 
-local function ShowAddDialog(refreshCallback)
+ShowAddDialog = function(refreshCallback)
     if not addDialog then CreateAddDialog() end
 
     -- Reset all fields

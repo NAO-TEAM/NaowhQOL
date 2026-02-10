@@ -38,7 +38,7 @@ local function UpdateSlot(button, slotID)
             button.border:Hide()
         end
     else
-        button.icon:SetTexture(nil)
+        button.icon:SetTexture(0)
         button.icon:Hide()
         button.border:Hide()
     end
@@ -62,15 +62,46 @@ local function CreateItemButton(parent, slotID, slotName)
     -- Icon texture
     local icon = button:CreateTexture(nil, "ARTWORK")
     icon:SetAllPoints()
+    icon:SetTexture(0)
     button.icon = icon
 
-    -- Quality border
-    local border = button:CreateTexture(nil, "OVERLAY")
-    border:SetPoint("TOPLEFT", -2, 2)
-    border:SetPoint("BOTTOMRIGHT", 2, -2)
-    border:SetTexture([[Interface\Buttons\UI-ActionButton-Border]])
-    border:SetBlendMode("ADD")
-    button.border = border
+    -- Quality border (4 edge textures for a clean outline)
+    local borderSize = 2
+    button.borderTextures = {}
+
+    local sides = {
+        {point1 = "TOPLEFT", point2 = "TOPRIGHT", x1 = -borderSize, y1 = borderSize, x2 = borderSize, y2 = 0},
+        {point1 = "BOTTOMLEFT", point2 = "BOTTOMRIGHT", x1 = -borderSize, y1 = 0, x2 = borderSize, y2 = -borderSize},
+        {point1 = "TOPLEFT", point2 = "BOTTOMLEFT", x1 = -borderSize, y1 = borderSize, x2 = 0, y2 = -borderSize},
+        {point1 = "TOPRIGHT", point2 = "BOTTOMRIGHT", x1 = 0, y1 = borderSize, x2 = borderSize, y2 = -borderSize},
+    }
+
+    for i, side in ipairs(sides) do
+        local tex = button:CreateTexture(nil, "OVERLAY")
+        tex:SetPoint(side.point1, button, side.point1, side.x1, side.y1)
+        tex:SetPoint(side.point2, button, side.point2, side.x2, side.y2)
+        tex:SetColorTexture(1, 1, 1, 1)
+        button.borderTextures[i] = tex
+    end
+
+    -- Wrapper for compatibility
+    button.border = {
+        SetVertexColor = function(_, r, g, b, a)
+            for _, tex in ipairs(button.borderTextures) do
+                tex:SetVertexColor(r, g, b, a or 1)
+            end
+        end,
+        Show = function()
+            for _, tex in ipairs(button.borderTextures) do
+                tex:Show()
+            end
+        end,
+        Hide = function()
+            for _, tex in ipairs(button.borderTextures) do
+                tex:Hide()
+            end
+        end,
+    }
 
     -- Tooltip handling
     button:SetScript("OnEnter", function(self)
