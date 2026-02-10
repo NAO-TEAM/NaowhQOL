@@ -1,7 +1,8 @@
 ## Interface: 120000, 110207
 ## Title: |cff0091edNaowh|r|cffffa300QOL|r
 ## Notes: Quality of Life improvements
-## SavedVariables: NaowhQOL
+## SavedVariablesPerCharacter: NaowhQOL
+## SavedVariables: NaowhQOL_Profiles
 ## AddonCompartmentFunc: NaowhQOL_OnAddonCompartmentClick
 ## IconTexture: 136243
 Libs/LibStub/LibStub.lua

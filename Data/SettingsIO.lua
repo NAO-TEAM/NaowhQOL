@@ -510,6 +510,156 @@ function ns.SettingsIO:Import(encoded, selectedKeys)
     return true
 end
 
+-- Profile Management (profiles are stored as export strings)
+-- NaowhQOL.profiles = { ["ProfileName"] = "base64string", ... }
+-- NaowhQOL.activeProfile = "Default"
+-- NaowhQOL_Profiles = { ["Realm-Character"] = { ["ProfileName"] = "base64string" }, ... }
+
+function ns.SettingsIO:InitProfiles()
+    NaowhQOL.profiles = NaowhQOL.profiles or {}
+    NaowhQOL.activeProfile = NaowhQOL.activeProfile or "Default"
+    NaowhQOL_Profiles = NaowhQOL_Profiles or {}
+end
+
+function ns.SettingsIO:GetCharacterKey()
+    local name = UnitName("player") or "Unknown"
+    local realm = GetRealmName() or "Unknown"
+    return realm .. "-" .. name
+end
+
+function ns.SettingsIO:GetProfileList()
+    self:InitProfiles()
+    local list = {}
+    for name in pairs(NaowhQOL.profiles) do
+        list[#list + 1] = name
+    end
+    table.sort(list)
+    return list
+end
+
+function ns.SettingsIO:GetActiveProfile()
+    self:InitProfiles()
+    return NaowhQOL.activeProfile
+end
+
+function ns.SettingsIO:SaveProfile(name)
+    self:InitProfiles()
+    local exportStr = self:Export()
+    NaowhQOL.profiles[name] = exportStr
+    NaowhQOL.activeProfile = name
+
+    -- Also sync to account-wide registry for cross-character copy
+    local charKey = self:GetCharacterKey()
+    NaowhQOL_Profiles[charKey] = NaowhQOL_Profiles[charKey] or {}
+    NaowhQOL_Profiles[charKey][name] = exportStr
+
+    return true
+end
+
+function ns.SettingsIO:LoadProfile(name)
+    self:InitProfiles()
+    local exportStr = NaowhQOL.profiles[name]
+    if not exportStr then return false, "Profile not found" end
+
+    -- Import all modules from the stored string
+    local allKeys = {}
+    for _, m in ipairs(self.modules) do
+        allKeys[m.key] = true
+    end
+
+    local ok, err = self:Import(exportStr, allKeys)
+    if ok then
+        NaowhQOL.activeProfile = name
+    end
+    return ok, err
+end
+
+function ns.SettingsIO:DeleteProfile(name)
+    self:InitProfiles()
+    if not NaowhQOL.profiles[name] then return false end
+
+    NaowhQOL.profiles[name] = nil
+
+    -- Also remove from account registry
+    local charKey = self:GetCharacterKey()
+    if NaowhQOL_Profiles[charKey] then
+        NaowhQOL_Profiles[charKey][name] = nil
+    end
+
+    -- Switch to another profile if we deleted the active one
+    if NaowhQOL.activeProfile == name then
+        local remaining = self:GetProfileList()
+        NaowhQOL.activeProfile = remaining[1] or "Default"
+    end
+
+    return true
+end
+
+function ns.SettingsIO:RenameProfile(oldName, newName)
+    self:InitProfiles()
+    if not NaowhQOL.profiles[oldName] then return false end
+    if NaowhQOL.profiles[newName] then return false end
+
+    NaowhQOL.profiles[newName] = NaowhQOL.profiles[oldName]
+    NaowhQOL.profiles[oldName] = nil
+
+    -- Update account registry
+    local charKey = self:GetCharacterKey()
+    if NaowhQOL_Profiles[charKey] and NaowhQOL_Profiles[charKey][oldName] then
+        NaowhQOL_Profiles[charKey][newName] = NaowhQOL_Profiles[charKey][oldName]
+        NaowhQOL_Profiles[charKey][oldName] = nil
+    end
+
+    if NaowhQOL.activeProfile == oldName then
+        NaowhQOL.activeProfile = newName
+    end
+
+    return true
+end
+
+function ns.SettingsIO:GetOtherCharacters()
+    self:InitProfiles()
+    local charKey = self:GetCharacterKey()
+    local chars = {}
+    for key in pairs(NaowhQOL_Profiles) do
+        if key ~= charKey then
+            chars[#chars + 1] = key
+        end
+    end
+    table.sort(chars)
+    return chars
+end
+
+function ns.SettingsIO:GetCharacterProfiles(charKey)
+    self:InitProfiles()
+    local profiles = NaowhQOL_Profiles[charKey]
+    if not profiles then return {} end
+
+    local list = {}
+    for name in pairs(profiles) do
+        list[#list + 1] = name
+    end
+    table.sort(list)
+    return list
+end
+
+function ns.SettingsIO:CopyFromCharacter(charKey, profileName)
+    self:InitProfiles()
+    local charProfiles = NaowhQOL_Profiles[charKey]
+    if not charProfiles then return false, "Character not found" end
+
+    local exportStr = charProfiles[profileName]
+    if not exportStr then return false, "Profile not found" end
+
+    -- Import all modules
+    local allKeys = {}
+    for _, m in ipairs(self.modules) do
+        allKeys[m.key] = true
+    end
+
+    return self:Import(exportStr, allKeys)
+end
+
 ns.SettingsIO:RegisterSimple("combatTimer",   "Combat Timer")
 ns.SettingsIO:RegisterSimple("combatAlert",   "Combat Alert")
 ns.SettingsIO:RegisterSimple("crosshair",     "Crosshair")
