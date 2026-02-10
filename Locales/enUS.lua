@@ -597,7 +597,7 @@ ns:RegisterLocale("enUS", {
     MOUSE_SUBTITLE = "Customize your cursor ring & trail",
     MOUSE_ENABLE = "Enable Mouse Ring",
     MOUSE_VISIBLE_OOC = "Visible Outside Combat",
-    MOUSE_HIDE_ON_CLICK = "Hide on Mouse Click",
+    MOUSE_HIDE_ON_CLICK = "Hide on RMB",
     MOUSE_SECTION_APPEARANCE = "APPEARANCE",
     MOUSE_SHAPE = "Ring Shape",
     MOUSE_SHAPE_CIRCLE = "Circle",

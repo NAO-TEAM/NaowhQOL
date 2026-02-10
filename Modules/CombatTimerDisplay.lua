@@ -33,6 +33,12 @@ local function InvalidateDbCache()
     cachedDb = nil
 end
 
+local function IsInstanceCheckPassed(db)
+    if not db.instanceOnly then return true end
+    local inInstance, instanceType = IsInInstance()
+    return inInstance and instanceType ~= "none"
+end
+
 
 function timerFrame:UpdateTextSize()
     local db = NaowhQOL.combatTimer
@@ -94,7 +100,7 @@ function timerFrame:UpdateDisplay()
         timerFrame:SetBackdrop(nil)
         if resizeHandle then resizeHandle:Hide() end
 
-        if not inCombat and not db.stickyTimer then
+        if not inCombat and (not db.stickyTimer or not IsInstanceCheckPassed(db)) then
             timerFrame:Hide()
         end
     end
@@ -151,7 +157,7 @@ timerFrame:SetScript("OnUpdate", ns.PerfMonitor:Wrap("Combat Timer", function(se
     if acc >= 1 then
         acc = 0
         local db = GetCachedDb()
-        if inCombat or (db and db.unlock) or (db and db.stickyTimer and lastCombatDuration > 0) then
+        if inCombat or (db and db.unlock) or (db and db.stickyTimer and lastCombatDuration > 0 and IsInstanceCheckPassed(db)) then
             self:UpdateDisplay()
         end
     end
@@ -227,9 +233,10 @@ loader:SetScript("OnEvent", function(self, event)
         end
 
         inCombat = false
-        if not db.unlock and not db.stickyTimer then
+        local instanceOk = IsInstanceCheckPassed(db)
+        if not db.unlock and (not db.stickyTimer or not instanceOk) then
             timerFrame:Hide()
-        elseif db.stickyTimer and lastCombatDuration > 0 then
+        elseif db.stickyTimer and lastCombatDuration > 0 and instanceOk then
             timerFrame:UpdateDisplay()
         end
     end

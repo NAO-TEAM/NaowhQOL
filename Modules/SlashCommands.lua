@@ -317,9 +317,25 @@ ns.SlashCommands.FRAME_ADDON_REQUIREMENTS = {
     HouseFinderFrame = "Blizzard_HousingHouseFinder",
 }
 
+-- Try to activate ElvUI keybind mode, returns true if successful
+function ns.SlashCommands:TryElvUIKeybind()
+    if not ElvUI then return false end
+    local E = ElvUI[1]
+    if not E then return false end
+    local AB = E:GetModule('ActionBars')
+    if not AB or not AB.ActivateBindMode then return false end
+    AB:ActivateBindMode()
+    return true
+end
+
 -- Toggle frame visibility (wrapped in pcall for safety)
 function ns.SlashCommands:ToggleFrame(frameName)
     if not frameName or frameName == "" then return end
+
+    -- Try ElvUI keybind mode first for QuickKeybindFrame
+    if frameName == "QuickKeybindFrame" then
+        if self:TryElvUIKeybind() then return end
+    end
 
     local success, err = pcall(function()
         -- Load required Blizzard addon if needed

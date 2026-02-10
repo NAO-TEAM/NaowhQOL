@@ -1053,7 +1053,7 @@ function ns.InitMouseOptions()
 
         W:CreateSlider(appContent, {
             label = L["MOUSE_SIZE"],
-            min = 32, max = 256, step = 1,
+            min = 16, max = 256, step = 1,
             x = G:Col(1), y = G:Row(2),
             value = settings.size or 48,
             onChange = function(val) UpdateSize(val) end
