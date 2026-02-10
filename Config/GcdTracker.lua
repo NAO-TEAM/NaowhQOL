@@ -87,37 +87,39 @@ function ns:InitGcdTracker()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local G = ns.Layout:New(2)
+
         local durationSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["GCD_DURATION"], C.ORANGE), 1, 15, -5, 0.5, false,
             function(val) db.duration = val end,
             { db = db, key = "duration", moduleName = "gcdTracker" })
-        PlaceSlider(durationSlider, dspContent, 0, -5)
+        PlaceSlider(durationSlider, dspContent, G:Col(1), G:Row(1))
 
         local iconSizeSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["COMMON_LABEL_ICON_SIZE"], C.ORANGE), 16, 64, -5, 1, false,
             function(val) db.iconSize = val; onUpdate() end,
             { db = db, key = "iconSize", moduleName = "gcdTracker" })
-        PlaceSlider(iconSizeSlider, dspContent, 240, -5)
+        PlaceSlider(iconSizeSlider, dspContent, G:Col(2), G:Row(1))
 
         local spacingSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["GCD_SPACING"], C.ORANGE), 0, 20, -65, 1, false,
             function(val) db.spacing = val end,
             { db = db, key = "spacing", moduleName = "gcdTracker" })
-        PlaceSlider(spacingSlider, dspContent, 0, -65)
+        PlaceSlider(spacingSlider, dspContent, G:Col(1), G:Row(2))
 
         -- fadeStart stored as 0-1, slider shows 0-100
         local fadeSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["GCD_FADE_START"], C.ORANGE), 0, 100, -65, 5, true,
             function(val) db.fadeStart = val / 100 end,
             { value = (db.fadeStart ~= nil and db.fadeStart or 0.5) * 100 })
-        PlaceSlider(fadeSlider, dspContent, 240, -65)
+        PlaceSlider(fadeSlider, dspContent, G:Col(2), G:Row(2))
 
         db.direction = db.direction or "RIGHT"
         W:CreateDropdown(dspContent, {
             label = L["GCD_SCROLL_DIR"],
             db = db, key = "direction",
             options = {"LEFT", "RIGHT", "UP", "DOWN"},
-            x = 10, y = -130,
+            x = G:Col(1), y = G:Row(3),
             width = 160,
             globalName = "NaowhGcdDirDrop"
         })
@@ -125,12 +127,12 @@ function ns:InitGcdTracker()
         W:CreateCheckbox(dspContent, {
             label = L["GCD_STACK_OVERLAPPING"],
             db = db, key = "stackOverlapping",
-            x = 200, y = -130,
+            x = G:Col(2), y = G:Row(3),
             template = "ChatConfigCheckButtonTemplate",
             onChange = onUpdate
         })
 
-        dspContent:SetHeight(180)
+        dspContent:SetHeight(G:Height(3) + 30)
         dspWrap:RecalcHeight()
 
         -- TIMELINE section
@@ -140,27 +142,29 @@ function ns:InitGcdTracker()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GT = ns.Layout:New(2)
+
         local tlSlider = W:CreateAdvancedSlider(tlContent,
             W.Colorize(L["GCD_THICKNESS"], C.ORANGE), 1, 16, -5, 1, false,
             function(val) db.timelineHeight = val; onUpdate() end,
             { db = db, key = "timelineHeight", moduleName = "gcdTracker" })
-        PlaceSlider(tlSlider, tlContent, 0, -5)
+        PlaceSlider(tlSlider, tlContent, GT:Col(1), GT:Row(1))
 
         W:CreateColorPicker(tlContent, {
             label = L["GCD_TIMELINE_COLOR"], db = db,
             rKey = "timelineColorR", gKey = "timelineColorG", bKey = "timelineColorB",
-            x = 10, y = -65,
+            x = GT:Col(1), y = GT:Row(2) + 5,
             onChange = onUpdate
         })
 
         W:CreateCheckbox(tlContent, {
             label = L["GCD_SHOW_DOWNTIME"],
             db = db, key = "showDowntimeSummary",
-            x = 200, y = -65,
+            x = GT:Col(2), y = GT:Row(2) + 5,
             template = "ChatConfigCheckButtonTemplate",
         })
 
-        tlContent:SetHeight(95)
+        tlContent:SetHeight(GT:Height(2))
         tlWrap:RecalcHeight()
 
         -- ZONE VISIBILITY section

@@ -141,45 +141,51 @@ function ns:InitCrosshair()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local G = ns.Layout:New(2)
+
+        -- Row 1: Rotation (single column)
         local rotSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_ROTATION"], C.ORANGE), 0, 359, -5, 1, false,
+            W.Colorize(L["CROSSHAIR_ROTATION"], C.ORANGE), 0, 359, G:Row(1), 1, false,
             function(val) db.rotation = val; refresh() end,
             { db = db, key = "rotation", moduleName = "crosshair" })
-        PlaceSlider(rotSlider, dimContent, 0, -5)
+        PlaceSlider(rotSlider, dimContent, G:Col(1), G:Row(1))
 
+        -- Row 2: Arm Length / Thickness
         local sizeSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_ARM_LENGTH"], C.ORANGE), 2, 80, -65, 1, false,
+            W.Colorize(L["CROSSHAIR_ARM_LENGTH"], C.ORANGE), 2, 80, G:Row(2), 1, false,
             function(val) db.size = val; refresh() end,
             { db = db, key = "size", moduleName = "crosshair" })
-        PlaceSlider(sizeSlider, dimContent, 0, -65)
+        PlaceSlider(sizeSlider, dimContent, G:Col(1), G:Row(2))
 
         local thickSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_THICKNESS"], C.ORANGE), 1, 20, -65, 1, false,
+            W.Colorize(L["CROSSHAIR_THICKNESS"], C.ORANGE), 1, 20, G:Row(2), 1, false,
             function(val) db.thickness = val; refresh() end,
             { db = db, key = "thickness", moduleName = "crosshair" })
-        PlaceSlider(thickSlider, dimContent, 240, -65)
+        PlaceSlider(thickSlider, dimContent, G:Col(2), G:Row(2))
 
+        -- Row 3: Center Gap / Dot Size
         local gapSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_CENTER_GAP"], C.ORANGE), 0, 40, -125, 1, false,
+            W.Colorize(L["CROSSHAIR_CENTER_GAP"], C.ORANGE), 0, 40, G:Row(3), 1, false,
             function(val) db.gap = val; refresh() end,
             { db = db, key = "gap", moduleName = "crosshair" })
-        PlaceSlider(gapSlider, dimContent, 0, -125)
+        PlaceSlider(gapSlider, dimContent, G:Col(1), G:Row(3))
 
         local dotSizeSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_DOT_SIZE"], C.ORANGE), 1, 16, -125, 1, false,
+            W.Colorize(L["CROSSHAIR_DOT_SIZE"], C.ORANGE), 1, 16, G:Row(3), 1, false,
             function(val) db.dotSize = val; refresh() end,
             { db = db, key = "dotSize", moduleName = "crosshair" })
-        PlaceSlider(dotSizeSlider, dimContent, 240, -125)
+        PlaceSlider(dotSizeSlider, dimContent, G:Col(2), G:Row(3))
 
+        -- Row 4: Center Dot checkbox
         local dotToggle = W:CreateCheckbox(dimContent, {
             label = L["CROSSHAIR_CENTER_DOT"],
             db = db, key = "dotEnabled",
-            x = 10, y = -185,
+            x = 10, y = G:Row(4) + 10,
             template = "ChatConfigCheckButtonTemplate",
             onChange = refresh
         })
 
-        dimContent:SetHeight(215)
+        dimContent:SetHeight(G:Height(4))
         dimWrap:RecalcHeight()
 
         -- APPEARANCE section
@@ -293,17 +299,19 @@ function ns:InitCrosshair()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local G3 = ns.Layout:New(2)
+
         local xSlider = W:CreateAdvancedSlider(posContent,
-            W.Colorize(L["CROSSHAIR_OFFSET_X"], C.ORANGE), -200, 200, -5, 1, false,
+            W.Colorize(L["CROSSHAIR_OFFSET_X"], C.ORANGE), -200, 200, G3:Row(1), 1, false,
             function(val) db.offsetX = val; refresh() end,
             { db = db, key = "offsetX", moduleName = "crosshair" })
-        PlaceSlider(xSlider, posContent, 0, -5)
+        PlaceSlider(xSlider, posContent, G3:Col(1), G3:Row(1))
 
         local ySlider = W:CreateAdvancedSlider(posContent,
-            W.Colorize(L["CROSSHAIR_OFFSET_Y"], C.ORANGE), -200, 200, -5, 1, false,
+            W.Colorize(L["CROSSHAIR_OFFSET_Y"], C.ORANGE), -200, 200, G3:Row(1), 1, false,
             function(val) db.offsetY = val; refresh() end,
             { db = db, key = "offsetY", moduleName = "crosshair" })
-        PlaceSlider(ySlider, posContent, 240, -5)
+        PlaceSlider(ySlider, posContent, G3:Col(2), G3:Row(1))
 
         local resetBtn = W:CreateButton(posContent, {
             text = L["CROSSHAIR_RESET_POSITION"],

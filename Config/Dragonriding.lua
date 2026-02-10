@@ -65,31 +65,33 @@ function ns:InitDragonriding()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local G = ns.Layout:New(2)
+
         local widthSlider = W:CreateAdvancedSlider(layContent,
             W.Colorize(L["DRAGON_BAR_WIDTH"], C.ORANGE), 10, 100, -5, 1, false,
             function(val) db.barWidth = val; drRefresh() end,
             { db = db, key = "barWidth", moduleName = "dragonriding" })
-        PlaceSlider(widthSlider, layContent, 0, -5)
+        PlaceSlider(widthSlider, layContent, G:Col(1), G:Row(1))
 
         local speedHSlider = W:CreateAdvancedSlider(layContent,
             W.Colorize(L["DRAGON_SPEED_HEIGHT"], C.ORANGE), 6, 50, -5, 1, false,
             function(val) db.speedHeight = val; drRefresh() end,
             { db = db, key = "speedHeight", moduleName = "dragonriding" })
-        PlaceSlider(speedHSlider, layContent, 240, -5)
+        PlaceSlider(speedHSlider, layContent, G:Col(2), G:Row(1))
 
         local chargeHSlider = W:CreateAdvancedSlider(layContent,
             W.Colorize(L["DRAGON_CHARGE_HEIGHT"], C.ORANGE), 6, 50, -65, 1, false,
             function(val) db.chargeHeight = val; drRefresh() end,
             { db = db, key = "chargeHeight", moduleName = "dragonriding" })
-        PlaceSlider(chargeHSlider, layContent, 0, -65)
+        PlaceSlider(chargeHSlider, layContent, G:Col(1), G:Row(2))
 
         local gapSlider = W:CreateAdvancedSlider(layContent,
             W.Colorize(L["DRAGON_GAP"], C.ORANGE), 0, 40, -65, 1, false,
             function(val) db.gap = val; drRefresh() end,
             { db = db, key = "gap", moduleName = "dragonriding" })
-        PlaceSlider(gapSlider, layContent, 240, -65)
+        PlaceSlider(gapSlider, layContent, G:Col(2), G:Row(2))
 
-        layContent:SetHeight(125)
+        layContent:SetHeight(G:Height(2))
         layWrap:RecalcHeight()
 
         -- ANCHOR section
@@ -99,11 +101,13 @@ function ns:InitDragonriding()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GA = ns.Layout:New(2)
+
         W:CreateDropdown(anchorContent, {
             label = L["DRAGON_ANCHOR_FRAME"],
             db = db, key = "anchorFrame",
             options = Layout.GetAnchorFrameList(),
-            x = 10, y = -5,
+            x = GA:Col(1), y = GA:Row(1),
             width = 180,
             onChange = drRefresh,
         })
@@ -112,7 +116,7 @@ function ns:InitDragonriding()
             label = L["DRAGON_ANCHOR_SELF"],
             db = db, key = "point",
             options = Layout.ANCHOR_POINTS,
-            x = 10, y = -65,
+            x = GA:Col(1), y = GA:Row(2),
             width = 130,
             onChange = drRefresh,
         })
@@ -121,7 +125,7 @@ function ns:InitDragonriding()
             label = L["DRAGON_ANCHOR_TARGET"],
             db = db, key = "anchorTo",
             options = Layout.ANCHOR_POINTS,
-            x = 240, y = -65,
+            x = GA:Col(2), y = GA:Row(2),
             width = 130,
             onChange = drRefresh,
         })
@@ -129,7 +133,7 @@ function ns:InitDragonriding()
         W:CreateCheckbox(anchorContent, {
             label = L["DRAGON_MATCH_WIDTH"],
             db = db, key = "matchAnchorWidth",
-            x = 10, y = -120,
+            x = GA:Col(1), y = GA:Row(3) + 20,
             template = "ChatConfigCheckButtonTemplate",
             description = L["DRAGON_MATCH_WIDTH_DESC"],
             onChange = drRefresh
@@ -139,15 +143,15 @@ function ns:InitDragonriding()
             W.Colorize(L["DRAGON_OFFSET_X"], C.ORANGE), -500, 500, -145, 1, false,
             function(val) db.posX = val; drRefresh() end,
             { db = db, key = "posX", moduleName = "dragonriding" })
-        PlaceSlider(offsetXSlider, anchorContent, 0, -145)
+        PlaceSlider(offsetXSlider, anchorContent, GA:Col(1), GA:Row(4))
 
         local offsetYSlider = W:CreateAdvancedSlider(anchorContent,
             W.Colorize(L["DRAGON_OFFSET_Y"], C.ORANGE), -500, 500, -145, 1, false,
             function(val) db.posY = val; drRefresh() end,
             { db = db, key = "posY", moduleName = "dragonriding" })
-        PlaceSlider(offsetYSlider, anchorContent, 240, -145)
+        PlaceSlider(offsetYSlider, anchorContent, GA:Col(2), GA:Row(4))
 
-        anchorContent:SetHeight(210)
+        anchorContent:SetHeight(GA:Height(4))
         anchorWrap:RecalcHeight()
 
         -- APPEARANCE section
@@ -157,11 +161,13 @@ function ns:InitDragonriding()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GAP = ns.Layout:New(2)
+
         local styleLabel = appContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        styleLabel:SetPoint("TOPLEFT", appContent, "TOPLEFT", 10, -5)
+        styleLabel:SetPoint("TOPLEFT", appContent, "TOPLEFT", GAP:Col(1), GAP:Row(1) + 5)
         styleLabel:SetText(W.Colorize(L["DRAGON_BAR_STYLE"], C.BLUE))
 
-        W:CreateBarStylePicker(appContent, 10, -20,
+        W:CreateBarStylePicker(appContent, GAP:Col(1), GAP:Row(1) - 15,
             db.barStyle or [[Interface\Buttons\WHITE8X8]],
             function(path)
                 db.barStyle = path
@@ -171,43 +177,43 @@ function ns:InitDragonriding()
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_SPEED_COLOR"],
             db = db, rKey = "speedColorR", gKey = "speedColorG", bKey = "speedColorB",
-            x = 10, y = -60,
+            x = GAP:Col(1), y = GAP:Row(2) + 5,
             onChange = drRefresh,
         })
 
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_THRILL_COLOR"],
             db = db, rKey = "thrillColorR", gKey = "thrillColorG", bKey = "thrillColorB",
-            x = 240, y = -60,
+            x = GAP:Col(2), y = GAP:Row(2) + 5,
             onChange = drRefresh,
         })
 
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_CHARGE_COLOR"],
             db = db, rKey = "chargeColorR", gKey = "chargeColorG", bKey = "chargeColorB",
-            x = 10, y = -95,
+            x = GAP:Col(1), y = GAP:Row(3) + 20,
             onChange = drRefresh,
         })
 
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_BG_COLOR"],
             db = db, rKey = "bgColorR", gKey = "bgColorG", bKey = "bgColorB",
-            x = 240, y = -95,
+            x = GAP:Col(2), y = GAP:Row(3) + 20,
             onChange = drRefresh,
         })
 
         local bgAlphaSlider = W:CreateAdvancedSlider(appContent,
             W.Colorize(L["DRAGON_BG_OPACITY"], C.ORANGE), 0, 100, -130, 1, true,
             function(val) db.bgAlpha = val / 100; drRefresh() end)
-        PlaceSlider(bgAlphaSlider, appContent, 0, -130)
+        PlaceSlider(bgAlphaSlider, appContent, GAP:Col(1), GAP:Row(4))
         -- bgAlpha stored as 0-1, slider shows 0-100
         bgAlphaSlider:SetValue((db.bgAlpha ~= nil and db.bgAlpha or 0.8) * 100)
 
         local fontLabel = appContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        fontLabel:SetPoint("TOPLEFT", appContent, "TOPLEFT", 10, -190)
+        fontLabel:SetPoint("TOPLEFT", appContent, "TOPLEFT", GAP:Col(1), GAP:Row(5) + 5)
         fontLabel:SetText(W.Colorize(L["DRAGON_SPEED_FONT"], C.BLUE))
 
-        W:CreateFontPicker(appContent, 10, -205,
+        W:CreateFontPicker(appContent, GAP:Col(1), GAP:Row(5) - 15,
             db.speedFont or "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf",
             function(path)
                 db.speedFont = path
@@ -218,9 +224,9 @@ function ns:InitDragonriding()
             W.Colorize("Font Size", C.ORANGE), 6, 32, -205, 1, false,
             function(val) db.speedFontSize = val; drRefresh() end,
             { db = db, key = "speedFontSize", moduleName = "dragonriding" })
-        PlaceSlider(fontSizeSlider, appContent, 240, -205)
+        PlaceSlider(fontSizeSlider, appContent, GAP:Col(2), GAP:Row(5))
 
-        appContent:SetHeight(265)
+        appContent:SetHeight(GAP:Height(5))
         appWrap:RecalcHeight()
 
         -- BEHAVIOR section
@@ -304,11 +310,13 @@ function ns:InitDragonriding()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GI = ns.Layout:New(2)
+
         local iconSizeSlider = W:CreateAdvancedSlider(iconContent,
             W.Colorize(L["DRAGON_ICON_SIZE"], C.ORANGE), 0, 64, -5, 1, false,
             function(val) db.surgeIconSize = val; drRefresh() end,
             { db = db, key = "surgeIconSize", moduleName = "dragonriding" })
-        PlaceSlider(iconSizeSlider, iconContent, 0, -5)
+        PlaceSlider(iconSizeSlider, iconContent, GI:Col(1), GI:Row(1))
 
         W:CreateDropdown(iconContent, {
             label = L["DRAGON_ICON_ANCHOR"],
@@ -319,24 +327,24 @@ function ns:InitDragonriding()
                 { text = L["DRAGON_ICON_TOP"],    value = "TOP" },
                 { text = L["DRAGON_ICON_BOTTOM"], value = "BOTTOM" },
             },
-            x = 240, y = -5,
+            x = GI:Col(2), y = GI:Row(1),
             width = 100,
             onChange = drRefresh,
         })
 
-        local offsetXSlider = W:CreateAdvancedSlider(iconContent,
+        local surgeOffsetXSlider = W:CreateAdvancedSlider(iconContent,
             W.Colorize(L["DRAGON_OFFSET_X"], C.ORANGE), -50, 50, -65, 1, false,
             function(val) db.surgeOffsetX = val; drRefresh() end,
             { db = db, key = "surgeOffsetX", moduleName = "dragonriding" })
-        PlaceSlider(offsetXSlider, iconContent, 0, -65)
+        PlaceSlider(surgeOffsetXSlider, iconContent, GI:Col(1), GI:Row(2))
 
-        local offsetYSlider = W:CreateAdvancedSlider(iconContent,
+        local surgeOffsetYSlider = W:CreateAdvancedSlider(iconContent,
             W.Colorize(L["DRAGON_OFFSET_Y"], C.ORANGE), -50, 50, -65, 1, false,
             function(val) db.surgeOffsetY = val; drRefresh() end,
             { db = db, key = "surgeOffsetY", moduleName = "dragonriding" })
-        PlaceSlider(offsetYSlider, iconContent, 240, -65)
+        PlaceSlider(surgeOffsetYSlider, iconContent, GI:Col(2), GI:Row(2))
 
-        iconContent:SetHeight(125)
+        iconContent:SetHeight(GI:Height(2))
         iconWrap:RecalcHeight()
 
         -- Relayout

@@ -21,7 +21,6 @@ local RAID_BUFFS = {
 
 local playerClass, inCombat = nil, false
 local activeTrackers = {}  -- { tracker, idSet }
-local alertFired = {}
 
 local TRK_DIFFICULTY_FILTERS = {
     { inst = "party", diff = 1,  key = "diffNormalDungeon" },
@@ -188,16 +187,6 @@ local function SafeHide(frame, unlockKey)
     if not db or not db.enabled or not db[unlockKey] then frame:Hide() end
 end
 
----------------------------------------------------------------------------
--- Alert helper
----------------------------------------------------------------------------
-local function FireAlert(msg, db)
-    pcall(function()
-        UIErrorsFrame:AddMessage(msg, db.colorR or 1, db.colorG or 0.2, db.colorB or 0.8, 1, 3)
-        if db.soundEnabled then PlaySound(db.soundID or 8959, "Master") end
-    end)
-end
-
 local function ShouldShowTracker(t, zone)
     if not t.diffEnabled then return true end
     if not zone or zone.instanceType == "none" then return true end
@@ -219,7 +208,7 @@ end
 -- Custom tracker filtering
 ---------------------------------------------------------------------------
 local function FilterTrackers()
-    activeTrackers, alertFired = {}, {}
+    activeTrackers = {}
     local db = NaowhQOL.buffMonitor
     if not db or not db.trackers then return end
     local zone = ns.ZoneUtil and ns.ZoneUtil.GetCurrentZone()
@@ -232,7 +221,6 @@ local function FilterTrackers()
                 tracker = t, entrySet = entrySet, entries = t.entries,
                 matchType = t.matchType or "spellId"
             }
-            alertFired[#activeTrackers] = false
         end
     end
 end
@@ -240,8 +228,6 @@ end
 ---------------------------------------------------------------------------
 -- Raid buff check
 ---------------------------------------------------------------------------
-local raidAlertFired = false
-
 local function CheckRaidBuffs(auras)
     local db = NaowhQOL.buffMonitor
     if not db or not db.enabled or not db.raidBuffsEnabled then
@@ -282,28 +268,8 @@ local function CheckRaidBuffs(auras)
                 raidSlots[i].lbl:SetTextColor(db.raidLabelColorR or 0.7, db.raidLabelColorG or 0.7, db.raidLabelColorB or 0.7)
             end
             raidIcons:Show()
-            if not raidAlertFired then
-                local shouldPlaySound = true
-                if db.raidSoundSelfOnly then
-                    shouldPlaySound = false
-                    for _, s in ipairs(slots) do
-                        for _, buff in ipairs(RAID_BUFFS) do
-                            if buff.name == s.label and buff.class == playerClass then
-                                shouldPlaySound = true
-                                break
-                            end
-                        end
-                        if shouldPlaySound then break end
-                    end
-                end
-                if shouldPlaySound then
-                    FireAlert("Missing raid buffs!", db)
-                end
-                raidAlertFired = true
-            end
         else
             SafeHide(raidIcons, "unlockRaid")
-            raidAlertFired = false
         end
     end)
 end
@@ -372,21 +338,13 @@ local function CheckTrackers()
                         icon = best and best.icon
                     end
                     slots[#slots + 1] = { label = t.name, data = best, fallbackIcon = icon }
-                    if not alertFired[ai] then
-                        FireAlert(best and (t.name .. " Expiring!") or ("No " .. t.name .. "!"), db)
-                        alertFired[ai] = true
-                    end
-                else
-                    alertFired[ai] = false
                 end
             else
-                local anyBad = false
                 for _, e in ipairs(entry.entries) do
                     local a, matched
                     if matchType == "name" then a, matched = FindAuraByName(auraNames, e)
                     else a = auras[e] end
                     if IsExpiring(a, threshold, now) then
-                        anyBad = true
                         local displayName, icon
                         if matchType == "name" then
                             displayName = matched or e
@@ -398,14 +356,6 @@ local function CheckTrackers()
                         end
                         slots[#slots + 1] = { label = displayName, data = a, fallbackIcon = icon }
                     end
-                end
-                if anyBad then
-                    if not alertFired[ai] then
-                        FireAlert("Missing buff in " .. t.name .. "!", db)
-                        alertFired[ai] = true
-                    end
-                else
-                    alertFired[ai] = false
                 end
             end
         end
@@ -499,8 +449,7 @@ loader:SetScript("OnEvent", function(self, ev, a1)
         inCombat = true
         SafeHide(icons, "unlock"); SafeHide(raidIcons, "unlockRaid")
     elseif ev == "PLAYER_REGEN_ENABLED" then
-        inCombat = false; raidAlertFired = false
-        wipe(alertFired)
+        inCombat = false
         C_Timer.After(0.5, function() pcall(CheckTrackers) end)
     end
 end)
@@ -516,6 +465,5 @@ function ns:DisableBuffMonitor()
     raidIcons:Hide()
     loader:UnregisterEvent("UNIT_AURA")
     wipe(activeTrackers)
-    wipe(alertFired)
     DU.ClearTextureCache()
 end

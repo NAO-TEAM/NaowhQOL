@@ -102,23 +102,25 @@ function ns:InitStealthReminder()
             onChange = refreshStealth
         })
 
+        local G = ns.Layout:New(2)
+
         W:CreateColorPicker(colContent, {
             label = L["STEALTH_COLOR_STEALTHED"], db = db,
             rKey = "stealthR", gKey = "stealthG", bKey = "stealthB",
-            x = 10, y = -79,
+            x = G:Col(1), y = -79,
             onChange = refreshStealth
         })
 
         W:CreateColorPicker(colContent, {
             label = L["STEALTH_COLOR_NOT"], db = db,
             rKey = "warningR", gKey = "warningG", bKey = "warningB",
-            x = 10, y = -119,
+            x = G:Col(2), y = -79,
             onChange = refreshStealth
         })
 
         -- Stealth Text input
         local stealthTextLbl = colContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        stealthTextLbl:SetPoint("TOPLEFT", 10, -164)
+        stealthTextLbl:SetPoint("TOPLEFT", G:Col(1), -119)
         stealthTextLbl:SetText(L["STEALTH_TEXT"])
 
         local stealthTextBox = CreateFrame("EditBox", nil, colContent, "BackdropTemplate")
@@ -144,7 +146,7 @@ function ns:InitStealthReminder()
 
         -- Warning Text input
         local warningTextLbl = colContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        warningTextLbl:SetPoint("TOPLEFT", 10, -194)
+        warningTextLbl:SetPoint("TOPLEFT", G:Col(1), -149)
         warningTextLbl:SetText(L["STEALTH_WARNING_TEXT"])
 
         local warningTextBox = CreateFrame("EditBox", nil, colContent, "BackdropTemplate")
@@ -170,13 +172,13 @@ function ns:InitStealthReminder()
 
         -- Druid options (child of stealth settings)
         local druidNote = colContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        druidNote:SetPoint("TOPLEFT", 10, -224)
+        druidNote:SetPoint("TOPLEFT", G:Col(1), -179)
         druidNote:SetText(L["STEALTH_DRUID_NOTE"])
 
         W:CreateCheckbox(colContent, {
             label = L["STEALTH_BALANCE"],
             db = db, key = "enableBalance",
-            x = 10, y = -244,
+            x = G:Col(1), y = -199,
             template = "ChatConfigCheckButtonTemplate",
             onChange = refreshStealth
         })
@@ -184,7 +186,7 @@ function ns:InitStealthReminder()
         W:CreateCheckbox(colContent, {
             label = L["STEALTH_GUARDIAN"],
             db = db, key = "enableGuardian",
-            x = 10, y = -268,
+            x = G:Col(1), y = -223,
             template = "ChatConfigCheckButtonTemplate",
             onChange = refreshStealth
         })
@@ -192,12 +194,12 @@ function ns:InitStealthReminder()
         W:CreateCheckbox(colContent, {
             label = L["STEALTH_RESTORATION"],
             db = db, key = "enableResto",
-            x = 10, y = -292,
+            x = G:Col(1), y = -247,
             template = "ChatConfigCheckButtonTemplate",
             onChange = refreshStealth
         })
 
-        colContent:SetHeight(324)
+        colContent:SetHeight(279)
         colWrap:RecalcHeight()
 
         -- ============================================================

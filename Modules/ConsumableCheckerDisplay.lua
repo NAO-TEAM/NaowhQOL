@@ -17,7 +17,6 @@ local DIFFICULTY_FILTERS = {
     { inst = "party", diff = 1,  key = "normalDungeon" },
     { inst = "party", diff = 2,  key = "heroicDungeon" },
     { inst = "party", diff = 23, key = "mythicDungeon" },
-    { inst = "party", diff = 8,  key = "mythicPlus" },
     { inst = "raid",  diff = 17, key = "lfr" },
     { inst = "raid",  diff = 14, key = "normalRaid" },
     { inst = "raid",  diff = 15, key = "heroicRaid" },
@@ -39,7 +38,6 @@ local function GetExpiryThreshold(cat)
 end
 
 local inCombat = false
-local alertFired = false
 
 ---------------------------------------------------------------------------
 -- Bag scanning for consumable items
@@ -78,13 +76,17 @@ end
 local function ShouldShow(db)
     if not db.enabled then return false end
     local zone = ns.ZoneUtil and ns.ZoneUtil.GetCurrentZone()
-    if not zone or zone.instanceType == "none" then return false end
+    if not zone or zone.instanceType == "none" then
+        -- "Other" catch-all for non-instance locations
+        return db.other == true
+    end
     for _, f in ipairs(DIFFICULTY_FILTERS) do
         if zone.instanceType == f.inst and zone.difficulty == f.diff then
             return db[f.key] ~= false
         end
     end
-    return false
+    -- "Other" catch-all for unmatched instance types/difficulties
+    return db.other == true
 end
 
 ---------------------------------------------------------------------------
@@ -358,9 +360,12 @@ local function CheckConsumables()
             -- Apply font settings
             local labelSize = db.labelFontSize or 9
             local timerSize = db.timerFontSize or 11
+            local stackSize = db.stackFontSize or 11
             slot.lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
             slot.lbl:SetTextColor(db.labelColorR or 0.7, db.labelColorG or 0.7, db.labelColorB or 0.7)
             slot.timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
+            slot.count:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", stackSize, "OUTLINE")
+            slot.count:SetTextColor(db.stackColorR or 1, db.stackColorG or 1, db.stackColorB or 1, db.stackAlpha or 1)
 
             -- Prefer the item texture (what clicking will use) over generic icons
             local displayTex = m.itemTex
@@ -430,18 +435,8 @@ local function CheckConsumables()
         end
 
         ccIcons:Show()
-
-        if not alertFired then
-            UIErrorsFrame:AddMessage("Missing consumables!",
-                db.colorR or 1, db.colorG or 0.2, db.colorB or 0.8, 1, 3)
-            if db.soundEnabled then
-                PlaySound(db.soundID or 8959, "Master")
-            end
-            alertFired = true
-        end
     else
         SafeHide(ccIcons, "unlock")
-        alertFired = false
     end
 end
 
@@ -497,7 +492,6 @@ loader:SetScript("OnEvent", function(self, ev, a1)
         -- Zone change callback
         if ns.ZoneUtil then
             ns.ZoneUtil.RegisterCallback("ConsumableChecker", function()
-                alertFired = false
                 C_Timer.After(0.5, function() pcall(CheckConsumables) end)
             end)
         end
@@ -524,7 +518,6 @@ loader:SetScript("OnEvent", function(self, ev, a1)
         SafeHide(ccIcons, "unlock")
     elseif ev == "PLAYER_REGEN_ENABLED" then
         inCombat = false
-        alertFired = false
         -- Re-apply macro attributes now that combat ended
         C_Timer.After(0.5, function() pcall(CheckConsumables) end)
     end
@@ -543,7 +536,6 @@ function ns:DisableConsumableChecker()
     loader:UnregisterEvent("PLAYER_EQUIPMENT_CHANGED")
     loader:UnregisterEvent("PLAYER_REGEN_DISABLED")
     loader:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    alertFired = false
     inCombat = false
 end
 
@@ -554,6 +546,5 @@ function ns:EnableConsumableChecker()
     loader:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
     loader:RegisterEvent("PLAYER_REGEN_DISABLED")
     loader:RegisterEvent("PLAYER_REGEN_ENABLED")
-    alertFired = false
     pcall(CheckConsumables)
 end

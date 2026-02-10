@@ -443,7 +443,6 @@ local function StopCast()
     HideEmpowerStages()
     shieldIcon:SetAlpha(0)
     nonIntOverlay:SetAlpha(0)
-
     local db = NaowhQOL.focusCastBar
     if not db or not db.unlock then
         castBarFrame:Hide()

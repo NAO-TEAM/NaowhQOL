@@ -75,56 +75,57 @@ function ns:InitConsumableChecker()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local G = ns.Layout:New(2)  -- 2-column grid
+
+        -- Row 1: Icon Size / Label Font Size
         local iconSlider = W:CreateAdvancedSlider(settingsContent,
-            W.Colorize(L["COMMON_LABEL_ICON_SIZE"], C.ORANGE), 20, 80, -10, 1, false,
+            W.Colorize(L["COMMON_LABEL_ICON_SIZE"], C.ORANGE), 20, 80, G:Row(1), 1, false,
             function(val) db.iconSize = val; refresh() end,
             { db = db, key = "iconSize", moduleName = "consumableChecker" })
-        PlaceSlider(iconSlider, settingsContent, 0, -10)
+        PlaceSlider(iconSlider, settingsContent, G:Col(1), G:Row(1))
 
-        -- Label font size
         local labelSlider = W:CreateAdvancedSlider(settingsContent,
-            W.Colorize(L["COMMON_LABEL_FONT_SIZE"], C.ORANGE), 6, 18, -10, 1, false,
+            W.Colorize(L["COMMON_LABEL_FONT_SIZE"], C.ORANGE), 6, 18, G:Row(1), 1, false,
             function(val) db.labelFontSize = val; refresh() end,
             { db = db, key = "labelFontSize", moduleName = "consumableChecker" })
-        PlaceSlider(labelSlider, settingsContent, 220, -10)
+        PlaceSlider(labelSlider, settingsContent, G:Col(2), G:Row(1))
 
-        -- Timer font size
+        -- Row 2: Timer Font Size / Label Color
         local timerSlider = W:CreateAdvancedSlider(settingsContent,
-            W.Colorize(L["CONSUMABLE_TIMER_FONTSIZE"], C.ORANGE), 8, 20, -10, 1, false,
+            W.Colorize(L["CONSUMABLE_TIMER_FONTSIZE"], C.ORANGE), 8, 20, G:Row(2), 1, false,
             function(val) db.timerFontSize = val; refresh() end,
             { db = db, key = "timerFontSize", moduleName = "consumableChecker" })
-        PlaceSlider(timerSlider, settingsContent, 0, -60)
+        PlaceSlider(timerSlider, settingsContent, G:Col(1), G:Row(2))
 
-        -- Label color
         W:CreateColorPicker(settingsContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "labelColorR", gKey = "labelColorG", bKey = "labelColorB",
-            x = 220, y = -60,
+            x = G:Col(2), y = G:ColorY(2),
             onChange = refresh
         })
 
-        W:CreateCheckbox(settingsContent, {
-            label = L["COMMON_LABEL_ENABLE_SOUND"],
-            db = db, key = "soundEnabled",
-            x = 10, y = -120,
-            template = "ChatConfigCheckButtonTemplate",
-        })
-
-        local soundLabel = settingsContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        soundLabel:SetPoint("TOPLEFT", 10, -148)
-        soundLabel:SetText(W.Colorize(L["COMMON_LABEL_ALERT_SOUND"], C.WHITE))
-
-        W:CreateSoundPicker(settingsContent, 10, -162, db.soundID or 8959,
-            function(id) db.soundID = id end)
+        -- Row 3: Stack Font Size / Stack Color
+        local stackSlider = W:CreateAdvancedSlider(settingsContent,
+            W.Colorize(L["CONSUMABLE_STACK_FONTSIZE"], C.ORANGE), 8, 20, G:Row(3), 1, false,
+            function(val) db.stackFontSize = val; refresh() end,
+            { db = db, key = "stackFontSize", moduleName = "consumableChecker" })
+        PlaceSlider(stackSlider, settingsContent, G:Col(1), G:Row(3))
 
         W:CreateColorPicker(settingsContent, {
-            label = L["COMMON_LABEL_ALERT_COLOR"], db = db,
-            rKey = "colorR", gKey = "colorG", bKey = "colorB",
-            x = 10, y = -200,
+            label = L["CONSUMABLE_STACK_COLOR"], db = db,
+            rKey = "stackColorR", gKey = "stackColorG", bKey = "stackColorB",
+            x = G:Col(2), y = G:ColorY(3),
             onChange = refresh
         })
 
-        settingsContent:SetHeight(240)
+        -- Row 4: Stack Alpha
+        local stackAlphaSlider = W:CreateAdvancedSlider(settingsContent,
+            W.Colorize(L["CONSUMABLE_STACK_ALPHA"], C.ORANGE), 0, 1, G:Row(4), 0.1, false,
+            function(val) db.stackAlpha = val; refresh() end,
+            { db = db, key = "stackAlpha", moduleName = "consumableChecker" })
+        PlaceSlider(stackAlphaSlider, settingsContent, G:Col(1), G:Row(4))
+
+        settingsContent:SetHeight(G:Height(4))
         settingsWrap:RecalcHeight()
 
         ---------------------------------------------------------------
@@ -146,7 +147,7 @@ function ns:InitConsumableChecker()
             { label = L["COMMON_DIFF_NORMAL_DUNGEON"],  key = "normalDungeon", x = 10,  y = -25 },
             { label = L["COMMON_DIFF_HEROIC_DUNGEON"],  key = "heroicDungeon", x = 10,  y = -50 },
             { label = L["COMMON_DIFF_MYTHIC_DUNGEON"],  key = "mythicDungeon", x = 10,  y = -75 },
-            { label = L["COMMON_DIFF_MYTHIC_KEYSTONE"], key = "mythicPlus",    x = 10,  y = -100 },
+            { label = L["COMMON_DIFF_OTHER"],           key = "other",         x = 10,  y = -100 },
             { label = L["COMMON_DIFF_LFR"],             key = "lfr",           x = 230, y = -25 },
             { label = L["COMMON_DIFF_NORMAL_RAID"],     key = "normalRaid",    x = 230, y = -50 },
             { label = L["COMMON_DIFF_HEROIC_RAID"],     key = "heroicRaid",    x = 230, y = -75 },
@@ -175,6 +176,9 @@ function ns:InitConsumableChecker()
 
         local catDesc = catContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         catDesc:SetPoint("TOPLEFT", 10, -5)
+        catDesc:SetWidth(420)
+        catDesc:SetJustifyH("LEFT")
+        catDesc:SetText(W.Colorize(L["CONSUMABLE_CAT_DESC"], C.GRAY))
         catDesc:SetWidth(420)
         catDesc:SetJustifyH("LEFT")
         catDesc:SetText(W.Colorize(L["CONSUMABLE_CAT_DESC"], C.GRAY))

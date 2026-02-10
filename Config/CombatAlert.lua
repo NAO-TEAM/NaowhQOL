@@ -79,22 +79,24 @@ function ns:InitCombatAlerts()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GE = ns.Layout:New(2)
+
         W:CreateTextInput(enterContent, {
             label = L["COMBATALERT_DISPLAY_TEXT"], db = db, key = "enterText",
-            default = "++ Combat", x = 10, y = -8, width = 200,
+            default = "++ Combat", x = GE:Col(1), y = GE:Row(1) + 12, width = 200,
             onChange = refresh
         })
 
         W:CreateColorPicker(enterContent, {
             label = L["COMMON_LABEL_TEXT_COLOR"], db = db,
             rKey = "enterR", gKey = "enterG", bKey = "enterB",
-            x = 10, y = -44,
+            x = GE:Col(1), y = GE:Row(2) + 6,
             onChange = refresh
         })
 
         W:CreateDropdown(enterContent, {
             label = L["COMBATALERT_AUDIO_MODE"],
-            x = 10, y = -84,
+            x = GE:Col(2), y = GE:Row(2),
             db = db, key = "enterAudioMode",
             options = {
                 { text = L["COMBATALERT_AUDIO_NONE"], value = "none" },
@@ -104,12 +106,12 @@ function ns:InitCombatAlerts()
             onChange = refresh
         })
 
-        W:CreateSoundPicker(enterContent, 10, -139, db.enterSoundID, function(soundId)
+        W:CreateSoundPicker(enterContent, GE:Col(1), GE:Row(3) + 11, db.enterSoundID, function(soundId)
             db.enterSoundID = soundId
         end)
 
         local enterTtsLbl = enterContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        enterTtsLbl:SetPoint("TOPLEFT", 10, -184)
+        enterTtsLbl:SetPoint("TOPLEFT", GE:Col(1), GE:Row(4) + 6)
         enterTtsLbl:SetText(L["COMMON_TTS_MESSAGE"])
 
         local enterTtsBox = CreateFrame("EditBox", nil, enterContent, "BackdropTemplate")
@@ -133,10 +135,10 @@ function ns:InitCombatAlerts()
         end)
 
         local enterTtsVoiceLbl = enterContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        enterTtsVoiceLbl:SetPoint("TOPLEFT", 10, -214)
+        enterTtsVoiceLbl:SetPoint("TOPLEFT", GE:Col(1), GE:Row(5) + 6)
         enterTtsVoiceLbl:SetText(L["COMMON_TTS_VOICE"])
 
-        W:CreateTTSVoicePicker(enterContent, 80, -211, db.enterTtsVoiceID or 0, function(voiceID)
+        W:CreateTTSVoicePicker(enterContent, 80, GE:Row(5) + 9, db.enterTtsVoiceID or 0, function(voiceID)
             db.enterTtsVoiceID = voiceID
         end)
 
@@ -144,15 +146,15 @@ function ns:InitCombatAlerts()
             W.Colorize(L["COMMON_TTS_VOLUME"], C.ORANGE), 0, 100, -249, 5, true,
             function(val) db.enterTtsVolume = val end,
             { db = db, key = "enterTtsVolume", moduleName = "combatAlert" })
-        PlaceSlider(enterTtsVolSlider, enterContent, 0, -249)
+        PlaceSlider(enterTtsVolSlider, enterContent, GE:Col(1), GE:Row(6))
 
         local enterTtsRateSlider = W:CreateAdvancedSlider(enterContent,
             W.Colorize(L["COMMON_TTS_SPEED"], C.ORANGE), -10, 10, -249, 1, false,
             function(val) db.enterTtsRate = val end,
             { db = db, key = "enterTtsRate", moduleName = "combatAlert" })
-        PlaceSlider(enterTtsRateSlider, enterContent, 240, -249)
+        PlaceSlider(enterTtsRateSlider, enterContent, GE:Col(2), GE:Row(6))
 
-        enterContent:SetHeight(310)
+        enterContent:SetHeight(GE:Height(6))
         enterWrap:RecalcHeight()
 
         -- LEAVE COMBAT section
@@ -162,22 +164,24 @@ function ns:InitCombatAlerts()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GL = ns.Layout:New(2)
+
         W:CreateTextInput(leaveContent, {
             label = L["COMBATALERT_DISPLAY_TEXT"], db = db, key = "leaveText",
-            default = "-- Combat", x = 10, y = -8, width = 200,
+            default = "-- Combat", x = GL:Col(1), y = GL:Row(1) + 12, width = 200,
             onChange = refresh
         })
 
         W:CreateColorPicker(leaveContent, {
             label = L["COMMON_LABEL_TEXT_COLOR"], db = db,
             rKey = "leaveR", gKey = "leaveG", bKey = "leaveB",
-            x = 10, y = -44,
+            x = GL:Col(1), y = GL:Row(2) + 6,
             onChange = refresh
         })
 
         W:CreateDropdown(leaveContent, {
             label = L["COMBATALERT_AUDIO_MODE"],
-            x = 10, y = -84,
+            x = GL:Col(2), y = GL:Row(2),
             db = db, key = "leaveAudioMode",
             options = {
                 { text = L["COMBATALERT_AUDIO_NONE"], value = "none" },
@@ -187,12 +191,12 @@ function ns:InitCombatAlerts()
             onChange = refresh
         })
 
-        W:CreateSoundPicker(leaveContent, 10, -139, db.leaveSoundID, function(soundId)
+        W:CreateSoundPicker(leaveContent, GL:Col(1), GL:Row(3) + 11, db.leaveSoundID, function(soundId)
             db.leaveSoundID = soundId
         end)
 
         local leaveTtsLbl = leaveContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        leaveTtsLbl:SetPoint("TOPLEFT", 10, -184)
+        leaveTtsLbl:SetPoint("TOPLEFT", GL:Col(1), GL:Row(4) + 6)
         leaveTtsLbl:SetText(L["COMMON_TTS_MESSAGE"])
 
         local leaveTtsBox = CreateFrame("EditBox", nil, leaveContent, "BackdropTemplate")
@@ -216,10 +220,10 @@ function ns:InitCombatAlerts()
         end)
 
         local leaveTtsVoiceLbl = leaveContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        leaveTtsVoiceLbl:SetPoint("TOPLEFT", 10, -214)
+        leaveTtsVoiceLbl:SetPoint("TOPLEFT", GL:Col(1), GL:Row(5) + 6)
         leaveTtsVoiceLbl:SetText(L["COMMON_TTS_VOICE"])
 
-        W:CreateTTSVoicePicker(leaveContent, 80, -211, db.leaveTtsVoiceID or 0, function(voiceID)
+        W:CreateTTSVoicePicker(leaveContent, 80, GL:Row(5) + 9, db.leaveTtsVoiceID or 0, function(voiceID)
             db.leaveTtsVoiceID = voiceID
         end)
 
@@ -227,15 +231,15 @@ function ns:InitCombatAlerts()
             W.Colorize(L["COMMON_TTS_VOLUME"], C.ORANGE), 0, 100, -249, 5, true,
             function(val) db.leaveTtsVolume = val end,
             { db = db, key = "leaveTtsVolume", moduleName = "combatAlert" })
-        PlaceSlider(leaveTtsVolSlider, leaveContent, 0, -249)
+        PlaceSlider(leaveTtsVolSlider, leaveContent, GL:Col(1), GL:Row(6))
 
         local leaveTtsRateSlider = W:CreateAdvancedSlider(leaveContent,
             W.Colorize(L["COMMON_TTS_SPEED"], C.ORANGE), -10, 10, -249, 1, false,
             function(val) db.leaveTtsRate = val end,
             { db = db, key = "leaveTtsRate", moduleName = "combatAlert" })
-        PlaceSlider(leaveTtsRateSlider, leaveContent, 240, -249)
+        PlaceSlider(leaveTtsRateSlider, leaveContent, GL:Col(2), GL:Row(6))
 
-        leaveContent:SetHeight(310)
+        leaveContent:SetHeight(GL:Height(6))
         leaveWrap:RecalcHeight()
 
         -- Relayout

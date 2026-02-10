@@ -163,8 +163,10 @@ function ns:InitBuffTracker()
             onChange = refresh
         })
 
+        local G = ns.Layout:New(2)
+
         W:CreateFontDropdown(dspContent, {
-            db = db, x = 10, y = -110,
+            db = db, x = G:Col(1), y = G:Row(3),
             globalName = "NaowhBuffTrackerFontDrop",
             onChange = refresh
         })
@@ -173,7 +175,7 @@ function ns:InitBuffTracker()
             label = L["BUFFTRACKER_GROW_DIR"],
             db = db, key = "growDirection",
             options = {"RIGHT", "LEFT", "DOWN", "UP"},
-            x = 240, y = -110,
+            x = G:Col(2), y = G:Row(3),
             width = 120,
             onChange = refresh
         })
@@ -182,30 +184,30 @@ function ns:InitBuffTracker()
             W.Colorize(L["COMMON_LABEL_ICON_SIZE"], C.ORANGE), 24, 64, -175, 1, false,
             function(val) db.iconSize = val; refresh() end,
             { value = db.iconSize })
-        PlaceSlider(iconSlider, dspContent, 0, -175)
+        PlaceSlider(iconSlider, dspContent, G:Col(1), G:Row(4))
 
         local spacingSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["BUFFTRACKER_SPACING"], C.ORANGE), 0, 20, -175, 1, false,
             function(val) db.spacing = val; refresh() end,
             { value = db.spacing })
-        PlaceSlider(spacingSlider, dspContent, 240, -175)
+        PlaceSlider(spacingSlider, dspContent, G:Col(2), G:Row(4))
 
         local textSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["COMMON_LABEL_TEXT_SIZE"], C.ORANGE), 8, 24, -235, 1, false,
             function(val) db.textSize = val; refresh() end,
             { value = db.textSize })
-        PlaceSlider(textSlider, dspContent, 0, -235)
+        PlaceSlider(textSlider, dspContent, G:Col(1), G:Row(5))
 
         local rowSlider = W:CreateAdvancedSlider(dspContent,
             W.Colorize(L["BUFFTRACKER_ICONS_PER_ROW"], C.ORANGE), 1, 20, -235, 1, false,
             function(val) db.maxIconsPerRow = val; refresh() end,
             { value = db.maxIconsPerRow })
-        PlaceSlider(rowSlider, dspContent, 240, -235)
+        PlaceSlider(rowSlider, dspContent, G:Col(2), G:Row(5))
 
         local reset = W:CreateButton(dspContent, { text = "Reset to Defaults", onClick = function() StaticPopup_Show("NAOWH_BUFFTRACKER_RESET") end })
-        reset:SetPoint("TOPLEFT", 10, -300)
+        reset:SetPoint("TOPLEFT", G:Col(1), G:Row(6) + 20)
 
-        dspContent:SetHeight(335)
+        dspContent:SetHeight(G:Height(6))
         dspWrap:RecalcHeight()
 
         -- Relayout

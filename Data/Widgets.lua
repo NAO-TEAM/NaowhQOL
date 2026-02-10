@@ -17,6 +17,82 @@ ns.COLORS = {
     RED         = "ff0000",
 }
 
+-- Layout factory for consistent grid positioning
+-- Usage:
+--   local L = ns.Layout:New(2)  -- 2-column layout
+--   local L = ns.Layout:New(1)  -- single column layout
+--   L:Row(1), L:Col(1), L:Col(2)
+--   L:Pos(row, col) returns x, y
+ns.Layout = {
+    ROW_HEIGHT = 50,    -- Default vertical spacing between rows
+    ROW_START = -10,    -- Default first row Y offset
+    WIDTH = 440,        -- Default content width
+    -- Widget-specific Y offsets (relative to Row position)
+    SLIDER_OFFSET = 0,      -- Sliders are the baseline
+    COLOR_OFFSET = -10,     -- Color pickers align with slider track
+    CHECKBOX_OFFSET = 5,    -- Checkboxes align slightly higher
+    DROPDOWN_OFFSET = 0,    -- Dropdowns align with sliders
+}
+
+function ns.Layout:New(columns, opts)
+    opts = opts or {}
+    local layout = {
+        columns = columns or 2,
+        rowHeight = opts.rowHeight or self.ROW_HEIGHT,
+        rowStart = opts.rowStart or self.ROW_START,
+        width = opts.width or self.WIDTH,
+        gap = opts.gap or 20,  -- gap between columns
+    }
+
+    -- Calculate column width and positions
+    layout.colWidth = (layout.width - (layout.gap * (layout.columns - 1))) / layout.columns
+    layout.colPositions = {}
+    for i = 1, layout.columns do
+        -- Add 20px offset to column 2+ to prevent overlap
+        local offset = (i > 1) and 20 or 0
+        layout.colPositions[i] = (i - 1) * (layout.colWidth + layout.gap) + offset
+    end
+
+    -- Get Y position for row (1-indexed)
+    function layout:Row(n)
+        return self.rowStart - ((n - 1) * self.rowHeight)
+    end
+
+    -- Get X position for column (1-indexed)
+    function layout:Col(n)
+        return self.colPositions[n] or 0
+    end
+
+    -- Get X, Y position for row and column
+    function layout:Pos(row, col)
+        return self:Col(col), self:Row(row)
+    end
+
+    -- Widget-specific Y positions that auto-align
+    function layout:SliderY(row)
+        return self:Row(row) + ns.Layout.SLIDER_OFFSET
+    end
+
+    function layout:ColorY(row)
+        return self:Row(row) + ns.Layout.COLOR_OFFSET
+    end
+
+    function layout:CheckboxY(row)
+        return self:Row(row) + ns.Layout.CHECKBOX_OFFSET
+    end
+
+    function layout:DropdownY(row)
+        return self:Row(row) + ns.Layout.DROPDOWN_OFFSET
+    end
+
+    -- Calculate total height for n rows
+    function layout:Height(rows)
+        return (rows * self.rowHeight) + 10
+    end
+
+    return layout
+end
+
 
 function ns.Widgets.Colorize(text, hexColor)
     return "|cff" .. hexColor .. text .. "|r"

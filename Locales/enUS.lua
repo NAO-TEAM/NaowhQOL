@@ -49,11 +49,11 @@ ns:RegisterLocale("enUS", {
     COMMON_DIFF_NORMAL_DUNGEON = "Normal Dungeon",
     COMMON_DIFF_HEROIC_DUNGEON = "Heroic Dungeon",
     COMMON_DIFF_MYTHIC_DUNGEON = "Mythic Dungeon",
-    COMMON_DIFF_MYTHIC_KEYSTONE = "Mythic Keystone",
     COMMON_DIFF_LFR = "LFR",
     COMMON_DIFF_NORMAL_RAID = "Normal Raid",
     COMMON_DIFF_HEROIC_RAID = "Heroic Raid",
     COMMON_DIFF_MYTHIC_RAID = "Mythic Raid",
+    COMMON_DIFF_OTHER = "Other",
 
     ---------------------------------------------------------------------------
     -- COMMON: Thresholds
@@ -139,7 +139,7 @@ ns:RegisterLocale("enUS", {
     BUFFMONITOR_RAIDBUFF_ICONSIZE = "Raid Buff Icon Size",
     BUFFMONITOR_LABEL_FONTSIZE = "Label Font Size",
     BUFFMONITOR_LABEL_COLOR = "Label Color",
-    BUFFMONITOR_SECTION_ALERTS = "ALERTS",
+    BUFFMONITOR_SECTION_CUSTOM_DISPLAY = "CUSTOM TRACKER DISPLAY",
     BUFFMONITOR_CUSTOM_ICONSIZE = "Custom Tracker Icon Size",
     BUFFMONITOR_TIMER_FONTSIZE = "Timer Font Size",
     BUFFMONITOR_SECTION_CUSTOM = "CUSTOM BUFF TRACKERS",
@@ -213,7 +213,11 @@ ns:RegisterLocale("enUS", {
     CONSUMABLE_NOTE = "Note:",
     CONSUMABLE_DISCLAIMER = "Shows when consumable buffs are missing or expiring inside instances.",
     CONSUMABLE_ENABLE = "Enable Consumable Checker",
+    CONSUMABLE_CLICK_BLOCK = "Click icons to use consumables.",
     CONSUMABLE_TIMER_FONTSIZE = "Timer Font Size",
+    CONSUMABLE_STACK_FONTSIZE = "Stack Font Size",
+    CONSUMABLE_STACK_COLOR = "Stack Color",
+    CONSUMABLE_STACK_ALPHA = "Stack Alpha",
     CONSUMABLE_SECTION_DIFFICULTY = "DIFFICULTY FILTERS",
     CONSUMABLE_DIFF_DESC = "Show consumable strip in these instance difficulties.",
     CONSUMABLE_SECTION_CATEGORIES = "CONSUMABLE CATEGORIES",

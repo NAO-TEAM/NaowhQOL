@@ -100,98 +100,72 @@ function ns:InitBuffMonitor()
             onChange = function(val) ns:SetBuffMonitorRaidUnlock(val) end,
         })
 
-        W:CreateCheckbox(raidContent, {
-            label = L["BUFFMONITOR_ONLY_SELFCAST"],
-            db = db, key = "raidSoundSelfOnly",
-            x = 10, y = -80,
-            template = "ChatConfigCheckButtonTemplate",
-            description = L["BUFFMONITOR_ONLY_SELFCAST_DESC"],
-        })
+        local G = ns.Layout:New(2)  -- 2-column grid
 
+        -- Row 1: Icon Size / Label Font Size (offset for checkboxes above)
         local raidSlider = W:CreateAdvancedSlider(raidContent,
-            W.Colorize(L["BUFFMONITOR_RAIDBUFF_ICONSIZE"], C.ORANGE), 20, 80, -115, 1, false,
+            W.Colorize(L["BUFFMONITOR_RAIDBUFF_ICONSIZE"], C.ORANGE), 20, 80, -80, 1, false,
             function(val) db.raidIconSize = val; refresh() end,
             { db = db, key = "raidIconSize", moduleName = "buffMonitor" })
-        PlaceSlider(raidSlider, raidContent, 0, -115)
+        PlaceSlider(raidSlider, raidContent, G:Col(1), -80)
 
-        -- Raid buff label font size
         local raidLabelSlider = W:CreateAdvancedSlider(raidContent,
-            W.Colorize(L["BUFFMONITOR_LABEL_FONTSIZE"], C.ORANGE), 6, 18, -115, 1, false,
+            W.Colorize(L["BUFFMONITOR_LABEL_FONTSIZE"], C.ORANGE), 6, 18, -80, 1, false,
             function(val) db.raidLabelFontSize = val; refresh() end,
             { db = db, key = "raidLabelFontSize", moduleName = "buffMonitor" })
-        PlaceSlider(raidLabelSlider, raidContent, 220, -115)
+        PlaceSlider(raidLabelSlider, raidContent, G:Col(2), -80)
 
-        -- Raid buff label color
+        -- Row 2: Label Color
         W:CreateColorPicker(raidContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "raidLabelColorR", gKey = "raidLabelColorG", bKey = "raidLabelColorB",
-            x = 10, y = -165,
+            x = G:Col(1), y = -130,
             onChange = refresh
         })
 
-        raidContent:SetHeight(215)
+        raidContent:SetHeight(180)
         raidWrap:RecalcHeight()
 
         ---------------------------------------------------------------
-        -- ALERTS
+        -- CUSTOM TRACKER DISPLAY
         ---------------------------------------------------------------
-        local alertWrap, alertContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = L["BUFFMONITOR_SECTION_ALERTS"],
+        local customWrap, customContent = W:CreateCollapsibleSection(sectionContainer, {
+            text = L["BUFFMONITOR_SECTION_CUSTOM_DISPLAY"] or "Custom Tracker Display",
             startOpen = true,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
-        W:CreateCheckbox(alertContent, {
-            label = L["COMMON_LABEL_ENABLE_SOUND"],
-            db = db, key = "soundEnabled",
-            x = 10, y = -5,
-            template = "ChatConfigCheckButtonTemplate",
-        })
+        local G2 = ns.Layout:New(2)  -- 2-column grid
 
-        local soundLabel = alertContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        soundLabel:SetPoint("TOPLEFT", 10, -33)
-        soundLabel:SetText(W.Colorize(L["COMMON_LABEL_ALERT_SOUND"], C.WHITE))
-
-        W:CreateSoundPicker(alertContent, 10, -47, db.soundID or 8959,
-            function(id) db.soundID = id end)
-
-        W:CreateColorPicker(alertContent, {
-            label = L["COMMON_LABEL_ALERT_COLOR"], db = db,
-            rKey = "colorR", gKey = "colorG", bKey = "colorB",
-            x = 10, y = -85,
-            onChange = refresh
-        })
-
-        local iconSlider = W:CreateAdvancedSlider(alertContent,
-            W.Colorize(L["BUFFMONITOR_CUSTOM_ICONSIZE"], C.ORANGE), 20, 80, -120, 1, false,
+        -- Row 1: Icon Size / Label Font Size
+        local iconSlider = W:CreateAdvancedSlider(customContent,
+            W.Colorize(L["BUFFMONITOR_CUSTOM_ICONSIZE"], C.ORANGE), 20, 80, G2:Row(1), 1, false,
             function(val) db.iconSize = val; refresh() end,
             { db = db, key = "iconSize", moduleName = "buffMonitor" })
-        PlaceSlider(iconSlider, alertContent, 0, -120)
+        PlaceSlider(iconSlider, customContent, G2:Col(1), G2:Row(1))
 
-        -- Custom tracker label font size
-        local customLabelSlider = W:CreateAdvancedSlider(alertContent,
-            W.Colorize(L["BUFFMONITOR_LABEL_FONTSIZE"], C.ORANGE), 6, 18, -120, 1, false,
+        local customLabelSlider = W:CreateAdvancedSlider(customContent,
+            W.Colorize(L["BUFFMONITOR_LABEL_FONTSIZE"], C.ORANGE), 6, 18, G2:Row(1), 1, false,
             function(val) db.customLabelFontSize = val; refresh() end,
             { db = db, key = "customLabelFontSize", moduleName = "buffMonitor" })
-        PlaceSlider(customLabelSlider, alertContent, 220, -120)
+        PlaceSlider(customLabelSlider, customContent, G2:Col(2), G2:Row(1))
 
-        -- Custom tracker timer font size
-        local customTimerSlider = W:CreateAdvancedSlider(alertContent,
-            W.Colorize(L["BUFFMONITOR_TIMER_FONTSIZE"], C.ORANGE), 8, 20, -170, 1, false,
+        -- Row 2: Timer Font Size / Label Color
+        local customTimerSlider = W:CreateAdvancedSlider(customContent,
+            W.Colorize(L["BUFFMONITOR_TIMER_FONTSIZE"], C.ORANGE), 8, 20, G2:Row(2), 1, false,
             function(val) db.customTimerFontSize = val; refresh() end,
             { db = db, key = "customTimerFontSize", moduleName = "buffMonitor" })
-        PlaceSlider(customTimerSlider, alertContent, 0, -170)
+        PlaceSlider(customTimerSlider, customContent, G2:Col(1), G2:SliderY(2))
 
-        -- Custom tracker label color
-        W:CreateColorPicker(alertContent, {
+        W:CreateColorPicker(customContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "customLabelColorR", gKey = "customLabelColorG", bKey = "customLabelColorB",
-            x = 10, y = -220,
+            x = G2:Col(2), y = G2:ColorY(2),
             onChange = refresh
         })
 
-        alertContent:SetHeight(270)
-        alertWrap:RecalcHeight()
+        customContent:SetHeight(G2:Height(2))
+        customWrap:RecalcHeight()
 
         ---------------------------------------------------------------
         -- CUSTOM BUFF TRACKERS
@@ -625,7 +599,7 @@ function ns:InitBuffMonitor()
         cache.buildList = BuildTrackerList
 
         -- Relayout
-        local allSections = { raidWrap, alertWrap, trkWrap }
+        local allSections = { raidWrap, customWrap, trkWrap }
 
         RelayoutSections = function()
             for i, section in ipairs(allSections) do

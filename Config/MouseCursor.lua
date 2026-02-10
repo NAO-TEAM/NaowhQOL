@@ -1031,27 +1031,29 @@ function ns.InitMouseOptions()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local G = ns.Layout:New(2)
+
         W:CreateDropdown(appContent, {
             label = L["MOUSE_SHAPE"],
             db = settings, key = "shape",
             options = ringShapes,
-            x = 10, y = -5,
+            x = G:Col(1), y = G:Row(1),
             width = 120,
             onChange = function(val) UpdateShape(val) end
         })
 
         local bgColorLabel = appContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        bgColorLabel:SetPoint("TOPLEFT", 250, -5)
+        bgColorLabel:SetPoint("TOPLEFT", G:Col(2), G:Row(1) + 5)
         bgColorLabel:SetText(W.Colorize(L["MOUSE_COLOR_BACKGROUND"], C.ORANGE))
 
-        CreateColorButton(appContent, "Background", "color", 250, -25, function(r, g, b)
+        CreateColorButton(appContent, "Background", "color", G:Col(2), G:Row(1) - 15, function(r, g, b)
             UpdateColor(r, g, b)
         end)
 
         W:CreateSlider(appContent, {
             label = L["MOUSE_SIZE"],
             min = 32, max = 256, step = 1,
-            x = 0, y = -55,
+            x = G:Col(1), y = G:Row(2),
             value = settings.size or 48,
             onChange = function(val) UpdateSize(val) end
         })
@@ -1059,7 +1061,7 @@ function ns.InitMouseOptions()
         W:CreateSlider(appContent, {
             label = L["MOUSE_OPACITY_COMBAT"],
             min = 0, max = 100, step = 10,
-            x = 240, y = -55,
+            x = G:Col(2), y = G:Row(2),
             isPercent = true,
             value = (settings.opacityInCombat or 1.0) * 100,
             onChange = function(val)
@@ -1071,7 +1073,7 @@ function ns.InitMouseOptions()
         W:CreateSlider(appContent, {
             label = L["MOUSE_OPACITY_OOC"],
             min = 0, max = 100, step = 10,
-            x = 0, y = -115,
+            x = G:Col(1), y = G:Row(3),
             isPercent = true,
             value = (settings.opacityOutOfCombat or 1.0) * 100,
             onChange = function(val)
@@ -1080,7 +1082,7 @@ function ns.InitMouseOptions()
             end
         })
 
-        appContent:SetHeight(175)
+        appContent:SetHeight(G:Height(3))
         appWrap:RecalcHeight()
 
         local gcdWrap, gcdContent = W:CreateCollapsibleSection(sectionContainer, {
@@ -1089,10 +1091,12 @@ function ns.InitMouseOptions()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GG = ns.Layout:New(2)
+
         W:CreateCheckbox(gcdContent, {
             label = L["MOUSE_GCD_ENABLE"],
             db = settings, key = "gcdEnabled",
-            x = 10, y = -5,
+            x = GG:Col(1), y = GG:Row(1) + 5,
             template = "ChatConfigCheckButtonTemplate",
             onChange = function()
                 SaveSettings()
@@ -1104,7 +1108,7 @@ function ns.InitMouseOptions()
         W:CreateCheckbox(gcdContent, {
             label = L["MOUSE_HIDE_BACKGROUND"],
             db = settings, key = "hideBackground",
-            x = 10, y = -30,
+            x = GG:Col(2), y = GG:Row(1) + 5,
             template = "ChatConfigCheckButtonTemplate",
             onChange = function()
                 SaveSettings()
@@ -1113,25 +1117,25 @@ function ns.InitMouseOptions()
         })
 
         local swipeLabel = gcdContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        swipeLabel:SetPoint("TOPLEFT", 10, -55)
+        swipeLabel:SetPoint("TOPLEFT", GG:Col(1), GG:Row(2) + 5)
         swipeLabel:SetText(W.Colorize(L["MOUSE_COLOR_SWIPE"], C.ORANGE))
 
-        CreateColorButton(gcdContent, "Swipe", "gcdColor", 10, -75, function()
+        CreateColorButton(gcdContent, "Swipe", "gcdColor", GG:Col(1), GG:Row(2) - 15, function()
             RefreshGCDAppearance()
         end)
 
         local readyLabel = gcdContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        readyLabel:SetPoint("TOPLEFT", 230, -55)
+        readyLabel:SetPoint("TOPLEFT", GG:Col(2), GG:Row(2) + 5)
         readyLabel:SetText(W.Colorize(L["MOUSE_COLOR_READY"], C.ORANGE))
 
-        local readyColorBtn, readyColorSwatch, readyColorBorder = CreateColorButton(gcdContent, "Ready", "gcdReadyColor", 230, -75, function()
+        local readyColorBtn, readyColorSwatch, readyColorBorder = CreateColorButton(gcdContent, "Ready", "gcdReadyColor", GG:Col(2), GG:Row(2) - 15, function()
             RefreshGCDAppearance()
         end)
 
         local matchSwipeCB = W:CreateCheckbox(gcdContent, {
             label = L["MOUSE_GCD_READY_MATCH"],
             db = settings, key = "gcdReadyMatchSwipe",
-            x = 230, y = -100,
+            x = GG:Col(2), y = GG:Row(3) + 5,
             template = "ChatConfigCheckButtonTemplate",
             onChange = function(enabled)
                 SaveSettings()
@@ -1151,7 +1155,7 @@ function ns.InitMouseOptions()
         W:CreateSlider(gcdContent, {
             label = L["MOUSE_OPACITY_SWIPE"],
             min = 0, max = 100, step = 10,
-            x = 0, y = -130,
+            x = GG:Col(1), y = GG:Row(3),
             isPercent = true,
             value = (settings.gcdAlpha or 1.0) * 100,
             onChange = function(val)
@@ -1164,20 +1168,20 @@ function ns.InitMouseOptions()
         W:CreateCheckbox(gcdContent, {
             label = L["MOUSE_CAST_SWIPE_ENABLE"],
             db = settings, key = "castSwipeEnabled",
-            x = 10, y = -190,
+            x = GG:Col(1), y = GG:Row(4) + 5,
             template = "ChatConfigCheckButtonTemplate",
             onChange = function()
                 SaveSettings()
             end
         })
 
-        CreateColorButton(gcdContent, "Cast Swipe Color", "castSwipeColor", 10, -220, function()
+        CreateColorButton(gcdContent, "Cast Swipe Color", "castSwipeColor", GG:Col(1), GG:Row(5) - 10, function()
             if isCasting then
                 ApplySwipeColor(true)
             end
         end)
 
-        gcdContent:SetHeight(265)
+        gcdContent:SetHeight(GG:Height(5))
         gcdWrap:RecalcHeight()
 
         local trailWrap, trailContent = W:CreateCollapsibleSection(sectionContainer, {
@@ -1186,10 +1190,12 @@ function ns.InitMouseOptions()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local GT = ns.Layout:New(2)
+
         W:CreateCheckbox(trailContent, {
             label = L["MOUSE_TRAIL_ENABLE"],
             db = settings, key = "trailEnabled",
-            x = 10, y = -5,
+            x = GT:Col(1), y = GT:Row(1) + 5,
             template = "ChatConfigCheckButtonTemplate",
             onChange = function()
                 SaveSettings()
@@ -1197,10 +1203,18 @@ function ns.InitMouseOptions()
             end
         })
 
+        local trailColorLabel = trailContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        trailColorLabel:SetPoint("TOPLEFT", GT:Col(2), GT:Row(1) + 5)
+        trailColorLabel:SetText(W.Colorize(L["MOUSE_TRAIL_COLOR"], C.ORANGE))
+
+        CreateColorButton(trailContent, "Trail", "trailColor", GT:Col(2), GT:Row(1) - 15, function()
+            SaveSettings()
+        end)
+
         W:CreateSlider(trailContent, {
             label = L["MOUSE_TRAIL_DURATION"],
             min = 10, max = 100, step = 5,
-            x = 0, y = -30,
+            x = GT:Col(1), y = GT:Row(2),
             value = ((settings.trailDuration - 0.1) / 0.4) * 100,
             onChange = function(val)
                 settings.trailDuration = 0.1 + (val / 100) * 0.4
@@ -1208,15 +1222,7 @@ function ns.InitMouseOptions()
             end
         })
 
-        local trailColorLabel = trailContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        trailColorLabel:SetPoint("TOPLEFT", 250, -5)
-        trailColorLabel:SetText(W.Colorize(L["MOUSE_TRAIL_COLOR"], C.ORANGE))
-
-        CreateColorButton(trailContent, "Trail", "trailColor", 250, -25, function()
-            SaveSettings()
-        end)
-
-        trailContent:SetHeight(90)
+        trailContent:SetHeight(GT:Height(2))
         trailWrap:RecalcHeight()
 
         local allSections = { appWrap, gcdWrap, trailWrap }
