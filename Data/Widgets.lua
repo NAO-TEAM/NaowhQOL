@@ -17,6 +17,16 @@ ns.COLORS = {
     RED         = "ff0000",
 }
 
+function ns.Widgets.GetPlayerClassColor()
+    local _, classFile = UnitClass("player")
+    -- Use WoW's built-in RAID_CLASS_COLORS which handles all classes correctly
+    local color = RAID_CLASS_COLORS[classFile]
+    if color then
+        return CreateColor(color.r, color.g, color.b, 1)
+    end
+    return CreateColor(1, 1, 1, 1)
+end
+
 -- Layout factory for consistent grid positioning
 -- Usage:
 --   local L = ns.Layout:New(2)  -- 2-column layout
@@ -744,10 +754,12 @@ function ns.Widgets:CreateColorPicker(parent, opts)
     )
 
     btn:SetScript("OnClick", function()
+        local _, classFile = UnitClass("player")
         ColorPickerFrame:SetupColorPickerAndShow({
             r = opts.db[opts.rKey] or 1,
             g = opts.db[opts.gKey] or 1,
             b = opts.db[opts.bKey] or 1,
+            extraInfo = classFile,
             swatchFunc = function()
                 local cr, cg, cb = ColorPickerFrame:GetColorRGB()
                 opts.db[opts.rKey], opts.db[opts.gKey], opts.db[opts.bKey] = cr, cg, cb

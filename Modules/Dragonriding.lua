@@ -43,7 +43,7 @@ local speedBar, speedText
 local chargeBars = {}
 local chargeDividers = {}
 local secondWindBars = {}
-local surgeFrame, surgeCooldown
+local surgeFrame, surgeCooldown, surgeBorder
 local eventFrame
 
 local function IsEnabled()
@@ -89,6 +89,16 @@ local function GetConfig()
     cfg.bgColorG = db.bgColorG or 0.12
     cfg.bgColorB = db.bgColorB or 0.12
     cfg.bgAlpha = db.bgAlpha or 0.8
+    cfg.borderColorR = db.borderColorR or 0.00
+    cfg.borderColorG = db.borderColorG or 0.00
+    cfg.borderColorB = db.borderColorB or 0.00
+    cfg.borderAlpha = db.borderAlpha or 1.0
+    cfg.borderSize = db.borderSize or 1
+    cfg.iconBorderColorR = db.iconBorderColorR or 0.00
+    cfg.iconBorderColorG = db.iconBorderColorG or 0.00
+    cfg.iconBorderColorB = db.iconBorderColorB or 0.00
+    cfg.iconBorderAlpha = db.iconBorderAlpha or 1.0
+    cfg.iconBorderSize = db.iconBorderSize or 1
     cfg.hideCdmWhileMounted = db.hideCdmWhileMounted or false
 end
 
@@ -190,7 +200,6 @@ end
 
 local function UpdateLayout()
     if not mainFrame then return end
-    local preset = GetPreset()
     local totalHeight = cfg.speedHeight + cfg.gap + cfg.chargeHeight
 
     -- Update anchor position
@@ -212,8 +221,13 @@ local function UpdateLayout()
     end
 
     mainFrame:SetSize(totalWidth, totalHeight)
+    mainFrame:SetBackdrop({
+        bgFile = BAR_TEXTURE,
+        edgeFile = BAR_TEXTURE,
+        edgeSize = cfg.borderSize,
+    })
     mainFrame:SetBackdropColor(cfg.bgColorR, cfg.bgColorG, cfg.bgColorB, cfg.bgAlpha)
-    mainFrame:SetBackdropBorderColor(preset.border.r, preset.border.g, preset.border.b, 1)
+    mainFrame:SetBackdropBorderColor(cfg.borderColorR, cfg.borderColorG, cfg.borderColorB, cfg.borderAlpha)
 
     local speedY = cfg.swapPosition and 0 or -(cfg.chargeHeight + cfg.gap)
     local chargeY = cfg.swapPosition and -(cfg.speedHeight + cfg.gap) or 0
@@ -262,6 +276,14 @@ local function UpdateLayout()
             surgeFrame:SetPoint("LEFT", mainFrame, "RIGHT", ox, oy)
         end
         surgeFrame:SetShown(cfg.showWhirlingSurge)
+
+        if surgeBorder then
+            surgeBorder:SetBackdrop({
+                edgeFile = BAR_TEXTURE,
+                edgeSize = cfg.iconBorderSize,
+            })
+            surgeBorder:SetBackdropBorderColor(cfg.iconBorderColorR, cfg.iconBorderColorG, cfg.iconBorderColorB, cfg.iconBorderAlpha)
+        end
     end
 
     -- Apply bar style to all status bars
@@ -328,10 +350,6 @@ end
 
 local cdmHidden = false
 local function HideCooldownManager()
-    -- Always enforce BCDM bar hiding (they may re-show themselves)
-    if BCDM_PowerBar and BCDM_PowerBar:IsShown() then BCDM_PowerBar:Hide() end
-    if BCDM_SecondaryPowerBar and BCDM_SecondaryPowerBar:IsShown() then BCDM_SecondaryPowerBar:Hide() end
-
     if cdmHidden then return end
     StashPositionAndReanchor()
     cdmHidden = true
@@ -346,8 +364,6 @@ local function ShowCooldownManager()
     if BuffIconCooldownViewer then BuffIconCooldownViewer:Show() end
     if EssentialCooldownViewer then EssentialCooldownViewer:Show() end
     if UtilityCooldownViewer then UtilityCooldownViewer:Show() end
-    if BCDM_PowerBar then BCDM_PowerBar:Show() end
-    if BCDM_SecondaryPowerBar then BCDM_SecondaryPowerBar:Show() end
     RestoreOriginalAnchor()
 end
 
@@ -427,10 +443,10 @@ local function BuildUI()
     mainFrame:SetBackdrop({
         bgFile = BAR_TEXTURE,
         edgeFile = BAR_TEXTURE,
-        edgeSize = 1,
+        edgeSize = cfg.borderSize,
     })
     mainFrame:SetBackdropColor(cfg.bgColorR, cfg.bgColorG, cfg.bgColorB, cfg.bgAlpha)
-    mainFrame:SetBackdropBorderColor(preset.border.r, preset.border.g, preset.border.b, 1)
+    mainFrame:SetBackdropBorderColor(cfg.borderColorR, cfg.borderColorG, cfg.borderColorB, cfg.borderAlpha)
 
     W.MakeDraggable(mainFrame, {
         db = NaowhQOL.dragonriding,
@@ -497,6 +513,15 @@ local function BuildUI()
     surgeCooldown = CreateFrame("Cooldown", nil, surgeFrame, "CooldownFrameTemplate")
     surgeCooldown:SetAllPoints()
     surgeCooldown:SetHideCountdownNumbers(false)
+
+    surgeBorder = CreateFrame("Frame", nil, surgeFrame, "BackdropTemplate")
+    surgeBorder:SetAllPoints()
+    surgeBorder:SetFrameLevel(surgeFrame:GetFrameLevel() + 3)
+    surgeBorder:SetBackdrop({
+        edgeFile = BAR_TEXTURE,
+        edgeSize = cfg.iconBorderSize,
+    })
+    surgeBorder:SetBackdropBorderColor(cfg.iconBorderColorR, cfg.iconBorderColorG, cfg.iconBorderColorB, cfg.iconBorderAlpha)
 
     mainFrame:ClearAllPoints()
     local anchorParent = L.GetAnchorFrame(cfg.anchorFrame) or UIParent

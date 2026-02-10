@@ -1,13 +1,13 @@
 local addonName, ns = ...
 local L = ns.L
 
--- Crosshair overlay w/ rotation, dual-color, dot, circle
+-- Crosshair overlay w/ dot, circle
 
 local BAR_TEXTURE = [[Interface\Buttons\WHITE8x8]]
 local CIRCLE_TEXTURE = [[Interface\AddOns\NaowhQOL\Assets\ring]]
 local TEXEL_HALF = 0.5 / 512  -- ring.tga is 512x512
 local PI = math.pi
-local sin, cos, rad = math.sin, math.cos, math.rad
+local sin, cos = math.sin, math.cos
 
 -- Default spell IDs for melee range checking per class/spec index
 local DEFAULT_MELEE_SPELLS = {
@@ -81,10 +81,10 @@ end
 
 -- Base angles measured clockwise from 12-o'clock
 local ARM_DEFS = {
-    { key = "showTop",    base = 0,        group = "primary"   },
-    { key = "showRight",  base = PI / 2,   group = "secondary" },
-    { key = "showBottom", base = PI,       group = "primary"   },
-    { key = "showLeft",   base = 3*PI / 2, group = "secondary" },
+    { key = "showTop",    base = 0        },
+    { key = "showRight",  base = PI / 2   },
+    { key = "showBottom", base = PI       },
+    { key = "showLeft",   base = 3*PI / 2 },
 }
 
 local crosshairFrame = CreateFrame("Frame", "NaowhQOL_Crosshair", UIParent)
@@ -115,7 +115,7 @@ local dot = crosshairFrame:CreateTexture(nil, "ARTWORK", nil, 1)
 dot:SetTexture(BAR_TEXTURE)
 
 local circleShadow = crosshairFrame:CreateTexture(nil, "ARTWORK", nil, 0)
-circleShadow:SetTexture(CIRCLE_TEXTURE)
+circleShadow:SetTexture(CIRCLE_TEXTURE, "CLAMP", "CLAMP", "TRILINEAR")
 circleShadow:SetVertexColor(0, 0, 0, 1)
 circleShadow:SetTexCoord(TEXEL_HALF, 1 - TEXEL_HALF, TEXEL_HALF, 1 - TEXEL_HALF)
 if circleShadow.SetSnapToPixelGrid then
@@ -124,7 +124,7 @@ if circleShadow.SetSnapToPixelGrid then
 end
 
 local circleRing = crosshairFrame:CreateTexture(nil, "ARTWORK", nil, 1)
-circleRing:SetTexture(CIRCLE_TEXTURE)
+circleRing:SetTexture(CIRCLE_TEXTURE, "CLAMP", "CLAMP", "TRILINEAR")
 circleRing:SetTexCoord(TEXEL_HALF, 1 - TEXEL_HALF, TEXEL_HALF, 1 - TEXEL_HALF)
 if circleRing.SetSnapToPixelGrid then
     circleRing:SetSnapToPixelGrid(false)
@@ -143,8 +143,6 @@ local function ApplyLayout()
     local thick     = db.thickness or 2
     local gap       = db.gap or 6
     local r1, g1, b1 = db.colorR or 0, db.colorG or 1, db.colorB or 0
-    local r2, g2, b2 = db.color2R or 1, db.color2G or 0, db.color2B or 0
-    local dual      = db.dualColor
     local alpha     = db.opacity or 0.8
     local ox        = db.offsetX or 0
     local oy        = db.offsetY or 0
@@ -161,7 +159,6 @@ local function ApplyLayout()
         outline = true
         olR, olG, olB = moR, moG, moB
     end
-    local theta     = rad(db.rotation or 0)
 
     local span = (gap + size) + (outline and ow or 0) + 2
     crosshairFrame:SetSize(span * 2, span * 2)
@@ -177,13 +174,10 @@ local function ApplyLayout()
         local arm = arms[i]
         local shd = shadows[i]
         local visible = db[def.key] ~= false
-        local angle = def.base + theta
+        local angle = def.base
 
         if visible then
             local cr, cg, cb = r1, g1, b1
-            if dual and def.group == "secondary" then
-                cr, cg, cb = r2, g2, b2
-            end
             if meleeOut and db.meleeRecolorArms then
                 cr, cg, cb = moR, moG, moB
             end
@@ -463,3 +457,4 @@ ns.SpecUtil.RegisterCallback("CrosshairDisplay", function()
 end)
 
 ns.CrosshairDisplay = crosshairFrame
+ns.CrosshairDisplay.StopMeleeSound = StopMeleeSound

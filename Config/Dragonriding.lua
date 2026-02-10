@@ -209,11 +209,30 @@ function ns:InitDragonriding()
         -- bgAlpha stored as 0-1, slider shows 0-100
         bgAlphaSlider:SetValue((db.bgAlpha ~= nil and db.bgAlpha or 0.8) * 100)
 
+        W:CreateColorPicker(appContent, {
+            label = L["DRAGON_BORDER_COLOR"],
+            db = db, rKey = "borderColorR", gKey = "borderColorG", bKey = "borderColorB",
+            x = GAP:Col(1), y = GAP:Row(5) + 5,
+            onChange = drRefresh,
+        })
+
+        local borderAlphaSlider = W:CreateAdvancedSlider(appContent,
+            W.Colorize(L["DRAGON_BORDER_OPACITY"], C.ORANGE), 0, 100, -190, 1, true,
+            function(val) db.borderAlpha = val / 100; drRefresh() end)
+        PlaceSlider(borderAlphaSlider, appContent, GAP:Col(2), GAP:Row(5))
+        borderAlphaSlider:SetValue((db.borderAlpha ~= nil and db.borderAlpha or 1.0) * 100)
+
+        local borderSizeSlider = W:CreateAdvancedSlider(appContent,
+            W.Colorize(L["DRAGON_BORDER_SIZE"], C.ORANGE), 1, 5, -250, 1, false,
+            function(val) db.borderSize = val; drRefresh() end,
+            { db = db, key = "borderSize", moduleName = "dragonriding" })
+        PlaceSlider(borderSizeSlider, appContent, GAP:Col(1), GAP:Row(6))
+
         local fontLabel = appContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        fontLabel:SetPoint("TOPLEFT", appContent, "TOPLEFT", GAP:Col(1), GAP:Row(5) + 5)
+        fontLabel:SetPoint("TOPLEFT", appContent, "TOPLEFT", GAP:Col(1), GAP:Row(7) + 5)
         fontLabel:SetText(W.Colorize(L["DRAGON_SPEED_FONT"], C.BLUE))
 
-        W:CreateFontPicker(appContent, GAP:Col(1), GAP:Row(5) - 15,
+        W:CreateFontPicker(appContent, GAP:Col(1), GAP:Row(7) - 15,
             db.speedFont or "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf",
             function(path)
                 db.speedFont = path
@@ -221,12 +240,12 @@ function ns:InitDragonriding()
             end)
 
         local fontSizeSlider = W:CreateAdvancedSlider(appContent,
-            W.Colorize("Font Size", C.ORANGE), 6, 32, -205, 1, false,
+            W.Colorize("Font Size", C.ORANGE), 6, 32, -325, 1, false,
             function(val) db.speedFontSize = val; drRefresh() end,
             { db = db, key = "speedFontSize", moduleName = "dragonriding" })
-        PlaceSlider(fontSizeSlider, appContent, GAP:Col(2), GAP:Row(5))
+        PlaceSlider(fontSizeSlider, appContent, GAP:Col(2), GAP:Row(7))
 
-        appContent:SetHeight(GAP:Height(5))
+        appContent:SetHeight(GAP:Height(7))
         appWrap:RecalcHeight()
 
         -- BEHAVIOR section
@@ -344,7 +363,26 @@ function ns:InitDragonriding()
             { db = db, key = "surgeOffsetY", moduleName = "dragonriding" })
         PlaceSlider(surgeOffsetYSlider, iconContent, GI:Col(2), GI:Row(2))
 
-        iconContent:SetHeight(GI:Height(2))
+        W:CreateColorPicker(iconContent, {
+            label = L["DRAGON_ICON_BORDER_COLOR"],
+            db = db, rKey = "iconBorderColorR", gKey = "iconBorderColorG", bKey = "iconBorderColorB",
+            x = GI:Col(1), y = GI:Row(3) + 5,
+            onChange = drRefresh,
+        })
+
+        local iconBorderAlphaSlider = W:CreateAdvancedSlider(iconContent,
+            W.Colorize(L["DRAGON_ICON_BORDER_OPACITY"], C.ORANGE), 0, 100, -130, 1, true,
+            function(val) db.iconBorderAlpha = val / 100; drRefresh() end)
+        PlaceSlider(iconBorderAlphaSlider, iconContent, GI:Col(2), GI:Row(3))
+        iconBorderAlphaSlider:SetValue((db.iconBorderAlpha ~= nil and db.iconBorderAlpha or 1.0) * 100)
+
+        local iconBorderSizeSlider = W:CreateAdvancedSlider(iconContent,
+            W.Colorize(L["DRAGON_ICON_BORDER_SIZE"], C.ORANGE), 1, 5, -190, 1, false,
+            function(val) db.iconBorderSize = val; drRefresh() end,
+            { db = db, key = "iconBorderSize", moduleName = "dragonriding" })
+        PlaceSlider(iconBorderSizeSlider, iconContent, GI:Col(1), GI:Row(4))
+
+        iconContent:SetHeight(GI:Height(4))
         iconWrap:RecalcHeight()
 
         -- Relayout

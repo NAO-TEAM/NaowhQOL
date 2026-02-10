@@ -407,7 +407,12 @@ function ns:InitCrosshair()
             db = db, key = "meleeSoundEnabled",
             x = 10, y = -105,
             template = "ChatConfigCheckButtonTemplate",
-            onChange = refresh
+            onChange = function(enabled)
+                if not enabled and display and display.StopMeleeSound then
+                    display.StopMeleeSound()
+                end
+                refresh()
+            end
         })
         meleeSubElements[#meleeSubElements + 1] = soundCB
 

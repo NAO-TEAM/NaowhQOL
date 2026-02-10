@@ -619,6 +619,9 @@ loader:SetScript("OnEvent", function(self, event, unit, ...)
 
     if not db or not db.enabled then return end
 
+    -- When unlocked, keep showing the preview - don't process cast events
+    if db.unlock then return end
+
     if event == "PLAYER_FOCUS_CHANGED" then
         CheckFocusCast()
         return

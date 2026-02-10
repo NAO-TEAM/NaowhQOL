@@ -570,6 +570,7 @@ UpdateCastAnimation = function(animation)
         frames.castSegments = {}
         for i = 1, CAST_SEGMENTS do
             local seg = parent:CreateTexture(nil, "BACKGROUND")
+            seg:SetTexture(ASSET_PATH .. "cast_segment.tga", "CLAMP", "CLAMP", "TRILINEAR")
             seg:SetAllPoints()
             seg:SetRotation(math.rad((i - 1) * (360 / CAST_SEGMENTS)))
             seg:SetVertexColor(1, 1, 1, 0)

@@ -267,6 +267,9 @@ ns:RegisterLocale("enUS", {
     DRAGON_CHARGE_COLOR = "Charge Color",
     DRAGON_BG_COLOR = "Background Color",
     DRAGON_BG_OPACITY = "Background Opacity",
+    DRAGON_BORDER_COLOR = "Border Color",
+    DRAGON_BORDER_OPACITY = "Border Opacity",
+    DRAGON_BORDER_SIZE = "Border Size",
     DRAGON_SPEED_FONT = "Speed Font",
     DRAGON_SHOW_SPEED = "Show Speed Text",
     DRAGON_SHOW_SPEED_DESC = "Display numeric speed on the speed bar",
@@ -288,6 +291,9 @@ ns:RegisterLocale("enUS", {
     DRAGON_ICON_LEFT = "Left",
     DRAGON_ICON_TOP = "Top",
     DRAGON_ICON_BOTTOM = "Bottom",
+    DRAGON_ICON_BORDER_COLOR = "Icon Border Color",
+    DRAGON_ICON_BORDER_OPACITY = "Icon Border Opacity",
+    DRAGON_ICON_BORDER_SIZE = "Icon Border Size",
 
     ---------------------------------------------------------------------------
     -- EMOTE DETECTION
