@@ -28,7 +28,7 @@ function ns:InitModuleOptions()
         -- ============================================================
         local itemsWrap, itemsContent = W:CreateCollapsibleSection(sections, {
             text = L["MODULES_SECTION_LOOT"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -71,7 +71,7 @@ function ns:InitModuleOptions()
         -- ============================================================
         local clutterWrap, clutterContent = W:CreateCollapsibleSection(sections, {
             text = L["MODULES_SECTION_UI"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -114,7 +114,7 @@ function ns:InitModuleOptions()
         -- ============================================================
         local durWrap, durContent = W:CreateCollapsibleSection(sections, {
             text = L["MODULES_SECTION_DEATH"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

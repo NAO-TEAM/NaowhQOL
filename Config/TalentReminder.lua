@@ -42,7 +42,7 @@ function ns:InitTalentReminder()
         -- SAVED LOADOUTS section
         local loadWrap, loadContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "SAVED LOADOUTS",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

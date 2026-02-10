@@ -36,7 +36,7 @@ end
 ns.Layout = {
     ROW_HEIGHT = 50,    -- Default vertical spacing between rows
     ROW_START = -10,    -- Default first row Y offset
-    WIDTH = 440,        -- Default content width
+    WIDTH = 500,        -- Default content width
     -- Widget-specific Y offsets (relative to Row position)
     SLIDER_OFFSET = 0,      -- Sliders are the baseline
     COLOR_OFFSET = -10,     -- Color pickers align with slider track
@@ -547,6 +547,15 @@ function ns.Widgets:CreateScrollFrame(parent, contentHeight)
     sc:SetWidth(sf:GetWidth() or 700)
     sc:SetHeight(contentHeight or 900)
     sf:SetScrollChild(sc)
+
+    sf:EnableMouseWheel(true)
+    sf:SetScript("OnMouseWheel", function(self, delta)
+        local pos = self:GetVerticalScroll()
+        local max = sc:GetHeight() - self:GetHeight()
+        if max < 0 then max = 0 end
+        local newPos = math.max(0, math.min(pos - (delta * 23), max))
+        self:SetVerticalScroll(newPos)
+    end)
 
     return sf, sc
 end

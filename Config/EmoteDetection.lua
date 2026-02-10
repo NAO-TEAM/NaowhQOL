@@ -62,7 +62,7 @@ function ns:InitEmoteDetection()
         -- APPEARANCE
         local appWrap, appContent = W:CreateCollapsibleSection(sections, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 
@@ -89,7 +89,7 @@ function ns:InitEmoteDetection()
         -- EMOTE FILTER
         local filterWrap, filterContent = W:CreateCollapsibleSection(sections, {
             text = L["EMOTE_SECTION_FILTER"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 
@@ -128,7 +128,7 @@ function ns:InitEmoteDetection()
         -- SOUND
         local soundWrap, soundContent = W:CreateCollapsibleSection(sections, {
             text = L["COMMON_SECTION_SOUND"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 

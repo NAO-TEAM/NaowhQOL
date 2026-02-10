@@ -65,30 +65,41 @@ function ns:InitFocusCastBar()
         -- APPEARANCE section
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
         local G = ns.Layout:New(2)
 
+        local barColorLbl = appContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        barColorLbl:SetPoint("TOPLEFT", G:Col(1), G:Row(1) + 10)
+        barColorLbl:SetText(L["FOCUS_BAR_COLOR"])
+
         W:CreateColorPicker(appContent, {
             label = L["FOCUS_BAR_READY"], db = db,
             rKey = "barColorR", gKey = "barColorG", bKey = "barColorB",
-            x = G:Col(1), y = G:Row(1) + 5,
+            x = G:Col(1), y = G:Row(1) - 15,
             onChange = onUpdate
         })
 
         W:CreateColorPicker(appContent, {
             label = L["FOCUS_BAR_CD"], db = db,
             rKey = "barColorCdR", gKey = "barColorCdG", bKey = "barColorCdB",
-            x = G:Col(2), y = G:Row(1) + 5,
+            x = G:Col(2), y = G:Row(1) - 15,
+            onChange = onUpdate
+        })
+
+        W:CreateColorPicker(appContent, {
+            label = L["FOCUS_NONINT_COLOR"], db = db,
+            rKey = "nonIntColorR", gKey = "nonIntColorG", bKey = "nonIntColorB",
+            x = G:Col(1), y = G:Row(2) + 5,
             onChange = onUpdate
         })
 
         W:CreateColorPicker(appContent, {
             label = L["FOCUS_BACKGROUND"], db = db,
             rKey = "bgColorR", gKey = "bgColorG", bKey = "bgColorB",
-            x = G:Col(1), y = G:Row(2) + 5,
+            x = G:Col(1), y = G:Row(3) + 5,
             onChange = onUpdate
         })
 
@@ -97,15 +108,15 @@ function ns:InitFocusCastBar()
             W.Colorize(L["FOCUS_BG_OPACITY"], C.ORANGE), 0, 100, -125, 5, true,
             function(val) db.bgAlpha = val / 100; onUpdate() end,
             { value = (db.bgAlpha ~= nil and db.bgAlpha or 0.8) * 100 })
-        PlaceSlider(bgAlphaSlider, appContent, G:Col(2), G:Row(2))
+        PlaceSlider(bgAlphaSlider, appContent, G:Col(2), G:Row(3))
 
-        appContent:SetHeight(G:Height(2))
+        appContent:SetHeight(G:Height(3))
         appWrap:RecalcHeight()
 
         -- ICON section
         local iconWrap, iconContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["FOCUS_SECTION_ICON"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -142,7 +153,7 @@ function ns:InitFocusCastBar()
         -- TEXT section
         local textWrap, textContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["FOCUS_SECTION_TEXT"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -188,7 +199,7 @@ function ns:InitFocusCastBar()
         -- BEHAVIOR section
         local behWrap, behContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_BEHAVIOR"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -208,49 +219,29 @@ function ns:InitFocusCastBar()
             onChange = onUpdate
         })
 
-        behContent:SetHeight(60)
-        behWrap:RecalcHeight()
-
-        -- NON-INTERRUPTIBLE DISPLAY section
-        local nonIntWrap, nonIntContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = L["FOCUS_SECTION_NONINT"],
-            startOpen = true,
-            onCollapse = function() if RelayoutSections then RelayoutSections() end end,
-        })
-
-        local GN = ns.Layout:New(2)
-
-        W:CreateCheckbox(nonIntContent, {
+        W:CreateCheckbox(behContent, {
             label = L["FOCUS_SHOW_SHIELD"],
             db = db, key = "showShieldIcon",
-            x = GN:Col(1), y = GN:Row(1) + 5,
+            x = 10, y = -53,
             template = "ChatConfigCheckButtonTemplate",
             onChange = onUpdate
         })
 
-        W:CreateCheckbox(nonIntContent, {
+        W:CreateCheckbox(behContent, {
             label = L["FOCUS_CHANGE_COLOR"],
             db = db, key = "colorNonInterrupt",
-            x = GN:Col(2), y = GN:Row(1) + 5,
+            x = 10, y = -77,
             template = "ChatConfigCheckButtonTemplate",
             onChange = onUpdate
         })
 
-        W:CreateColorPicker(nonIntContent, {
-            label = L["FOCUS_NONINT_COLOR"],
-            db = db,
-            rKey = "nonIntColorR", gKey = "nonIntColorG", bKey = "nonIntColorB",
-            x = GN:Col(1), y = GN:Row(2) + 5,
-            onChange = onUpdate
-        })
-
-        nonIntContent:SetHeight(GN:Height(2))
-        nonIntWrap:RecalcHeight()
+        behContent:SetHeight(108)
+        behWrap:RecalcHeight()
 
         -- AUDIO section
         local audioWrap, audioContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_AUDIO"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -330,7 +321,7 @@ function ns:InitFocusCastBar()
         audioWrap:RecalcHeight()
 
         -- Relayout
-        local allSections = { appWrap, iconWrap, textWrap, behWrap, nonIntWrap, audioWrap }
+        local allSections = { appWrap, iconWrap, textWrap, behWrap, audioWrap }
 
         RelayoutSections = function()
             for i, section in ipairs(allSections) do

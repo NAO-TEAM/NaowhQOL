@@ -71,7 +71,7 @@ function ns:InitConsumableChecker()
         ---------------------------------------------------------------
         local settingsWrap, settingsContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_SETTINGS"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -133,7 +133,7 @@ function ns:InitConsumableChecker()
         ---------------------------------------------------------------
         local diffWrap, diffContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CONSUMABLE_SECTION_DIFFICULTY"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -170,7 +170,7 @@ function ns:InitConsumableChecker()
         ---------------------------------------------------------------
         local catWrap, catContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CONSUMABLE_SECTION_CATEGORIES"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

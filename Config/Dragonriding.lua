@@ -61,7 +61,7 @@ function ns:InitDragonriding()
         -- LAYOUT section
         local layWrap, layContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["DRAGON_SECTION_LAYOUT"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -97,7 +97,7 @@ function ns:InitDragonriding()
         -- ANCHOR section
         local anchorWrap, anchorContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["DRAGON_SECTION_ANCHOR"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -133,7 +133,7 @@ function ns:InitDragonriding()
         W:CreateCheckbox(anchorContent, {
             label = L["DRAGON_MATCH_WIDTH"],
             db = db, key = "matchAnchorWidth",
-            x = GA:Col(1), y = GA:Row(3) + 20,
+            x = GA:Col(1), y = GA:Row(3),
             template = "ChatConfigCheckButtonTemplate",
             description = L["DRAGON_MATCH_WIDTH_DESC"],
             onChange = drRefresh
@@ -157,7 +157,7 @@ function ns:InitDragonriding()
         -- APPEARANCE section
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -191,14 +191,14 @@ function ns:InitDragonriding()
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_CHARGE_COLOR"],
             db = db, rKey = "chargeColorR", gKey = "chargeColorG", bKey = "chargeColorB",
-            x = GAP:Col(1), y = GAP:Row(3) + 20,
+            x = GAP:Col(1), y = GAP:Row(3),
             onChange = drRefresh,
         })
 
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_BG_COLOR"],
             db = db, rKey = "bgColorR", gKey = "bgColorG", bKey = "bgColorB",
-            x = GAP:Col(2), y = GAP:Row(3) + 20,
+            x = GAP:Col(2), y = GAP:Row(3),
             onChange = drRefresh,
         })
 
@@ -251,7 +251,7 @@ function ns:InitDragonriding()
         -- BEHAVIOR section
         local behWrap, behContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_BEHAVIOR"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -297,7 +297,7 @@ function ns:InitDragonriding()
         -- FEATURES section
         local featWrap, featContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["DRAGON_SECTION_FEATURES"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -325,7 +325,7 @@ function ns:InitDragonriding()
         -- ICON section (Whirling Surge)
         local iconWrap, iconContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["DRAGON_SECTION_ICON"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

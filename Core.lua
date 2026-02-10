@@ -141,7 +141,7 @@ local RANGE_CHECK_DEFAULTS = {
 local EMOTE_DETECTION_DEFAULTS = {
     enabled = true, unlock = false, font = NAOWH_FONT,
     point = "CENTER", x = 0, y = 0, width = 200, height = 60, fontSize = 16,
-    textR = 1, textG = 1, textB = 1, emotePattern = "prepares", soundOn = true, soundID = 8959,
+    textR = 1, textG = 1, textB = 1, emotePattern = "prepares,places", soundOn = true, soundID = 8959,
     autoEmoteEnabled = true, autoEmoteCooldown = 2,
 }
 
@@ -602,7 +602,7 @@ local function InitializeDB()
     if ra.textR            == nil then ra.textR            = 1                  end
     if ra.textG            == nil then ra.textG            = 1                  end
     if ra.textB            == nil then ra.textB            = 1                  end
-    if ra.emotePattern     == nil then ra.emotePattern     = "prepares"         end
+    if ra.emotePattern     == nil then ra.emotePattern     = "prepares,places"  end
     if ra.soundOn          == nil then ra.soundOn          = true               end
     if ra.soundID          == nil then ra.soundID          = 8959               end
     -- Auto Emote sub-feature

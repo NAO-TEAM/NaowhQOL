@@ -68,7 +68,7 @@ function ns:InitCombatAlerts()
         -- APPEARANCE section
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -83,7 +83,7 @@ function ns:InitCombatAlerts()
         -- ENTER COMBAT section
         local enterWrap, enterContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMBATALERT_SECTION_ENTER"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -168,7 +168,7 @@ function ns:InitCombatAlerts()
         -- LEAVE COMBAT section
         local leaveWrap, leaveContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMBATALERT_SECTION_LEAVE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

@@ -1028,7 +1028,7 @@ function ns.InitMouseOptions()
 
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["MOUSE_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -1088,7 +1088,7 @@ function ns.InitMouseOptions()
 
         local gcdWrap, gcdContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["MOUSE_SECTION_GCD"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -1187,7 +1187,7 @@ function ns.InitMouseOptions()
 
         local trailWrap, trailContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["MOUSE_SECTION_TRAIL"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

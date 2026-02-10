@@ -83,7 +83,7 @@ function ns:InitGcdTracker()
         -- DISPLAY section
         local dspWrap, dspContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_DISPLAY"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -138,7 +138,7 @@ function ns:InitGcdTracker()
         -- TIMELINE section
         local tlWrap, tlContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["GCD_SECTION_TIMELINE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -170,7 +170,7 @@ function ns:InitGcdTracker()
         -- ZONE VISIBILITY section
         local zoneWrap, zoneContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["GCD_SECTION_ZONE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -198,7 +198,7 @@ function ns:InitGcdTracker()
         -- SPELL BLOCKLIST section
         local blkWrap, blkContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["GCD_SECTION_BLOCKLIST"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

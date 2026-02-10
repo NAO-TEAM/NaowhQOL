@@ -42,7 +42,7 @@ function ns:InitCombatLogger()
         -- STATUS section
         local statWrap, statContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "STATUS",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -58,7 +58,7 @@ function ns:InitCombatLogger()
         -- SAVED INSTANCES section
         local instWrap, instContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "SAVED INSTANCES",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

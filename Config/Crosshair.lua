@@ -87,7 +87,7 @@ function ns:InitCrosshair()
         -- SHAPE PRESETS section
         local shpWrap, shpContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CROSSHAIR_SECTION_SHAPE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -137,61 +137,54 @@ function ns:InitCrosshair()
         -- DIMENSIONS section
         local dimWrap, dimContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CROSSHAIR_SECTION_DIMENSIONS"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
         local G = ns.Layout:New(2)
 
-        -- Row 1: Rotation (single column)
-        local rotSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_ROTATION"], C.ORANGE), 0, 359, G:Row(1), 1, false,
-            function(val) db.rotation = val; refresh() end,
-            { db = db, key = "rotation", moduleName = "crosshair" })
-        PlaceSlider(rotSlider, dimContent, G:Col(1), G:Row(1))
-
-        -- Row 2: Arm Length / Thickness
+        -- Row 1: Arm Length / Thickness
         local sizeSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_ARM_LENGTH"], C.ORANGE), 2, 80, G:Row(2), 1, false,
+            W.Colorize(L["CROSSHAIR_ARM_LENGTH"], C.ORANGE), 2, 80, G:Row(1), 1, false,
             function(val) db.size = val; refresh() end,
             { db = db, key = "size", moduleName = "crosshair" })
-        PlaceSlider(sizeSlider, dimContent, G:Col(1), G:Row(2))
+        PlaceSlider(sizeSlider, dimContent, G:Col(1), G:Row(1))
 
         local thickSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_THICKNESS"], C.ORANGE), 1, 20, G:Row(2), 1, false,
+            W.Colorize(L["CROSSHAIR_THICKNESS"], C.ORANGE), 1, 20, G:Row(1), 1, false,
             function(val) db.thickness = val; refresh() end,
             { db = db, key = "thickness", moduleName = "crosshair" })
-        PlaceSlider(thickSlider, dimContent, G:Col(2), G:Row(2))
+        PlaceSlider(thickSlider, dimContent, G:Col(2), G:Row(1))
 
-        -- Row 3: Center Gap / Dot Size
+        -- Row 2: Center Gap / Dot Size
         local gapSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_CENTER_GAP"], C.ORANGE), 0, 40, G:Row(3), 1, false,
+            W.Colorize(L["CROSSHAIR_CENTER_GAP"], C.ORANGE), 0, 40, G:Row(2), 1, false,
             function(val) db.gap = val; refresh() end,
             { db = db, key = "gap", moduleName = "crosshair" })
-        PlaceSlider(gapSlider, dimContent, G:Col(1), G:Row(3))
+        PlaceSlider(gapSlider, dimContent, G:Col(1), G:Row(2))
 
         local dotSizeSlider = W:CreateAdvancedSlider(dimContent,
-            W.Colorize(L["CROSSHAIR_DOT_SIZE"], C.ORANGE), 1, 16, G:Row(3), 1, false,
+            W.Colorize(L["CROSSHAIR_DOT_SIZE"], C.ORANGE), 1, 16, G:Row(2), 1, false,
             function(val) db.dotSize = val; refresh() end,
             { db = db, key = "dotSize", moduleName = "crosshair" })
-        PlaceSlider(dotSizeSlider, dimContent, G:Col(2), G:Row(3))
+        PlaceSlider(dotSizeSlider, dimContent, G:Col(2), G:Row(2))
 
-        -- Row 4: Center Dot checkbox
+        -- Row 3: Center Dot checkbox
         local dotToggle = W:CreateCheckbox(dimContent, {
             label = L["CROSSHAIR_CENTER_DOT"],
             db = db, key = "dotEnabled",
-            x = 10, y = G:Row(4) + 10,
+            x = 10, y = G:Row(3) + 10,
             template = "ChatConfigCheckButtonTemplate",
             onChange = refresh
         })
 
-        dimContent:SetHeight(G:Height(4))
+        dimContent:SetHeight(G:Height(3))
         dimWrap:RecalcHeight()
 
         -- APPEARANCE section
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CROSSHAIR_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -209,62 +202,34 @@ function ns:InitCrosshair()
             { value = (db.opacity ~= nil and db.opacity or 0.8) * 100 })
         PlaceSlider(opacSlider, appContent, 0, -40)
 
-        local color2Btn, color2Preview
-
-        W:CreateCheckbox(appContent, {
-            label = L["CROSSHAIR_DUAL_COLOR"],
-            db = db, key = "dualColor",
-            x = 10, y = -100,
-            template = "ChatConfigCheckButtonTemplate",
-            description = L["CROSSHAIR_DUAL_COLOR_DESC"],
-            onChange = function(enabled)
-                if color2Btn then
-                    if enabled then color2Btn:Show(); color2Preview:Show()
-                    else color2Btn:Hide(); color2Preview:Hide() end
-                end
-                refresh()
-            end
-        })
-
-        color2Btn, color2Preview = W:CreateColorPicker(appContent, {
-            label = L["CROSSHAIR_COLOR_SECONDARY"], db = db,
-            rKey = "color2R", gKey = "color2G", bKey = "color2B",
-            x = 10, y = -130,
-            onChange = refresh
-        })
-
-        if not db.dualColor then
-            color2Btn:Hide(); color2Preview:Hide()
-        end
-
         W:CreateCheckbox(appContent, {
             label = L["CROSSHAIR_BORDER_ALWAYS"],
             db = db, key = "outlineEnabled",
-            x = 10, y = -165,
+            x = 10, y = -100,
             template = "ChatConfigCheckButtonTemplate",
             onChange = refresh
         })
 
         local outSlider = W:CreateAdvancedSlider(appContent,
-            W.Colorize(L["CROSSHAIR_BORDER_THICKNESS"], C.ORANGE), 1, 6, -195, 1, false,
+            W.Colorize(L["CROSSHAIR_BORDER_THICKNESS"], C.ORANGE), 1, 6, -130, 1, false,
             function(val) db.outlineWeight = val; refresh() end,
             { db = db, key = "outlineWeight", moduleName = "crosshair" })
-        PlaceSlider(outSlider, appContent, 0, -195)
+        PlaceSlider(outSlider, appContent, 0, -130)
 
         W:CreateColorPicker(appContent, {
             label = L["CROSSHAIR_COLOR_BORDER"], db = db,
             rKey = "outlineR", gKey = "outlineG", bKey = "outlineB",
-            x = 240, y = -190,
+            x = 240, y = -125,
             onChange = refresh
         })
 
-        appContent:SetHeight(235)
+        appContent:SetHeight(175)
         appWrap:RecalcHeight()
 
         -- CIRCLE section
         local circWrap, circContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CROSSHAIR_SECTION_CIRCLE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -295,7 +260,7 @@ function ns:InitCrosshair()
         -- POSITION section
         local posWrap, posContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CROSSHAIR_SECTION_POSITION"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -331,7 +296,7 @@ function ns:InitCrosshair()
         -- DETECTION section (melee range)
         local mlWrap, mlContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["CROSSHAIR_SECTION_DETECTION"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -530,7 +495,6 @@ function ns:InitCrosshair()
 
         -- Preset refresh callback
         refreshControls = function()
-            rotSlider:SetValue(db.rotation or 0)
             armToggles.showTop:SetChecked(db.showTop ~= false)
             armToggles.showRight:SetChecked(db.showRight ~= false)
             armToggles.showBottom:SetChecked(db.showBottom ~= false)

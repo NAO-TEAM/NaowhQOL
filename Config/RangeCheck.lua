@@ -53,7 +53,7 @@ function ns:InitRangeCheck()
         -- BEHAVIOR section
         local behWrap, behContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_BEHAVIOR"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -71,7 +71,7 @@ function ns:InitRangeCheck()
         -- APPEARANCE section
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

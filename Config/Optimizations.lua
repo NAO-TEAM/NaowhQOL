@@ -1094,7 +1094,7 @@ function ns:InitOptOptions()
         -----------------------------------------------------------------------
         local presetsWrap, presetsContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "PRESETS",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -1279,7 +1279,7 @@ function ns:InitOptOptions()
         -----------------------------------------------------------------------
         local monWrap, monContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "REAL-TIME MONITOR",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

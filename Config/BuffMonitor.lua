@@ -74,7 +74,7 @@ function ns:InitBuffMonitor()
         ---------------------------------------------------------------
         local raidWrap, raidContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["BUFFMONITOR_SECTION_RAIDBUFFS"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -131,7 +131,7 @@ function ns:InitBuffMonitor()
         ---------------------------------------------------------------
         local customWrap, customContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["BUFFMONITOR_SECTION_CUSTOM_DISPLAY"] or "Custom Tracker Display",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -172,7 +172,7 @@ function ns:InitBuffMonitor()
         ---------------------------------------------------------------
         local trkWrap, trkContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["BUFFMONITOR_SECTION_CUSTOM"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

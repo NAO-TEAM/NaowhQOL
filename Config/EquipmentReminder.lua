@@ -40,7 +40,7 @@ function ns:InitEquipmentReminder()
         -- TRIGGERS section
         local triggerWrap, triggerContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "TRIGGERS",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -68,7 +68,7 @@ function ns:InitEquipmentReminder()
         -- DISPLAY section
         local displayWrap, displayContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "DISPLAY",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -105,7 +105,7 @@ function ns:InitEquipmentReminder()
         -- PREVIEW section
         local previewWrap, previewContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "PREVIEW",
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

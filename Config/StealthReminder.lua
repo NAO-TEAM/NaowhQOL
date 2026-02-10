@@ -64,7 +64,7 @@ function ns:InitStealthReminder()
         -- APPEARANCE
         local appWrap, appContent = W:CreateCollapsibleSection(stealthSections, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 
@@ -79,7 +79,7 @@ function ns:InitStealthReminder()
         -- SETTINGS
         local colWrap, colContent = W:CreateCollapsibleSection(stealthSections, {
             text = L["STEALTH_SECTION_STEALTH"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 
@@ -258,7 +258,7 @@ function ns:InitStealthReminder()
         -- STANCE ALERTS
         local stColWrap, stColContent = W:CreateCollapsibleSection(stanceSections, {
             text = L["STEALTH_SECTION_STANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 

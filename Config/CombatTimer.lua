@@ -60,7 +60,7 @@ function ns:InitCombatTimer()
         -- OPTIONS section
         local optWrap, optContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMBATTIMER_SECTION_OPTIONS"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -94,7 +94,7 @@ function ns:InitCombatTimer()
         -- APPEARANCE section
         local appWrap, appContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_APPEARANCE"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 

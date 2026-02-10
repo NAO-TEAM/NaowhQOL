@@ -84,7 +84,7 @@ function ns:InitBuffTracker()
         -- TRACKING section
         local trkWrap, trkContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["BUFFTRACKER_SECTION_TRACKING"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -127,7 +127,7 @@ function ns:InitBuffTracker()
         -- DISPLAY section
         local dspWrap, dspContent = W:CreateCollapsibleSection(sectionContainer, {
             text = L["COMMON_SECTION_DISPLAY"],
-            startOpen = true,
+            startOpen = false,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
