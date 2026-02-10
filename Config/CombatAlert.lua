@@ -17,6 +17,14 @@ function ns:InitCombatAlerts()
     local db = NaowhQOL.combatAlert
     local display = ns.CombatAlertDisplay
 
+    -- Migrate old soundID format to new sound format
+    if db.enterSoundID and not db.enterSound then
+        db.enterSound = { id = db.enterSoundID }
+    end
+    if db.leaveSoundID and not db.leaveSound then
+        db.leaveSound = { id = db.leaveSoundID }
+    end
+
     W:CachedPanel(cache, "caFrame", p, function(f)
         local sf, sc = W:CreateScrollFrame(f, 1200)
 
@@ -106,8 +114,8 @@ function ns:InitCombatAlerts()
             onChange = refresh
         })
 
-        W:CreateSoundPicker(enterContent, GE:Col(1), GE:Row(3) + 11, db.enterSoundID, function(soundId)
-            db.enterSoundID = soundId
+        W:CreateSoundPicker(enterContent, GE:Col(1), GE:Row(3) + 11, db.enterSound, function(entry)
+            db.enterSound = entry.id and { id = entry.id } or { path = entry.path }
         end)
 
         local enterTtsLbl = enterContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -191,8 +199,8 @@ function ns:InitCombatAlerts()
             onChange = refresh
         })
 
-        W:CreateSoundPicker(leaveContent, GL:Col(1), GL:Row(3) + 11, db.leaveSoundID, function(soundId)
-            db.leaveSoundID = soundId
+        W:CreateSoundPicker(leaveContent, GL:Col(1), GL:Row(3) + 11, db.leaveSound, function(entry)
+            db.leaveSound = entry.id and { id = entry.id } or { path = entry.path }
         end)
 
         local leaveTtsLbl = leaveContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

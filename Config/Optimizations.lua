@@ -1084,7 +1084,7 @@ function ns:InitOptOptions()
         local sectionContainer = CreateFrame("Frame", nil, sc)
         sectionContainer:SetPoint("TOPLEFT", 10, -75)
         sectionContainer:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
-        sectionContainer:SetHeight(2400)
+        sectionContainer:SetHeight(1)  -- Will be updated by RelayoutSections
 
         local RelayoutSections
         local allSections = {}
@@ -1417,6 +1417,7 @@ function ns:InitOptOptions()
             end
             totalH = totalH + footerContainer:GetHeight() + 40
             sc:SetHeight(math.max(totalH, 600))
+            sectionContainer:SetHeight(totalH - 35)
         end
 
         RelayoutSections()

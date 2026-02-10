@@ -88,19 +88,19 @@ SLASH_NAOWHQOL1 = "/nao"
 SLASH_NAOWHQOL2 = "/nqol"
 
 SlashCmdList["NAOWHQOL"] = function()
-    if MainWindow:IsShown() then 
-        MainWindow:Hide() 
-    else 
+    if MainWindow:IsShown() then
+        MainWindow:Hide()
+    else
         MainWindow:Show()
         if MainWindow.ResetContent then
             MainWindow:ResetContent()
         end
-        if ns.InitOptOptions then 
-            ns:InitOptOptions() 
+        if ns.InitHomePage then
+            ns:InitHomePage()
         end
 
-        if ns.ResetSidebarToOptimizations then
-            ns:ResetSidebarToOptimizations()
+        if ns.ResetSidebarToHome then
+            ns:ResetSidebarToHome()
         end
     end
 end
@@ -116,3 +116,30 @@ WelcomeFrame:RegisterEvent("PLAYER_LOGIN")
 WelcomeFrame:SetScript("OnEvent", function()
     ns:Log("Loaded. Type |cff00ff00/nao|r to open settings.")
 end)
+
+-- Home/Welcome page shown on addon open
+function ns:InitHomePage()
+    local p = ns.MainFrame.Content
+    local L = ns.L
+
+    -- Container for masked icon
+    local iconFrame = CreateFrame("Frame", nil, p)
+    iconFrame:SetSize(200, 200)
+    iconFrame:SetPoint("CENTER", 0, 40)
+
+    local icon = iconFrame:CreateTexture(nil, "ARTWORK")
+    icon:SetAllPoints()
+    icon:SetTexture("Interface\\AddOns\\NaowhQOL\\Assets\\welcomeicon.tga")
+    icon:SetAlpha(0.4)
+
+    -- Apply circular mask to hide square edges
+    local mask = iconFrame:CreateMaskTexture()
+    mask:SetAllPoints()
+    mask:SetTexture("Interface\\CHARACTERFRAME\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    icon:AddMaskTexture(mask)
+
+    local subtitle = p:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    subtitle:SetPoint("TOP", iconFrame, "BOTTOM", 0, -15)
+    subtitle:SetText(L["HOME_SUBTITLE"])
+    subtitle:SetTextColor(0.6, 0.6, 0.6, 1)
+end

@@ -29,9 +29,9 @@ local function PlayCombatAudio(prefix)
     if audioMode == "none" then return end
 
     if audioMode == "sound" then
-        local soundID = db[prefix .. "SoundID"]
-        if soundID then
-            PlaySound(soundID, "Master")
+        local sound = db[prefix .. "Sound"]
+        if sound then
+            ns.SoundList.Play(sound)
         end
     elseif audioMode == "tts" then
         local ttsMessage = db[prefix .. "TtsMessage"]

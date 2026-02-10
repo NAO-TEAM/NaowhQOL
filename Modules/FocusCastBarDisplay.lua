@@ -315,8 +315,8 @@ local function PlayAudioAlert()
     local db = NaowhQOL.focusCastBar
     if not db then return end
 
-    if db.soundEnabled and db.soundID then
-        PlaySound(db.soundID, "Master")
+    if db.soundEnabled and db.sound then
+        ns.SoundList.Play(db.sound)
     elseif db.ttsEnabled and db.ttsMessage and db.ttsMessage ~= "" then
         local voiceID = db.ttsVoiceID or 0
         local rate = db.ttsRate or 0

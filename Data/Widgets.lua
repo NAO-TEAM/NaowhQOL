@@ -1243,10 +1243,18 @@ function ns.Widgets:CreateAdvancedSlider(parent, label, min, max, yOffset, step,
     return wrapper.slider
 end
 
-function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
+function ns.Widgets:CreateSoundPicker(parent, x, y, currentSound, onSelect)
+    -- currentSound can be: number (legacy ID), {id=N}, or {path="..."}
     local VISIBLE_ROWS = 6
     local ROW_H = 20
+    local FILTER_H = 20
     local WIDTH = 260
+
+    -- Normalize legacy format
+    if type(currentSound) == "number" then
+        currentSound = { id = currentSound }
+    end
+    currentSound = currentSound or { id = 8959 }
 
     local frame = CreateFrame("Frame", nil, parent)
     frame:SetSize(WIDTH, 28)
@@ -1268,7 +1276,7 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
     arrow:SetPoint("RIGHT", -6, 0); arrow:SetText("|cffffa900v|r")
 
     local panel = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-    panel:SetSize(WIDTH, ROW_H + VISIBLE_ROWS * ROW_H + 6)
+    panel:SetSize(WIDTH, FILTER_H + ROW_H + VISIBLE_ROWS * ROW_H + 10)
     panel:SetPoint("TOPLEFT", selBtn, "BOTTOMLEFT", 0, -2)
     panel:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]],
         edgeFile = [[Interface\Buttons\WHITE8x8]], edgeSize = 1 })
@@ -1288,9 +1296,79 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
     panel:SetScript("OnShow", function() overlay:Show() end)
     panel:SetScript("OnHide", function() overlay:Hide() end)
 
+    -- Source filter dropdown
+    local currentFilter = "All"
+    local filterBtn = CreateFrame("Button", nil, panel, "BackdropTemplate")
+    filterBtn:SetSize(WIDTH - 8, FILTER_H)
+    filterBtn:SetPoint("TOPLEFT", 4, -4)
+    filterBtn:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]],
+        edgeFile = [[Interface\Buttons\WHITE8x8]], edgeSize = 1 })
+    filterBtn:SetBackdropColor(0.12, 0.12, 0.12, 1)
+    filterBtn:SetBackdropBorderColor(0, 0, 0, 1)
+
+    local filterText = filterBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    filterText:SetPoint("LEFT", 6, 0); filterText:SetPoint("RIGHT", -20, 0)
+    filterText:SetJustifyH("LEFT"); filterText:SetText("All")
+
+    local filterArrow = filterBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    filterArrow:SetPoint("RIGHT", -4, 0); filterArrow:SetText("|cffffa900v|r")
+
+    -- Filter dropdown menu (floats above panel)
+    local filterMenu = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+    filterMenu:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]],
+        edgeFile = [[Interface\Buttons\WHITE8x8]], edgeSize = 1 })
+    filterMenu:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    filterMenu:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    filterMenu:SetFrameStrata("TOOLTIP")
+    filterMenu:SetFrameLevel(200)
+    filterMenu:Hide()
+
+    local filterRows = {}
+    local Filter  -- Forward declaration
+    local function BuildFilterMenu()
+        local sources = ns.SoundList.GetSources()
+        filterMenu:SetSize(WIDTH - 8, #sources * 18 + 4)
+        filterMenu:SetPoint("TOPLEFT", filterBtn, "BOTTOMLEFT", 0, -1)
+
+        for i, src in ipairs(sources) do
+            if not filterRows[i] then
+                local row = CreateFrame("Button", nil, filterMenu, "BackdropTemplate")
+                row:SetSize(WIDTH - 12, 18)
+                row:SetPoint("TOPLEFT", 2, -(i - 1) * 18 - 2)
+                row:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
+                row:SetBackdropColor(0, 0, 0, 0)
+                row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+                row.label:SetPoint("LEFT", 4, 0)
+                row:SetScript("OnEnter", function(self) self:SetBackdropColor(0.2, 0.5, 0.8, 0.3) end)
+                row:SetScript("OnLeave", function(self) self:SetBackdropColor(0, 0, 0, 0) end)
+                filterRows[i] = row
+            end
+            filterRows[i].label:SetText(src)
+            filterRows[i]:SetScript("OnClick", function()
+                currentFilter = src
+                filterText:SetText(src)
+                filterMenu:Hide()
+                Filter()
+            end)
+            filterRows[i]:Show()
+        end
+        for i = #sources + 1, #filterRows do
+            filterRows[i]:Hide()
+        end
+    end
+
+    filterBtn:SetScript("OnClick", function()
+        if filterMenu:IsShown() then
+            filterMenu:Hide()
+        else
+            BuildFilterMenu()
+            filterMenu:Show()
+        end
+    end)
+
     local search = CreateFrame("EditBox", nil, panel, "BackdropTemplate")
     search:SetSize(WIDTH - 8, 18)
-    search:SetPoint("TOPLEFT", 4, -4)
+    search:SetPoint("TOPLEFT", 4, -(FILTER_H + 6))
     search:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]],
         edgeFile = [[Interface\Buttons\WHITE8x8]], edgeSize = 1 })
     search:SetBackdropColor(0, 0, 0, 1)
@@ -1301,13 +1379,13 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
 
     local placeholder = search:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     placeholder:SetPoint("LEFT", 6, 0); placeholder:SetText("Search sounds...")
-    search:SetScript("OnEditFocusGained", function() placeholder:Hide() end)
+    search:SetScript("OnEditFocusGained", function() placeholder:Hide(); filterMenu:Hide() end)
     search:SetScript("OnEditFocusLost", function()
         if search:GetText() == "" then placeholder:Show() end
     end)
 
     local listArea = CreateFrame("Frame", nil, panel)
-    listArea:SetPoint("TOPLEFT", 4, -(ROW_H + 4))
+    listArea:SetPoint("TOPLEFT", 4, -(FILTER_H + ROW_H + 8))
     listArea:SetSize(WIDTH - 8, VISIBLE_ROWS * ROW_H)
     listArea:EnableMouseWheel(true)
 
@@ -1349,14 +1427,15 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
             if idx then
                 local entry = ns.SoundList[idx]
                 row.label:SetText(entry.name)
+                row.label:SetTextColor(unpack(entry.color))
                 row:SetScript("OnClick", function()
-                    currentID = entry.id
+                    currentSound = entry.id and { id = entry.id } or { path = entry.path }
                     selText:SetText(entry.name)
                     panel:Hide()
-                    if onSelect then onSelect(entry.id, entry.name) end
+                    if onSelect then onSelect(entry) end
                 end)
                 row.play:SetScript("OnClick", function()
-                    PlaySound(entry.id, "Master")
+                    ns.SoundList.Play(entry)
                 end)
                 row:Show()
             else
@@ -1365,11 +1444,13 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
         end
     end
 
-    local function Filter()
+    Filter = function()
         filtered = {}
         local q = strlower(strtrim(search:GetText()))
         for i, entry in ipairs(ns.SoundList) do
-            if q == "" or strlower(entry.name):find(q, 1, true) then
+            local matchesSearch = q == "" or strlower(entry.name):find(q, 1, true)
+            local matchesSource = currentFilter == "All" or entry.source == currentFilter
+            if matchesSearch and matchesSource then
                 filtered[#filtered + 1] = i
             end
         end
@@ -1389,20 +1470,32 @@ function ns.Widgets:CreateSoundPicker(parent, x, y, currentID, onSelect)
         if panel:IsShown() then
             panel:Hide()
         else
+            currentFilter = "All"
+            filterText:SetText("All")
             search:SetText(""); placeholder:Show(); Filter()
             panel:Show(); search:SetFocus()
         end
     end)
 
-    local function SetSoundID(_, id)
-        currentID = id
-        selText:SetText(ns.SoundList.GetName(id))
+    -- Legacy support: SetSoundID accepts number or {id=...}/{path=...}
+    local function SetSound(_, sound)
+        if type(sound) == "number" then
+            currentSound = { id = sound }
+        else
+            currentSound = sound
+        end
+        local entry = ns.SoundList.GetEntry(currentSound)
+        selText:SetText(entry and entry.name or "Unknown")
     end
 
-    frame.SetSoundID = SetSoundID
-    frame.GetSoundID = function() return currentID end
+    frame.SetSound = SetSound
+    frame.SetSoundID = SetSound  -- Legacy alias
+    frame.GetSound = function() return currentSound end
+    frame.GetSoundID = function() return currentSound.id end  -- Legacy alias
 
-    selText:SetText(ns.SoundList.GetName(currentID or 8959))
+    -- Initialize display text
+    local initEntry = ns.SoundList.GetEntry(currentSound)
+    selText:SetText(initEntry and initEntry.name or "Unknown")
 
     return frame
 end

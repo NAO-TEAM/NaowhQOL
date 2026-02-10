@@ -17,6 +17,11 @@ function ns:InitFocusCastBar()
     local db = NaowhQOL.focusCastBar
     local display = ns.FocusCastBarDisplay
 
+    -- Migrate old soundID format to new sound format
+    if db.soundID and not db.sound then
+        db.sound = { id = db.soundID }
+    end
+
     W:CachedPanel(cache, "fcbFrame", p, function(f)
         local sf, sc = W:CreateScrollFrame(f, 1200)
 
@@ -262,8 +267,8 @@ function ns:InitFocusCastBar()
             end
         })
 
-        W:CreateSoundPicker(audioContent, GA:Col(1), GA:Row(2) + 15, db.soundID, function(soundId)
-            db.soundID = soundId
+        W:CreateSoundPicker(audioContent, GA:Col(1), GA:Row(2) + 15, db.sound, function(entry)
+            db.sound = entry.id and { id = entry.id } or { path = entry.path }
         end)
 
         local ttsCB = W:CreateCheckbox(audioContent, {

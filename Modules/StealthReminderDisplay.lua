@@ -164,22 +164,22 @@ local function StopStanceSound()
     end
 end
 
-local function PlayStanceSound(soundID)
+local function PlayStanceSound(sound)
     local now = GetTime()
     if now - lastStanceSoundTime < STANCE_SOUND_COOLDOWN then return end
     lastStanceSoundTime = now
-    PlaySound(soundID, "Master")
+    ns.SoundList.Play(sound)
 end
 
 local function StartStanceSound(db)
     StopStanceSound()
     local interval = db.stanceSoundInterval or 3
-    local soundID = db.stanceSoundID or 8959
-    PlayStanceSound(soundID)
+    local sound = db.stanceSound or { id = 8959 }
+    PlayStanceSound(sound)
     stanceSoundFired = true
     if interval > 0 then
         stanceSoundTicker = C_Timer.NewTicker(interval, function()
-            PlayStanceSound(soundID)
+            PlayStanceSound(sound)
         end)
     end
 end

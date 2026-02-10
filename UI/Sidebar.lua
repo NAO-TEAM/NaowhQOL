@@ -294,6 +294,14 @@ function ns:ResetSidebarToOptimizations()
     end
 end
 
+function ns:ResetSidebarToHome()
+    -- Hide tab indicator (no sidebar item selected for home page)
+    if ActiveTabIndicator then
+        ActiveTabIndicator:Hide()
+    end
+    selectedButton = nil
+end
+
 -- Reset all groups to collapsed and expand only the one with selected item
 local function ResetSidebarGroups()
     -- Collapse all groups
@@ -329,15 +337,11 @@ loader:SetScript("OnEvent", function()
     RecalculateLayout()
 
     C_Timer.After(0.1, function()
-        -- Expand first group and open Combat Timer
-        local firstGroup = allGroups[1]
-        if firstGroup then
-            groupStates[firstGroup.name] = true
-            firstGroup.header.iconTxt:SetText("-")
-            RecalculateLayout()
-            if firstGroup.children[1] and ns.InitCombatTimer then
-                SwitchTab(firstGroup.children[1], ns.InitCombatTimer)
-            end
+        -- Show home page by default (no sidebar item selected)
+        if ns.MainFrame and ns.MainFrame.Content and ns.InitHomePage then
+            ns.MainFrame:ResetContent()
+            ns:InitHomePage()
         end
+        ActiveTabIndicator:Hide()
     end)
 end)

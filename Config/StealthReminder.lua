@@ -11,6 +11,11 @@ function ns:InitStealthReminder()
     local stealthDisplay = ns.StealthReminderDisplay
     local stanceDisplay = ns.StanceReminderDisplay
 
+    -- Migrate old soundID format to new sound format
+    if db.stanceSoundID and not db.stanceSound then
+        db.stanceSound = { id = db.stanceSoundID }
+    end
+
     W:CachedPanel(cache, "srFrame", p, function(f)
         local sf, sc = W:CreateScrollFrame(f, 800)
 
@@ -298,8 +303,8 @@ function ns:InitStealthReminder()
             onChange = refreshStance
         })
 
-        W:CreateSoundPicker(stColContent, 10, -110, db.stanceSoundID or 8959,
-            function(id) db.stanceSoundID = id end)
+        W:CreateSoundPicker(stColContent, 10, -110, db.stanceSound or { id = 8959 },
+            function(entry) db.stanceSound = entry.id and { id = entry.id } or { path = entry.path } end)
 
         local intervalSlider = W:CreateAdvancedSlider(stColContent, L["STEALTH_REPEAT"], 0, 15, -155, 1, false,
             function(val) db.stanceSoundInterval = val end,

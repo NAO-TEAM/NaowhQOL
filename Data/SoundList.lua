@@ -1,6 +1,20 @@
 local addonName, ns = ...
 
-ns.SoundList = {
+-- Color palette for sources (auto-cycled)
+local SOURCE_COLORS = {
+    { 1.0, 1.0, 1.0, 1 },    -- White (Base Game - always first)
+    { 0.4, 0.8, 1.0, 1 },    -- Light Blue
+    { 0.8, 0.5, 1.0, 1 },    -- Purple
+    { 1.0, 0.8, 0.4, 1 },    -- Gold
+    { 0.5, 1.0, 0.5, 1 },    -- Light Green
+    { 1.0, 0.5, 0.5, 1 },    -- Light Red
+    { 0.5, 1.0, 1.0, 1 },    -- Cyan
+}
+
+local BASE_GAME = "Base Game"
+
+-- Built-in WoW game sounds (always available)
+local builtIn = {
     { name = "Achievement Unlocked",    id = 13833 },
     { name = "Alarm Clock Warning 1",   id = 18871 },
     { name = "Alarm Clock Warning 2",   id = 12867 },
@@ -58,10 +72,215 @@ ns.SoundList = {
     { name = "World Quest Start",       id = 73275 },
 }
 
--- Lookup: id -> name
-local nameByID = {}
-for _, s in ipairs(ns.SoundList) do nameByID[s.id] = s.name end
+ns.SoundList = {}
 
-function ns.SoundList.GetName(id)
-    return nameByID[id] or ("Unknown (" .. tostring(id) .. ")")
+local dirty = true
+local sourceColors = {}     -- source name -> color table
+local sourceList = {}       -- ordered list: {"All", "Base Game", ...}
+local colorIndex = 2        -- start at 2 since Base Game always gets index 1
+
+-- Extract addon name from a SharedMedia path (or handle numeric sound IDs)
+local function GetSourceFromPath(path)
+    -- Some LSM sounds use numeric IDs instead of paths
+    if type(path) == "number" then
+        return "SharedMedia"
+    end
+    -- Paths like: Interface\AddOns\AddonName\Sounds\file.ogg
+    local addon = path:match("Interface\\AddOns\\([^\\]+)")
+    if addon then
+        return addon
+    end
+    -- Fallback for paths without standard addon structure
+    return "SharedMedia"
 end
+
+-- Get or assign a color for a source
+local function GetColorForSource(source)
+    if sourceColors[source] then
+        return sourceColors[source]
+    end
+    -- Assign next color in palette (wrap around if needed)
+    local color = SOURCE_COLORS[colorIndex] or SOURCE_COLORS[#SOURCE_COLORS]
+    sourceColors[source] = color
+    colorIndex = colorIndex + 1
+    if colorIndex > #SOURCE_COLORS then
+        colorIndex = 2  -- wrap back, skip white (reserved for Base Game)
+    end
+    return color
+end
+
+-- Rebuild the merged list: built-in + LSM sounds, sorted
+function ns.SoundList.Rebuild()
+    if not dirty then return end
+    dirty = false
+
+    local merged = {}
+    local seenName = {}
+    local seenID = {}
+    local seenPath = {}
+    local sourcesFound = {}
+
+    -- Reset color assignments (except Base Game)
+    sourceColors = { [BASE_GAME] = SOURCE_COLORS[1] }
+    colorIndex = 2
+
+    -- Add built-in sounds first (highest priority)
+    local baseGameColor = SOURCE_COLORS[1]
+    for _, s in ipairs(builtIn) do
+        merged[#merged + 1] = {
+            name = s.name,
+            id = s.id,
+            path = nil,
+            source = BASE_GAME,
+            color = baseGameColor,
+        }
+        seenName[s.name] = true
+        seenID[s.id] = true
+        sourcesFound[BASE_GAME] = true
+    end
+
+    -- Pull in LSM sounds if available
+    local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
+    if LSM then
+        local soundTable = LSM:HashTable("sound")
+        if soundTable then
+            for name, pathOrID in pairs(soundTable) do
+                -- LSM can return numeric IDs or string paths
+                local isNumeric = type(pathOrID) == "number"
+                local skipKey = isNumeric and pathOrID or pathOrID
+
+                -- Skip duplicates
+                if not seenName[name] and not (isNumeric and seenID[pathOrID]) and not (not isNumeric and seenPath[pathOrID]) then
+                    local source = GetSourceFromPath(pathOrID)
+                    local color = GetColorForSource(source)
+                    merged[#merged + 1] = {
+                        name = name,
+                        id = isNumeric and pathOrID or nil,
+                        path = isNumeric and nil or pathOrID,
+                        source = source,
+                        color = color,
+                    }
+                    seenName[name] = true
+                    if isNumeric then
+                        seenID[pathOrID] = true
+                    else
+                        seenPath[pathOrID] = true
+                    end
+                    sourcesFound[source] = true
+                end
+            end
+        end
+    end
+
+    -- Sort alphabetically by name
+    table.sort(merged, function(a, b) return a.name < b.name end)
+
+    -- Replace the array portion of ns.SoundList
+    for i = 1, #ns.SoundList do ns.SoundList[i] = nil end
+    for i, s in ipairs(merged) do ns.SoundList[i] = s end
+
+    -- Rebuild reverse lookups
+    ns.SoundList._nameByID = {}
+    ns.SoundList._nameByPath = {}
+    ns.SoundList._entryByID = {}
+    ns.SoundList._entryByPath = {}
+    for _, s in ipairs(ns.SoundList) do
+        if s.id then
+            ns.SoundList._nameByID[s.id] = s.name
+            ns.SoundList._entryByID[s.id] = s
+        end
+        if s.path then
+            ns.SoundList._nameByPath[s.path] = s.name
+            ns.SoundList._entryByPath[s.path] = s
+        end
+    end
+
+    -- Build ordered source list for filter dropdown
+    sourceList = { "All" }
+    -- Add Base Game first if present
+    if sourcesFound[BASE_GAME] then
+        sourceList[#sourceList + 1] = BASE_GAME
+    end
+    -- Add other sources alphabetically
+    local otherSources = {}
+    for src in pairs(sourcesFound) do
+        if src ~= BASE_GAME then
+            otherSources[#otherSources + 1] = src
+        end
+    end
+    table.sort(otherSources)
+    for _, src in ipairs(otherSources) do
+        sourceList[#sourceList + 1] = src
+    end
+end
+
+-- Mark dirty so next Rebuild() actually runs
+function ns.SoundList.MarkDirty()
+    dirty = true
+end
+
+-- Get name by ID (legacy) or by path
+function ns.SoundList.GetName(idOrPath)
+    if not ns.SoundList._nameByID then ns.SoundList.Rebuild() end
+    if type(idOrPath) == "number" then
+        return ns.SoundList._nameByID[idOrPath] or ("Unknown (" .. tostring(idOrPath) .. ")")
+    else
+        return ns.SoundList._nameByPath[idOrPath] or ("Unknown")
+    end
+end
+
+-- Get entry by sound data table {id=...} or {path=...}
+function ns.SoundList.GetEntry(soundData)
+    if not soundData then return nil end
+    if not ns.SoundList._entryByID then ns.SoundList.Rebuild() end
+    if soundData.id then
+        return ns.SoundList._entryByID[soundData.id]
+    elseif soundData.path then
+        return ns.SoundList._entryByPath[soundData.path]
+    end
+    return nil
+end
+
+-- Get ordered list of sources for filter dropdown
+function ns.SoundList.GetSources()
+    if #sourceList == 0 then ns.SoundList.Rebuild() end
+    return sourceList
+end
+
+-- Default fallback sound (Raid Warning)
+local FALLBACK_SOUND_ID = 8959
+
+-- Unified playback - handles both ID and path based sounds
+-- Returns true if sound played successfully, false if fallback was used
+function ns.SoundList.Play(soundData)
+    if not soundData then return false end
+
+    if soundData.id then
+        PlaySound(soundData.id, "Master")
+        return true
+    elseif soundData.path then
+        -- PlaySoundFile returns willPlay, handle (or just willPlay in some versions)
+        local willPlay = PlaySoundFile(soundData.path, "Master")
+        if not willPlay then
+            -- File missing or invalid - play fallback sound
+            PlaySound(FALLBACK_SOUND_ID, "Master")
+            return false
+        end
+        return true
+    end
+    return false
+end
+
+-- Hook LSM callback to mark dirty when new sounds are registered
+local function HookLSM()
+    local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
+    if LSM then
+        LSM.RegisterCallback(ns.SoundList, "LibSharedMedia_Registered", function(_, mediatype)
+            if mediatype == "sound" then dirty = true end
+        end)
+    end
+end
+
+-- Initial build
+ns.SoundList.Rebuild()
+HookLSM()
