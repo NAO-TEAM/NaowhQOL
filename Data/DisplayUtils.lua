@@ -178,7 +178,7 @@ function ns.DisplayUtils.SetSlot(slot, label, data, fallbackIcon)
     if not data then
         slot.tex:SetTexture(fallbackIcon or "Interface\\Icons\\INV_Misc_QuestionMark")
         slot.tex:SetDesaturated(fallbackIcon ~= nil)
-        slot.timer:SetText("NONE")
+        slot.timer:SetText(L["COMMON_MISSING"])
         slot.timer:SetTextColor(1, 0.3, 0.3)
     elseif data.expiry == 0 then
         slot.tex:SetTexture(data.icon)

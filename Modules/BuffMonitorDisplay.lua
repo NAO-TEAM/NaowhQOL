@@ -16,7 +16,7 @@ local RAID_BUFFS = {
     { spellId = 21562,  class = "PRIEST",  name = "Power Word: Fortitude" },
     { spellId = 6673,   class = "WARRIOR", name = "Battle Shout" },
     { spellId = 462854, class = "SHAMAN",  name = "Skyfury" },
-    { spellId = 381748, class = "EVOKER",  name = "Blessing of the Bronze" },
+    { spellIds = {381748, 381751, 381732, 381754, 381752, 381746, 381757, 381750, 381753, 381749, 381758, 432658, 381756, 381741, 442744, 432652, 432655}, class = "EVOKER", name = "Blessing of the Bronze" },
 }
 
 local playerClass, inCombat = nil, false
@@ -245,11 +245,27 @@ local function CheckRaidBuffs(auras)
 
         for _, buff in ipairs(RAID_BUFFS) do
             if groupClasses[buff.class] then
-                local a = auras[buff.spellId]
+                local a = nil
+                local checkId = buff.spellId  -- For icon lookup
+
+                -- Support multiple spell IDs (e.g., per-spec variants)
+                if buff.spellIds and #buff.spellIds > 0 then
+                    for _, id in ipairs(buff.spellIds) do
+                        if auras[id] then
+                            a = auras[id]
+                            checkId = id
+                            break
+                        end
+                    end
+                    if not checkId then checkId = buff.spellIds[1] end
+                else
+                    a = auras[buff.spellId]
+                end
+
                 local missing = not a
                 local expired = a and a.expiry ~= 0 and (a.expiry - now) <= 0
                 if missing or expired then
-                    local icon = GetCachedTexture(buff.spellId)
+                    local icon = GetCachedTexture(checkId)
                     slots[#slots + 1] = { label = buff.name, data = a, fallbackIcon = icon }
                 end
             end
