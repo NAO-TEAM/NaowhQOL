@@ -24,6 +24,8 @@ local function BuildBlocker(releaseBtn)
     timerLabel = blocker:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     timerLabel:SetPoint("CENTER", 0, 0)
     timerLabel:SetTextColor(1, 0.65, 0)
+    local fontFile, fontSize, fontFlags = timerLabel:GetFont()
+    timerLabel:SetFont(fontFile, fontSize * 0.7, fontFlags)
 
     blocker:SetScript("OnClick", function() end)
 

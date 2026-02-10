@@ -7,8 +7,22 @@ local L = ns.L
 local FIRST_SLOT = 1
 local LAST_SLOT  = 19
 
--- Warning text color (pink)
-local WARN_R, WARN_G, WARN_B = 1.0, 0.41, 0.71
+-- Warning colors: pink at threshold, red at floor
+local PINK_R, PINK_G, PINK_B = 1.0, 0.41, 0.71
+local RED_R, RED_G, RED_B = 1.0, 0.0, 0.0
+local FLOOR_PCT = 15
+
+local function GetWarningColor(pct, threshold)
+    if pct <= FLOOR_PCT then
+        return RED_R, RED_G, RED_B
+    elseif pct >= threshold then
+        return PINK_R, PINK_G, PINK_B
+    end
+    local t = (pct - FLOOR_PCT) / (threshold - FLOOR_PCT)
+    return RED_R + t * (PINK_R - RED_R),
+           RED_G + t * (PINK_G - RED_G),
+           RED_B + t * (PINK_B - RED_B)
+end
 
 ---------------------------------------------------------------------------
 -- On-screen warning frame
@@ -21,12 +35,14 @@ warnFrame:Hide()
 local warnText = warnFrame:CreateFontString(nil, "OVERLAY")
 warnText:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", 22, "OUTLINE")
 warnText:SetPoint("CENTER")
-warnText:SetTextColor(WARN_R, WARN_G, WARN_B)
+warnText:SetTextColor(PINK_R, PINK_G, PINK_B)
 
 ---------------------------------------------------------------------------
 -- Show / hide helpers
 ---------------------------------------------------------------------------
-local function ShowWarning(pct)
+local function ShowWarning(pct, threshold)
+    local r, g, b = GetWarningColor(pct, threshold)
+    warnText:SetTextColor(r, g, b)
     warnText:SetText(string.format(L["DURABILITY_WARNING"], pct))
     warnFrame:SetAlpha(1)
     warnFrame:Show()
@@ -77,10 +93,11 @@ local function StartPolling()
             return
         end
         local lowest = GetLowestDurability()
-        if not lowest or lowest >= (db.durabilityThreshold or 50) then
+        local threshold = db.durabilityThreshold or 50
+        if not lowest or lowest >= threshold then
             HideWarning()
         else
-            ShowWarning(math.floor(lowest))
+            ShowWarning(math.floor(lowest), threshold)
         end
     end)
 end
@@ -126,9 +143,10 @@ events:SetScript("OnEvent", function(self, event)
         -- Initial durability check on login + start polling
         local db = NaowhQOL.misc
         if db and db.durabilityWarning then
+            local threshold = db.durabilityThreshold or 50
             local lowest = GetLowestDurability()
-            if lowest and lowest < (db.durabilityThreshold or 50) then
-                ShowWarning(math.floor(lowest))
+            if lowest and lowest < threshold then
+                ShowWarning(math.floor(lowest), threshold)
             end
         end
         StartPolling()
@@ -144,9 +162,10 @@ events:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_REGEN_ENABLED" then
         local db = NaowhQOL.misc
         if db and db.durabilityWarning then
+            local threshold = db.durabilityThreshold or 50
             local lowest = GetLowestDurability()
-            if lowest and lowest < (db.durabilityThreshold or 50) then
-                ShowWarning(math.floor(lowest))
+            if lowest and lowest < threshold then
+                ShowWarning(math.floor(lowest), threshold)
             end
         end
         StartPolling()

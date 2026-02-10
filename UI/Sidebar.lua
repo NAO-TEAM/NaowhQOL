@@ -268,17 +268,17 @@ CreateGroup("tracking", L["SIDEBAR_GROUP_TRACKING"], {
     { label = L["SIDEBAR_TAB_RANGE_CHECK"], onClick = function() if ns.InitRangeCheck then ns:InitRangeCheck() end end },
 })
 
--- REMINDERS group
+-- REMINDERS/MISC group
 CreateGroup("reminders", L["SIDEBAR_GROUP_REMINDERS"], {
     { label = L["SIDEBAR_TAB_TALENT_REMINDER"], onClick = function() if ns.InitTalentReminder then ns:InitTalentReminder() end end },
     { label = L["SIDEBAR_TAB_EMOTE_DETECTION"], onClick = function() if ns.InitEmoteDetection then ns:InitEmoteDetection() end end },
     { label = L["SIDEBAR_TAB_EQUIPMENT_REMINDER"], onClick = function() if ns.InitEquipmentReminder then ns:InitEquipmentReminder() end end },
+    { label = L["SIDEBAR_TAB_MISC"], onClick = function() if ns.InitModuleOptions then ns:InitModuleOptions() end end },
 })
 
 -- SYSTEM group
 CreateGroup("system", L["SIDEBAR_GROUP_SYSTEM"], {
     { label = L["SIDEBAR_TAB_OPTIMIZATIONS"], onClick = function() if ns.InitOptOptions then ns:InitOptOptions() end end },
-    { label = L["SIDEBAR_TAB_MISC"], onClick = function() if ns.InitModuleOptions then ns:InitModuleOptions() end end },
     { label = L["SIDEBAR_TAB_PROFILES"], onClick = function() if ns.InitImportExport then ns:InitImportExport() end end },
     { label = L["SIDEBAR_TAB_SLASH_COMMANDS"], onClick = function() if ns.InitSlashCommands then ns:InitSlashCommands() end end },
 })
