@@ -753,9 +753,9 @@ function ns.Widgets:CreateColorPicker(parent, opts)
         1
     )
 
-    -- Class color reference box
+    -- Class color reference box (clickable to apply)
     local classColor = ns.Widgets.GetPlayerClassColor()
-    local classBox = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    local classBox = CreateFrame("Button", nil, parent, "BackdropTemplate")
     classBox:SetSize(26, 26)
     classBox:SetPoint("LEFT", preview, "RIGHT", 6, 0)
     classBox:SetBackdrop({
@@ -767,10 +767,15 @@ function ns.Widgets:CreateColorPicker(parent, opts)
     classBox:SetBackdropColor(classColor.r, classColor.g, classColor.b, 1)
     classBox:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText("Class Color", 1, 1, 1)
+        GameTooltip:SetText("Class Color (Click to apply)", 1, 1, 1)
         GameTooltip:Show()
     end)
     classBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    classBox:SetScript("OnClick", function()
+        opts.db[opts.rKey], opts.db[opts.gKey], opts.db[opts.bKey] = classColor.r, classColor.g, classColor.b
+        preview:SetBackdropColor(classColor.r, classColor.g, classColor.b, 1)
+        if opts.onChange then opts.onChange(classColor.r, classColor.g, classColor.b) end
+    end)
 
     btn:SetScript("OnClick", function()
         local _, classFile = UnitClass("player")
