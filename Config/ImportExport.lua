@@ -9,11 +9,12 @@ local DARK_BG_R, DARK_BG_G, DARK_BG_B = 0.08, 0.08, 0.08
 local BTN_BLUE_R, BTN_BLUE_G, BTN_BLUE_B = 0.004, 0.557, 0.906
 local BTN_ORANGE_R, BTN_ORANGE_G, BTN_ORANGE_B = 1.0, 0.663, 0.0
 
--- Dynamic dropdown for profile selection
+-- Dynamic dropdown for profile selection (with frame pooling)
 local function CreateDynamicDropdown(parent, opts)
     opts = opts or {}
     local width = opts.width or 160
     local height = 22
+    local itemHeight = 20
 
     local f = CreateFrame("Frame", nil, parent)
     f:SetSize(width, height)
@@ -64,8 +65,19 @@ local function CreateDynamicDropdown(parent, opts)
     f.menu = menu
 
     f.menuOpen = false
-    f.menuItems = {}
+    f.itemPool = {}
+    f.activeItems = {}
     f.selectedValue = nil
+
+    -- Pre-create empty state frame (reused)
+    local emptyItem = CreateFrame("Frame", nil, menu)
+    emptyItem:SetSize(width - 2, itemHeight)
+    emptyItem:SetPoint("TOPLEFT", 1, -1)
+    local emptyText = emptyItem:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    emptyText:SetPoint("LEFT", 8, 0)
+    emptyText:SetText(opts.emptyText or "(None)")
+    emptyItem:Hide()
+    f.emptyItem = emptyItem
 
     function f:SetText(str)
         text:SetText(str)
@@ -79,57 +91,72 @@ local function CreateDynamicDropdown(parent, opts)
         f.selectedValue = val
     end
 
+    -- Get or create pooled menu item
+    local function GetPooledItem()
+        for _, item in ipairs(f.itemPool) do
+            if not item.inUse then
+                item.inUse = true
+                item:Show()
+                return item
+            end
+        end
+
+        -- Create new item
+        local item = CreateFrame("Button", nil, menu, "BackdropTemplate")
+        item:SetSize(width - 2, itemHeight)
+        item:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
+        item:SetBackdropColor(0, 0, 0, 0)
+
+        item.label = item:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        item.label:SetPoint("LEFT", 8, 0)
+        item.label:SetPoint("RIGHT", -8, 0)
+        item.label:SetJustifyH("LEFT")
+        item.label:SetTextColor(1, 1, 1, 1)
+
+        item:SetScript("OnEnter", function(self)
+            self:SetBackdropColor(BTN_ORANGE_R, BTN_ORANGE_G, BTN_ORANGE_B, 0.3)
+        end)
+        item:SetScript("OnLeave", function(self)
+            self:SetBackdropColor(0, 0, 0, 0)
+        end)
+
+        f.itemPool[#f.itemPool + 1] = item
+        item.inUse = true
+        return item
+    end
+
     function f:Refresh(options)
-        -- Clear old items
-        for _, item in ipairs(f.menuItems) do
+        -- Return all items to pool
+        for _, item in ipairs(f.activeItems) do
+            item.inUse = false
             item:Hide()
-            item:SetParent(nil)
         end
-        f.menuItems = {}
-
-        local itemHeight = 20
-        for i, opt in ipairs(options) do
-            local item = CreateFrame("Button", nil, menu, "BackdropTemplate")
-            item:SetSize(width - 2, itemHeight)
-            item:SetPoint("TOPLEFT", 1, -1 - (i - 1) * itemHeight)
-            item:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
-            item:SetBackdropColor(0, 0, 0, 0)
-
-            local itemText = item:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-            itemText:SetPoint("LEFT", 8, 0)
-            itemText:SetPoint("RIGHT", -8, 0)
-            itemText:SetJustifyH("LEFT")
-            itemText:SetText(opt.text)
-            itemText:SetTextColor(1, 1, 1, 1)
-
-            item:SetScript("OnEnter", function(self)
-                self:SetBackdropColor(BTN_ORANGE_R, BTN_ORANGE_G, BTN_ORANGE_B, 0.3)
-            end)
-            item:SetScript("OnLeave", function(self)
-                self:SetBackdropColor(0, 0, 0, 0)
-            end)
-            item:SetScript("OnClick", function()
-                f.selectedValue = opt.value
-                text:SetText(opt.text)
-                menu:Hide()
-                f.menuOpen = false
-                btn:SetBackdropBorderColor(BTN_BLUE_R, BTN_BLUE_G, BTN_BLUE_B, 0.7)
-                if opts.onSelect then opts.onSelect(opt.value, opt.text) end
-            end)
-
-            f.menuItems[i] = item
-        end
+        f.activeItems = {}
 
         if #options == 0 then
+            f.emptyItem:Show()
             menu:SetHeight(itemHeight + 2)
-            local empty = CreateFrame("Frame", nil, menu)
-            empty:SetSize(width - 2, itemHeight)
-            empty:SetPoint("TOPLEFT", 1, -1)
-            local emptyText = empty:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-            emptyText:SetPoint("LEFT", 8, 0)
-            emptyText:SetText(opts.emptyText or "(None)")
-            f.menuItems[1] = empty
         else
+            f.emptyItem:Hide()
+
+            for i, opt in ipairs(options) do
+                local item = GetPooledItem()
+                item:ClearAllPoints()
+                item:SetPoint("TOPLEFT", 1, -1 - (i - 1) * itemHeight)
+                item.label:SetText(opt.text)
+                item.optValue = opt.value
+                item.optText = opt.text
+
+                item:SetScript("OnClick", function(self)
+                    f.selectedValue = self.optValue
+                    text:SetText(self.optText)
+                    menu:Hide()
+                    if opts.onSelect then opts.onSelect(self.optValue, self.optText) end
+                end)
+
+                f.activeItems[i] = item
+            end
+
             menu:SetHeight(#options * itemHeight + 2)
         end
     end
@@ -138,8 +165,6 @@ local function CreateDynamicDropdown(parent, opts)
     btn:SetScript("OnClick", function()
         if f.menuOpen then
             menu:Hide()
-            f.menuOpen = false
-            btn:SetBackdropBorderColor(BTN_BLUE_R, BTN_BLUE_G, BTN_BLUE_B, 0.7)
         else
             menu:Show()
             f.menuOpen = true
@@ -158,22 +183,28 @@ local function CreateDynamicDropdown(parent, opts)
         end
     end)
 
-    -- Close on world click
-    f:SetScript("OnUpdate", function()
-        if f.menuOpen and not menu:IsMouseOver() and not btn:IsMouseOver() then
-            if IsMouseButtonDown("LeftButton") or IsMouseButtonDown("RightButton") then
-                menu:Hide()
-                f.menuOpen = false
-                btn:SetBackdropBorderColor(BTN_BLUE_R, BTN_BLUE_G, BTN_BLUE_B, 0.7)
+    -- OnUpdate only runs when menu is open
+    menu:SetScript("OnShow", function()
+        f:SetScript("OnUpdate", function()
+            if not menu:IsMouseOver() and not btn:IsMouseOver() then
+                if IsMouseButtonDown("LeftButton") or IsMouseButtonDown("RightButton") then
+                    menu:Hide()
+                end
             end
-        end
+        end)
+    end)
+
+    menu:SetScript("OnHide", function()
+        f:SetScript("OnUpdate", nil)
+        f.menuOpen = false
+        btn:SetBackdropBorderColor(BTN_BLUE_R, BTN_BLUE_G, BTN_BLUE_B, 0.7)
     end)
 
     return f
 end
 
 -- Static popup for profile name input
-StaticPopupDialogs["NAOWHQOL_PROFILE_NAME"] = {
+StaticPopupDialogs["NAOWH_QOL_PROFILE_NAME"] = {
     text = "%s",
     button1 = "OK",
     button2 = "Cancel",
@@ -206,7 +237,7 @@ StaticPopupDialogs["NAOWHQOL_PROFILE_NAME"] = {
     preferredIndex = 3,
 }
 
-StaticPopupDialogs["NAOWHQOL_PROFILE_CONFIRM"] = {
+StaticPopupDialogs["NAOWH_QOL_PROFILE_CONFIRM"] = {
     text = "%s",
     button1 = "Yes",
     button2 = "No",
@@ -277,7 +308,7 @@ function ns:InitImportExport()
         local saveBtn = W:CreateButton(sc, { text = "Save", width = 60, height = 24 })
         saveBtn:SetPoint("LEFT", profileDropdown, "RIGHT", 8, 0)
         saveBtn:SetScript("OnClick", function()
-            local dialog = StaticPopup_Show("NAOWHQOL_PROFILE_NAME", "Save current settings as profile:")
+            local dialog = StaticPopup_Show("NAOWH_QOL_PROFILE_NAME", "Save current settings as profile:")
             if dialog then
                 dialog.data = {
                     default = ns.SettingsIO:GetActiveProfile(),
@@ -300,7 +331,7 @@ function ns:InitImportExport()
                 profileStatus:SetText("|cffff4444Save profile first|r")
                 return
             end
-            local dialog = StaticPopup_Show("NAOWHQOL_PROFILE_NAME", "Rename profile '" .. current .. "' to:")
+            local dialog = StaticPopup_Show("NAOWH_QOL_PROFILE_NAME", "Rename profile '" .. current .. "' to:")
             if dialog then
                 dialog.data = {
                     default = current,
@@ -326,7 +357,7 @@ function ns:InitImportExport()
                 profileStatus:SetText("|cffff4444No profile to delete|r")
                 return
             end
-            local dialog = StaticPopup_Show("NAOWHQOL_PROFILE_CONFIRM", "Delete profile '" .. current .. "'?")
+            local dialog = StaticPopup_Show("NAOWH_QOL_PROFILE_CONFIRM", "Delete profile '" .. current .. "'?")
             if dialog then
                 dialog.data = {
                     callback = function()
@@ -341,6 +372,10 @@ function ns:InitImportExport()
 
         -- Copy from other character section
         W:CreateSectionHeader(sc, "Copy From Character", -180)
+
+        local copyStatus = sc:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        copyStatus:SetPoint("TOPLEFT", 35, -245)
+        copyStatus:SetText("")
 
         local selectedChar = nil
 
@@ -367,7 +402,7 @@ function ns:InitImportExport()
                 charProfileDropdown:SetSelectedValue(nil)
             end
         })
-        charDropdown:SetPoint("TOPLEFT", 35, -215)
+        charDropdown:SetPoint("TOPLEFT", 35, -218)
         charProfileDropdown:SetPoint("LEFT", charDropdown, "RIGHT", 8, 0)
 
         local function RefreshCharProfileDropdown()
@@ -400,15 +435,17 @@ function ns:InitImportExport()
             local charKey = charDropdown:GetSelectedValue()
             local profileName = charProfileDropdown:GetSelectedValue()
             if not charKey or not profileName then
-                profileStatus:SetText("|cffff4444Select character and profile|r")
+                copyStatus:SetText("|cffff4444Select character and profile|r")
                 return
             end
             local ok, err = ns.SettingsIO:CopyFromCharacter(charKey, profileName)
             if ok then
-                profileStatus:SetText("|cff44ff44Copied from " .. charKey .. "|r")
+                copyStatus:SetText("|cff44ff44Copied from " .. charKey .. "|r")
+                RefreshProfileDropdown()
+                UpdateProfileStatus()
                 StaticPopup_Show("NAOWH_QOL_RELOAD_IMPORT")
             else
-                profileStatus:SetText("|cffff4444" .. (err or "Copy failed") .. "|r")
+                copyStatus:SetText("|cffff4444" .. (err or "Copy failed") .. "|r")
             end
         end)
 

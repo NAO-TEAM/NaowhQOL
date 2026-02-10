@@ -521,10 +521,21 @@ function ns.SettingsIO:InitProfiles()
     NaowhQOL_Profiles = NaowhQOL_Profiles or {}
 end
 
+local cachedCharKey = nil
+
 function ns.SettingsIO:GetCharacterKey()
-    local name = UnitName("player") or "Unknown"
-    local realm = GetRealmName() or "Unknown"
-    return realm .. "-" .. name
+    if cachedCharKey then return cachedCharKey end
+
+    local name = UnitName("player")
+    local realm = GetRealmName()
+
+    -- Return nil if not ready yet
+    if not name or name == "Unknown" or not realm then
+        return nil
+    end
+
+    cachedCharKey = realm .. "-" .. name
+    return cachedCharKey
 end
 
 function ns.SettingsIO:GetProfileList()
@@ -539,7 +550,21 @@ end
 
 function ns.SettingsIO:GetActiveProfile()
     self:InitProfiles()
-    return NaowhQOL.activeProfile
+    local active = NaowhQOL.activeProfile
+
+    -- Validate that active profile exists
+    if active and NaowhQOL.profiles[active] then
+        return active
+    end
+
+    -- Fall back to first available profile
+    local list = self:GetProfileList()
+    if #list > 0 then
+        NaowhQOL.activeProfile = list[1]
+        return list[1]
+    end
+
+    return "Unsaved"
 end
 
 function ns.SettingsIO:SaveProfile(name)
@@ -548,10 +573,12 @@ function ns.SettingsIO:SaveProfile(name)
     NaowhQOL.profiles[name] = exportStr
     NaowhQOL.activeProfile = name
 
-    -- Also sync to account-wide registry for cross-character copy
+    -- Sync to account-wide registry for cross-character copy
     local charKey = self:GetCharacterKey()
-    NaowhQOL_Profiles[charKey] = NaowhQOL_Profiles[charKey] or {}
-    NaowhQOL_Profiles[charKey][name] = exportStr
+    if charKey then
+        NaowhQOL_Profiles[charKey] = NaowhQOL_Profiles[charKey] or {}
+        NaowhQOL_Profiles[charKey][name] = exportStr
+    end
 
     return true
 end
@@ -580,16 +607,16 @@ function ns.SettingsIO:DeleteProfile(name)
 
     NaowhQOL.profiles[name] = nil
 
-    -- Also remove from account registry
+    -- Remove from account registry
     local charKey = self:GetCharacterKey()
-    if NaowhQOL_Profiles[charKey] then
+    if charKey and NaowhQOL_Profiles[charKey] then
         NaowhQOL_Profiles[charKey][name] = nil
     end
 
     -- Switch to another profile if we deleted the active one
     if NaowhQOL.activeProfile == name then
         local remaining = self:GetProfileList()
-        NaowhQOL.activeProfile = remaining[1] or "Default"
+        NaowhQOL.activeProfile = remaining[1] or "Unsaved"
     end
 
     return true
@@ -597,15 +624,15 @@ end
 
 function ns.SettingsIO:RenameProfile(oldName, newName)
     self:InitProfiles()
-    if not NaowhQOL.profiles[oldName] then return false end
-    if NaowhQOL.profiles[newName] then return false end
+    if not NaowhQOL.profiles[oldName] then return false, "not_found" end
+    if NaowhQOL.profiles[newName] then return false, "exists" end
 
     NaowhQOL.profiles[newName] = NaowhQOL.profiles[oldName]
     NaowhQOL.profiles[oldName] = nil
 
     -- Update account registry
     local charKey = self:GetCharacterKey()
-    if NaowhQOL_Profiles[charKey] and NaowhQOL_Profiles[charKey][oldName] then
+    if charKey and NaowhQOL_Profiles[charKey] and NaowhQOL_Profiles[charKey][oldName] then
         NaowhQOL_Profiles[charKey][newName] = NaowhQOL_Profiles[charKey][oldName]
         NaowhQOL_Profiles[charKey][oldName] = nil
     end
@@ -622,7 +649,7 @@ function ns.SettingsIO:GetOtherCharacters()
     local charKey = self:GetCharacterKey()
     local chars = {}
     for key in pairs(NaowhQOL_Profiles) do
-        if key ~= charKey then
+        if not charKey or key ~= charKey then
             chars[#chars + 1] = key
         end
     end
@@ -643,7 +670,7 @@ function ns.SettingsIO:GetCharacterProfiles(charKey)
     return list
 end
 
-function ns.SettingsIO:CopyFromCharacter(charKey, profileName)
+function ns.SettingsIO:CopyFromCharacter(charKey, profileName, saveAsName)
     self:InitProfiles()
     local charProfiles = NaowhQOL_Profiles[charKey]
     if not charProfiles then return false, "Character not found" end
@@ -657,7 +684,21 @@ function ns.SettingsIO:CopyFromCharacter(charKey, profileName)
         allKeys[m.key] = true
     end
 
-    return self:Import(exportStr, allKeys)
+    local ok, err = self:Import(exportStr, allKeys)
+    if ok then
+        -- Save as new profile
+        local newName = saveAsName or profileName
+        NaowhQOL.profiles[newName] = exportStr
+        NaowhQOL.activeProfile = newName
+
+        -- Sync to account registry
+        local myCharKey = self:GetCharacterKey()
+        if myCharKey then
+            NaowhQOL_Profiles[myCharKey] = NaowhQOL_Profiles[myCharKey] or {}
+            NaowhQOL_Profiles[myCharKey][newName] = exportStr
+        end
+    end
+    return ok, err
 end
 
 ns.SettingsIO:RegisterSimple("combatTimer",   "Combat Timer")
