@@ -118,9 +118,16 @@ local function MakeSlot(parent)
     click:RegisterForClicks("AnyUp", "AnyDown")
     f.click = click
 
-    -- Visual layers on the outer frame
+    -- Black border (2px)
+    f.border = f:CreateTexture(nil, "BACKGROUND")
+    f.border:SetAllPoints()
+    f.border:SetColorTexture(0, 0, 0, 1)
+
+    -- Icon texture (inset by 2px for border)
     f.tex = f:CreateTexture(nil, "ARTWORK")
-    f.tex:SetAllPoints(); f.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    f.tex:SetPoint("TOPLEFT", 2, -2)
+    f.tex:SetPoint("BOTTOMRIGHT", -2, 2)
+    f.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
     f.timer = f:CreateFontString(nil, "OVERLAY")
     f.timer:SetPoint("BOTTOM", 0, -14)
