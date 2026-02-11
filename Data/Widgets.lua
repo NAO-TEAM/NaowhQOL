@@ -755,6 +755,14 @@ function ns.Widgets:CreateColorPicker(parent, opts)
     })
     btn:SetPoint("TOPLEFT", opts.x or 40, opts.y)
 
+    -- Auto-generate classColorKey if not provided (unless explicitly disabled)
+    local classColorKey = opts.classColorKey
+    if not classColorKey and not opts.noClassColor and opts.rKey then
+        -- Derive from rKey: strip trailing "R" and append "UseClassColor"
+        local base = opts.rKey:match("^(.-)R$") or opts.rKey
+        classColorKey = base .. "UseClassColor"
+    end
+
     local preview = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     preview:SetSize(26, 26)
     preview:SetPoint("LEFT", btn, "RIGHT", 10, 0)
@@ -767,75 +775,33 @@ function ns.Widgets:CreateColorPicker(parent, opts)
 
     -- Helper to update preview based on class toggle state
     local function UpdatePreview()
-        local r, g, b = ns.Widgets.GetEffectiveColor(opts.db, opts.rKey, opts.gKey, opts.bKey, opts.classColorKey)
+        local r, g, b = ns.Widgets.GetEffectiveColor(opts.db, opts.rKey, opts.gKey, opts.bKey, classColorKey)
         preview:SetBackdropColor(r, g, b, 1)
     end
 
     UpdatePreview()
 
-    local thirdElement  -- Either classBox or classToggle depending on mode
+    local thirdElement
 
-    if opts.classColorKey then
-        -- Class color toggle mode: checkbox that enables dynamic class coloring
-        local toggleFrame = CreateFrame("Frame", nil, parent)
-        toggleFrame:SetSize(70, 26)
-        toggleFrame:SetPoint("LEFT", preview, "RIGHT", 6, 0)
-
-        local cb = CreateFrame("CheckButton", nil, toggleFrame, "UICheckButtonTemplate")
-        cb:SetSize(22, 22)
-        cb:SetPoint("LEFT", 0, 0)
-        cb:SetChecked(opts.db[opts.classColorKey] or false)
-
-        local label = toggleFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        label:SetPoint("LEFT", cb, "RIGHT", 2, 0)
-        label:SetText("Class")
-        label:SetTextColor(0.8, 0.8, 0.8)
-
-        cb:SetScript("OnClick", function(self)
-            opts.db[opts.classColorKey] = self:GetChecked() and true or false
-            UpdatePreview()
-            if opts.onChange then
-                local r, g, b = ns.Widgets.GetEffectiveColor(opts.db, opts.rKey, opts.gKey, opts.bKey, opts.classColorKey)
-                opts.onChange(r, g, b)
+    if classColorKey then
+        -- Class color toggle using consistent styled checkbox
+        local cb = self:CreateCheckbox(parent, {
+            label = "Class",
+            db = opts.db,
+            key = classColorKey,
+            size = 18,
+            tooltip = "Use your class color instead of the picker color",
+            onChange = function()
+                UpdatePreview()
+                if opts.onChange then
+                    local r, g, b = ns.Widgets.GetEffectiveColor(opts.db, opts.rKey, opts.gKey, opts.bKey, classColorKey)
+                    opts.onChange(r, g, b)
+                end
             end
-        end)
-
-        cb:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText("Use Class Color", 1, 1, 1)
-            GameTooltip:AddLine("When enabled, uses your class color instead of the picker color.", 0.8, 0.8, 0.8, true)
-            GameTooltip:Show()
-        end)
-        cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-        thirdElement = toggleFrame
-        toggleFrame.checkbox = cb
-    else
-        -- Classic mode: clickable class color box
-        local classColor = ns.Widgets.GetPlayerClassColor()
-        local classBox = CreateFrame("Button", nil, parent, "BackdropTemplate")
-        classBox:SetSize(26, 26)
-        classBox:SetPoint("LEFT", preview, "RIGHT", 6, 0)
-        classBox:SetBackdrop({
-            bgFile = "Interface\\Buttons\\WHITE8x8",
-            edgeFile = "Interface\\Buttons\\WHITE8x8",
-            edgeSize = 1,
         })
-        classBox:SetBackdropBorderColor(0, 0, 0, 1)
-        classBox:SetBackdropColor(classColor.r, classColor.g, classColor.b, 1)
-        classBox:SetScript("OnEnter", function(self)
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-            GameTooltip:SetText("Class Color (Click to apply)", 1, 1, 1)
-            GameTooltip:Show()
-        end)
-        classBox:SetScript("OnLeave", function() GameTooltip:Hide() end)
-        classBox:SetScript("OnClick", function()
-            opts.db[opts.rKey], opts.db[opts.gKey], opts.db[opts.bKey] = classColor.r, classColor.g, classColor.b
-            preview:SetBackdropColor(classColor.r, classColor.g, classColor.b, 1)
-            if opts.onChange then opts.onChange(classColor.r, classColor.g, classColor.b) end
-        end)
-
-        thirdElement = classBox
+        cb:ClearAllPoints()
+        cb:SetPoint("LEFT", preview, "RIGHT", 6, 0)
+        thirdElement = cb
     end
 
     btn:SetScript("OnClick", function()
@@ -849,14 +815,14 @@ function ns.Widgets:CreateColorPicker(parent, opts)
                 local cr, cg, cb = ColorPickerFrame:GetColorRGB()
                 opts.db[opts.rKey], opts.db[opts.gKey], opts.db[opts.bKey] = cr, cg, cb
                 -- Only update preview directly if class toggle is off
-                if not opts.classColorKey or not opts.db[opts.classColorKey] then
+                if not classColorKey or not opts.db[classColorKey] then
                     preview:SetBackdropColor(cr, cg, cb, 1)
                 end
                 if opts.onChange then opts.onChange(cr, cg, cb) end
             end,
             cancelFunc = function(prev)
                 opts.db[opts.rKey], opts.db[opts.gKey], opts.db[opts.bKey] = prev.r, prev.g, prev.b
-                if not opts.classColorKey or not opts.db[opts.classColorKey] then
+                if not classColorKey or not opts.db[classColorKey] then
                     preview:SetBackdropColor(prev.r, prev.g, prev.b, 1)
                 end
                 if opts.onChange then opts.onChange(prev.r, prev.g, prev.b) end
