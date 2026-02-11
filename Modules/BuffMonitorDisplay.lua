@@ -275,11 +275,17 @@ local function CheckRaidBuffs(auras)
                 SetSlot(raidSlots[i], s.label, s.data, s.fallbackIcon)
                 -- Apply raid buff font settings
                 local labelSize = db.raidLabelFontSize or 9
+                local timerSize = db.raidTimerFontSize or 11
                 local labelOffset = 10 + labelSize  -- Scale offset with font size
+                local timerOffset = -(10 + timerSize)  -- Scale offset with font size
                 raidSlots[i].lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
                 raidSlots[i].lbl:ClearAllPoints()
                 raidSlots[i].lbl:SetPoint("TOP", 0, labelOffset)
                 raidSlots[i].lbl:SetTextColor(db.raidLabelColorR or 0.7, db.raidLabelColorG or 0.7, db.raidLabelColorB or 0.7, db.raidLabelAlpha or 1.0)
+                raidSlots[i].timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
+                raidSlots[i].timer:ClearAllPoints()
+                raidSlots[i].timer:SetPoint("BOTTOM", 0, timerOffset)
+                raidSlots[i].timer:SetTextColor(1, 1, 1, db.raidTimerAlpha or 1.0)
             end
             raidIcons:Show()
         else
@@ -386,10 +392,11 @@ local function CheckTrackers()
                 iconSlots[i].lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
                 iconSlots[i].lbl:ClearAllPoints()
                 iconSlots[i].lbl:SetPoint("TOP", 0, labelOffset)
-                iconSlots[i].lbl:SetTextColor(db.customLabelColorR or 0.7, db.customLabelColorG or 0.7, db.customLabelColorB or 0.7)
+                iconSlots[i].lbl:SetTextColor(db.customLabelColorR or 0.7, db.customLabelColorG or 0.7, db.customLabelColorB or 0.7, db.customLabelAlpha or 1.0)
                 iconSlots[i].timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
                 iconSlots[i].timer:ClearAllPoints()
                 iconSlots[i].timer:SetPoint("BOTTOM", 0, timerOffset)
+                iconSlots[i].timer:SetTextColor(1, 1, 1, db.customTimerAlpha or 1.0)
             end
             icons:Show()
         else

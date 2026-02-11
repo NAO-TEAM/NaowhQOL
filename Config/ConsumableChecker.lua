@@ -90,42 +90,55 @@ function ns:InitConsumableChecker()
             { db = db, key = "labelFontSize", moduleName = "consumableChecker" })
         PlaceSlider(labelSlider, settingsContent, G:Col(2), G:Row(1))
 
-        -- Row 2: Timer Font Size / Label Color
-        local timerSlider = W:CreateAdvancedSlider(settingsContent,
-            W.Colorize(L["CONSUMABLE_TIMER_FONTSIZE"], C.ORANGE), 8, 20, G:Row(2), 1, false,
-            function(val) db.timerFontSize = val; refresh() end,
-            { db = db, key = "timerFontSize", moduleName = "consumableChecker" })
-        PlaceSlider(timerSlider, settingsContent, G:Col(1), G:Row(2))
-
+        -- Row 2: Label Color / Label Opacity
         W:CreateColorPicker(settingsContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "labelColorR", gKey = "labelColorG", bKey = "labelColorB",
-            x = G:Col(2), y = G:ColorY(2),
+            x = G:Col(1), y = G:ColorY(2),
             onChange = refresh
         })
 
-        -- Row 3: Stack Font Size / Stack Color
+        local labelAlphaSlider = W:CreateAdvancedSlider(settingsContent,
+            W.Colorize(L["BUFFMONITOR_LABEL_OPACITY"], C.ORANGE), 0, 100, G:SliderY(2), 5, true,
+            function(val) db.labelAlpha = val / 100; refresh() end,
+            { value = (db.labelAlpha or 1.0) * 100 })
+        PlaceSlider(labelAlphaSlider, settingsContent, G:Col(2), G:SliderY(2))
+
+        -- Row 3: Timer Font Size / Timer Opacity
+        local timerSlider = W:CreateAdvancedSlider(settingsContent,
+            W.Colorize(L["CONSUMABLE_TIMER_FONTSIZE"], C.ORANGE), 8, 20, G:Row(3), 1, false,
+            function(val) db.timerFontSize = val; refresh() end,
+            { db = db, key = "timerFontSize", moduleName = "consumableChecker" })
+        PlaceSlider(timerSlider, settingsContent, G:Col(1), G:Row(3))
+
+        local timerAlphaSlider = W:CreateAdvancedSlider(settingsContent,
+            W.Colorize(L["BUFFMONITOR_TIMER_OPACITY"], C.ORANGE), 0, 100, G:SliderY(3), 5, true,
+            function(val) db.timerAlpha = val / 100; refresh() end,
+            { value = (db.timerAlpha or 1.0) * 100 })
+        PlaceSlider(timerAlphaSlider, settingsContent, G:Col(2), G:SliderY(3))
+
+        -- Row 4: Stack Font Size / Stack Opacity
         local stackSlider = W:CreateAdvancedSlider(settingsContent,
-            W.Colorize(L["CONSUMABLE_STACK_FONTSIZE"], C.ORANGE), 8, 20, G:Row(3), 1, false,
+            W.Colorize(L["CONSUMABLE_STACK_FONTSIZE"], C.ORANGE), 8, 20, G:Row(4), 1, false,
             function(val) db.stackFontSize = val; refresh() end,
             { db = db, key = "stackFontSize", moduleName = "consumableChecker" })
-        PlaceSlider(stackSlider, settingsContent, G:Col(1), G:Row(3))
+        PlaceSlider(stackSlider, settingsContent, G:Col(1), G:Row(4))
 
+        local stackAlphaSlider = W:CreateAdvancedSlider(settingsContent,
+            W.Colorize(L["CONSUMABLE_STACK_OPACITY"], C.ORANGE), 0, 100, G:SliderY(4), 5, true,
+            function(val) db.stackAlpha = val / 100; refresh() end,
+            { value = (db.stackAlpha or 1.0) * 100 })
+        PlaceSlider(stackAlphaSlider, settingsContent, G:Col(2), G:SliderY(4))
+
+        -- Row 5: Stack Color
         W:CreateColorPicker(settingsContent, {
             label = L["CONSUMABLE_STACK_COLOR"], db = db,
             rKey = "stackColorR", gKey = "stackColorG", bKey = "stackColorB",
-            x = G:Col(2), y = G:ColorY(3),
+            x = G:Col(1), y = G:ColorY(5),
             onChange = refresh
         })
 
-        -- Row 4: Stack Alpha
-        local stackAlphaSlider = W:CreateAdvancedSlider(settingsContent,
-            W.Colorize(L["CONSUMABLE_STACK_ALPHA"], C.ORANGE), 0, 1, G:Row(4), 0.1, false,
-            function(val) db.stackAlpha = val; refresh() end,
-            { db = db, key = "stackAlpha", moduleName = "consumableChecker" })
-        PlaceSlider(stackAlphaSlider, settingsContent, G:Col(1), G:Row(4))
-
-        settingsContent:SetHeight(G:Height(4))
+        settingsContent:SetHeight(G:Height(5))
         settingsWrap:RecalcHeight()
 
         ---------------------------------------------------------------

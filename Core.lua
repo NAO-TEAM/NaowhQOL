@@ -108,9 +108,9 @@ local BUFF_MONITOR_DEFAULTS = {
     enabled = true, unlock = false, soundID = 8959, soundEnabled = true,
     colorR = 1, colorG = 0.2, colorB = 0.8, iconPoint = "CENTER", iconX = 0, iconY = 100, iconSize = 40,
     raidBuffsEnabled = true, raidIconSize = 40, raidIconPoint = "TOP", raidIconX = 0, raidIconY = -100, unlockRaid = false,
-    raidLabelFontSize = 9, raidLabelColorR = 0.7, raidLabelColorG = 0.7, raidLabelColorB = 0.7, raidLabelAlpha = 1.0,
+    raidLabelFontSize = 9, raidTimerFontSize = 11, raidLabelColorR = 0.7, raidLabelColorG = 0.7, raidLabelColorB = 0.7, raidLabelAlpha = 1.0, raidTimerAlpha = 1.0,
     customLabelFontSize = 9, customTimerFontSize = 11,
-    customLabelColorR = 0.7, customLabelColorG = 0.7, customLabelColorB = 0.7,
+    customLabelColorR = 0.7, customLabelColorG = 0.7, customLabelColorB = 0.7, customLabelAlpha = 1.0, customTimerAlpha = 1.0,
 }
 
 local CONSUMABLE_CHECKER_DEFAULTS = {
@@ -118,7 +118,9 @@ local CONSUMABLE_CHECKER_DEFAULTS = {
     normalDungeon = true, heroicDungeon = true, mythicDungeon = true, mythicPlus = false,
     lfr = true, normalRaid = true, heroicRaid = true, mythicRaid = true,
     soundEnabled = true, soundID = 8959, colorR = 1, colorG = 0.2, colorB = 0.8,
-    labelFontSize = 9, timerFontSize = 11, labelColorR = 0.7, labelColorG = 0.7, labelColorB = 0.7,
+    labelFontSize = 9, labelColorR = 0.7, labelColorG = 0.7, labelColorB = 0.7, labelAlpha = 1.0,
+    timerFontSize = 11, timerAlpha = 1.0,
+    stackFontSize = 11, stackColorR = 1, stackColorG = 1, stackColorB = 1, stackAlpha = 1.0,
 }
 
 local GCD_TRACKER_DEFAULTS = {
@@ -427,16 +429,20 @@ local function InitializeDB()
     if bm.unlockRaid   == nil then bm.unlockRaid   = false    end
     -- Raid buff font settings
     if bm.raidLabelFontSize == nil then bm.raidLabelFontSize = 9     end
+    if bm.raidTimerFontSize == nil then bm.raidTimerFontSize = 11    end
     if bm.raidLabelColorR   == nil then bm.raidLabelColorR   = 0.7   end
     if bm.raidLabelColorG   == nil then bm.raidLabelColorG   = 0.7   end
     if bm.raidLabelColorB   == nil then bm.raidLabelColorB   = 0.7   end
     if bm.raidLabelAlpha    == nil then bm.raidLabelAlpha    = 1.0   end
+    if bm.raidTimerAlpha    == nil then bm.raidTimerAlpha    = 1.0   end
     -- Custom tracker font settings
     if bm.customLabelFontSize == nil then bm.customLabelFontSize = 9   end
     if bm.customTimerFontSize == nil then bm.customTimerFontSize = 11  end
     if bm.customLabelColorR   == nil then bm.customLabelColorR   = 0.7 end
     if bm.customLabelColorG   == nil then bm.customLabelColorG   = 0.7 end
     if bm.customLabelColorB   == nil then bm.customLabelColorB   = 0.7 end
+    if bm.customLabelAlpha    == nil then bm.customLabelAlpha    = 1.0 end
+    if bm.customTimerAlpha    == nil then bm.customTimerAlpha    = 1.0 end
 
     -- Migrate consumable data from buffMonitor to standalone consumableChecker
     if bm.ccEnabled ~= nil and NaowhQOL.consumableChecker == nil then
@@ -487,10 +493,17 @@ local function InitializeDB()
     if cc.colorG           == nil then cc.colorG           = 0.2      end
     if cc.colorB           == nil then cc.colorB           = 0.8      end
     if cc.labelFontSize    == nil then cc.labelFontSize    = 9        end
-    if cc.timerFontSize    == nil then cc.timerFontSize    = 11       end
     if cc.labelColorR      == nil then cc.labelColorR      = 0.7      end
     if cc.labelColorG      == nil then cc.labelColorG      = 0.7      end
     if cc.labelColorB      == nil then cc.labelColorB      = 0.7      end
+    if cc.labelAlpha       == nil then cc.labelAlpha       = 1.0      end
+    if cc.timerFontSize    == nil then cc.timerFontSize    = 11       end
+    if cc.timerAlpha       == nil then cc.timerAlpha       = 1.0      end
+    if cc.stackFontSize    == nil then cc.stackFontSize    = 11       end
+    if cc.stackColorR      == nil then cc.stackColorR      = 1        end
+    if cc.stackColorG      == nil then cc.stackColorG      = 1        end
+    if cc.stackColorB      == nil then cc.stackColorB      = 1        end
+    if cc.stackAlpha       == nil then cc.stackAlpha       = 1.0      end
     if cc.categories == nil then
         cc.categories = {
             { name = "Flask", matchType = "spellId",

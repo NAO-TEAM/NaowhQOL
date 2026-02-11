@@ -361,8 +361,10 @@ local function CheckConsumables()
             local labelSize = db.labelFontSize or 9
             local timerSize = db.timerFontSize or 11
             local stackSize = db.stackFontSize or 11
+            local labelAlpha = db.labelAlpha or 1.0
+            local timerAlpha = db.timerAlpha or 1.0
             slot.lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
-            slot.lbl:SetTextColor(db.labelColorR or 0.7, db.labelColorG or 0.7, db.labelColorB or 0.7)
+            slot.lbl:SetTextColor(db.labelColorR or 0.7, db.labelColorG or 0.7, db.labelColorB or 0.7, labelAlpha)
             slot.timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
             slot.count:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", stackSize, "OUTLINE")
             slot.count:SetTextColor(db.stackColorR or 1, db.stackColorG or 1, db.stackColorB or 1, db.stackAlpha or 1)
@@ -378,16 +380,16 @@ local function CheckConsumables()
                 local rem = m.aura.expiry - now
                 if rem > 0 then
                     slot.timer:SetText(format("%d:%02d", rem / 60, rem % 60))
-                    slot.timer:SetTextColor(1, 0.6, 0)
+                    slot.timer:SetTextColor(1, 0.6, 0, timerAlpha)
                 else
                     slot.timer:SetText(L["COMMON_EXPIRED"])
-                    slot.timer:SetTextColor(1, 0.3, 0.3)
+                    slot.timer:SetTextColor(1, 0.3, 0.3, timerAlpha)
                 end
             else
                 slot.tex:SetTexture(displayTex)
                 slot.tex:SetDesaturated(not m.itemTex)
                 slot.timer:SetText(L["COMMON_MISSING"])
-                slot.timer:SetTextColor(1, 0.3, 0.3)
+                slot.timer:SetTextColor(1, 0.3, 0.3, timerAlpha)
             end
 
             -- Update secure button attributes only outside combat

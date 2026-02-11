@@ -96,21 +96,34 @@ function ns:InitBuffMonitor()
             { db = db, key = "customLabelFontSize", moduleName = "buffMonitor" })
         PlaceSlider(customLabelSlider, customContent, G2:Col(2), G2:Row(1))
 
-        -- Row 2: Timer Font Size / Label Color
-        local customTimerSlider = W:CreateAdvancedSlider(customContent,
-            W.Colorize(L["BUFFMONITOR_TIMER_FONTSIZE"], C.ORANGE), 8, 20, G2:Row(2), 1, false,
-            function(val) db.customTimerFontSize = val; refresh() end,
-            { db = db, key = "customTimerFontSize", moduleName = "buffMonitor" })
-        PlaceSlider(customTimerSlider, customContent, G2:Col(1), G2:SliderY(2))
-
+        -- Row 2: Label Color / Label Opacity
         W:CreateColorPicker(customContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "customLabelColorR", gKey = "customLabelColorG", bKey = "customLabelColorB",
-            x = G2:Col(2), y = G2:ColorY(2),
+            x = G2:Col(1), y = G2:ColorY(2),
             onChange = refresh
         })
 
-        customContent:SetHeight(G2:Height(2))
+        local customLabelAlphaSlider = W:CreateAdvancedSlider(customContent,
+            W.Colorize(L["BUFFMONITOR_LABEL_OPACITY"], C.ORANGE), 0, 100, G2:SliderY(2), 5, true,
+            function(val) db.customLabelAlpha = val / 100; refresh() end,
+            { value = (db.customLabelAlpha or 1.0) * 100 })
+        PlaceSlider(customLabelAlphaSlider, customContent, G2:Col(2), G2:SliderY(2))
+
+        -- Row 3: Timer Font Size / Timer Opacity
+        local customTimerSlider = W:CreateAdvancedSlider(customContent,
+            W.Colorize(L["BUFFMONITOR_TIMER_FONTSIZE"], C.ORANGE), 8, 20, G2:Row(3), 1, false,
+            function(val) db.customTimerFontSize = val; refresh() end,
+            { db = db, key = "customTimerFontSize", moduleName = "buffMonitor" })
+        PlaceSlider(customTimerSlider, customContent, G2:Col(1), G2:SliderY(3))
+
+        local customTimerAlphaSlider = W:CreateAdvancedSlider(customContent,
+            W.Colorize(L["BUFFMONITOR_TIMER_OPACITY"], C.ORANGE), 0, 100, G2:SliderY(3), 5, true,
+            function(val) db.customTimerAlpha = val / 100; refresh() end,
+            { value = (db.customTimerAlpha or 1.0) * 100 })
+        PlaceSlider(customTimerAlphaSlider, customContent, G2:Col(2), G2:SliderY(3))
+
+        customContent:SetHeight(G2:Height(3))
         customWrap:RecalcHeight()
 
         ---------------------------------------------------------------
@@ -604,7 +617,7 @@ function ns:InitBuffMonitor()
             { db = db, key = "raidLabelFontSize", moduleName = "buffMonitor" })
         PlaceSlider(raidLabelSlider, raidContent, G:Col(2), -25)
 
-        -- Row 2: Label Color / Label Alpha
+        -- Row 2: Label Color / Label Opacity
         W:CreateColorPicker(raidContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "raidLabelColorR", gKey = "raidLabelColorG", bKey = "raidLabelColorB",
@@ -612,14 +625,26 @@ function ns:InitBuffMonitor()
             onChange = refresh
         })
 
-        -- Label alpha stored as 0-1, slider shows 0-100
         local raidLabelAlphaSlider = W:CreateAdvancedSlider(raidContent,
             W.Colorize(L["BUFFMONITOR_LABEL_OPACITY"], C.ORANGE), 0, 100, -75, 5, true,
             function(val) db.raidLabelAlpha = val / 100; refresh() end,
             { value = (db.raidLabelAlpha or 1.0) * 100 })
         PlaceSlider(raidLabelAlphaSlider, raidContent, G:Col(2), -75)
 
-        raidContent:SetHeight(130)
+        -- Row 3: Timer Font Size / Timer Opacity
+        local raidTimerSlider = W:CreateAdvancedSlider(raidContent,
+            W.Colorize(L["BUFFMONITOR_TIMER_FONTSIZE"], C.ORANGE), 8, 20, -125, 1, false,
+            function(val) db.raidTimerFontSize = val; refresh() end,
+            { db = db, key = "raidTimerFontSize", moduleName = "buffMonitor" })
+        PlaceSlider(raidTimerSlider, raidContent, G:Col(1), -125)
+
+        local raidTimerAlphaSlider = W:CreateAdvancedSlider(raidContent,
+            W.Colorize(L["BUFFMONITOR_TIMER_OPACITY"], C.ORANGE), 0, 100, -125, 5, true,
+            function(val) db.raidTimerAlpha = val / 100; refresh() end,
+            { value = (db.raidTimerAlpha or 1.0) * 100 })
+        PlaceSlider(raidTimerAlphaSlider, raidContent, G:Col(2), -125)
+
+        raidContent:SetHeight(180)
         raidWrap:RecalcHeight()
 
         -- ============================================================
