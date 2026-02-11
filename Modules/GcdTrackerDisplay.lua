@@ -666,29 +666,36 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
         suppressUntil = GetTime() + 5
     elseif event == "PLAYER_REGEN_DISABLED" then
         inCombat = true
-        combatStartTime = GetTime()
-        totalDowntime = 0
-        lastDowntimeStart = 0
-        lastDowntimeActive = IsGCDActive() or IsCasting()
-        -- Start ticker for downtime tracking
-        if downtimeTicker then downtimeTicker:Cancel() end
-        downtimeTicker = C_Timer.NewTicker(0.1, TrackDowntime)
+        local db = NaowhQOL.gcdTracker
+        -- Start ticker only if downtime summary is enabled
+        if db and db.downtimeSummaryEnabled then
+            combatStartTime = GetTime()
+            totalDowntime = 0
+            lastDowntimeStart = 0
+            lastDowntimeActive = IsGCDActive() or IsCasting()
+            if downtimeTicker then downtimeTicker:Cancel() end
+            downtimeTicker = C_Timer.NewTicker(0.1, TrackDowntime)
+        end
         RefreshVisibility()
     elseif event == "PLAYER_REGEN_ENABLED" then
-        -- Stop downtime ticker
-        if downtimeTicker then downtimeTicker:Cancel(); downtimeTicker = nil end
-
-        -- Finalize any pending downtime
-        if lastDowntimeStart > 0 then
-            totalDowntime = totalDowntime + (GetTime() - lastDowntimeStart)
-        end
-
-        local combatDuration = GetTime() - combatStartTime
         local db = NaowhQOL.gcdTracker
-        if db and db.showDowntimeSummary ~= false and combatDuration > 15 then
-            local downtimePct = (totalDowntime / combatDuration) * 100
-            local msg = string.format("|cFFFFFF00[NaowhQOL]|r " .. L["GCD_DOWNTIME_MSG"], totalDowntime, downtimePct)
-            print(msg)
+
+        -- Stop downtime ticker and print summary if enabled
+        if downtimeTicker then
+            downtimeTicker:Cancel()
+            downtimeTicker = nil
+
+            -- Finalize any pending downtime
+            if lastDowntimeStart > 0 then
+                totalDowntime = totalDowntime + (GetTime() - lastDowntimeStart)
+            end
+
+            local combatDuration = GetTime() - combatStartTime
+            if db and db.downtimeSummaryEnabled and combatDuration > 15 then
+                local downtimePct = (totalDowntime / combatDuration) * 100
+                local msg = string.format("|cFFFFFF00[NaowhQOL]|r " .. L["GCD_DOWNTIME_MSG"], totalDowntime, downtimePct)
+                print(msg)
+            end
         end
 
         inCombat = false

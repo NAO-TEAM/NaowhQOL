@@ -31,7 +31,33 @@ local COLOR_PRESETS = {
     },
 }
 
-local cfg = {}
+-- Default values for all config options
+local DEFAULTS = {
+    barWidth = 36, speedHeight = 14, chargeHeight = 14, gap = 0,
+    showSpeedText = true, swapPosition = false, hideWhenGroundedFull = false,
+    showSecondWind = true, showWhirlingSurge = true, colorPreset = "Classic",
+    unlocked = false, point = "BOTTOM", posX = 0, posY = 200,
+    barStyle = [[Interface\Buttons\WHITE8X8]],
+    speedColorR = 0.00, speedColorG = 0.49, speedColorB = 0.79,
+    thrillColorR = 1.00, thrillColorG = 0.66, thrillColorB = 0.00,
+    chargeColorR = 0.01, chargeColorG = 0.56, chargeColorB = 0.91,
+    speedFont = "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf",
+    speedFontSize = 12, surgeIconSize = 0, surgeAnchor = "RIGHT",
+    surgeOffsetX = 6, surgeOffsetY = 0, anchorFrame = "UIParent", anchorTo = "BOTTOM",
+    matchAnchorWidth = false,
+    bgColorR = 0.12, bgColorG = 0.12, bgColorB = 0.12, bgAlpha = 0.8,
+    borderColorR = 0, borderColorG = 0, borderColorB = 0, borderAlpha = 1, borderSize = 1,
+    iconBorderColorR = 0, iconBorderColorG = 0, iconBorderColorB = 0, iconBorderAlpha = 1, iconBorderSize = 1,
+    hideCdmWhileMounted = false,
+}
+
+-- Get config value with default fallback
+local function Get(key)
+    local db = NaowhQOL.dragonriding
+    if db and db[key] ~= nil then return db[key] end
+    return DEFAULTS[key]
+end
+
 local prevSpeed = 0
 local elapsed = 0
 local lastColorState = nil
@@ -50,58 +76,6 @@ local function IsEnabled()
     return NaowhQOL.dragonriding and NaowhQOL.dragonriding.enabled
 end
 
-local function GetConfig()
-    local db = NaowhQOL.dragonriding or {}
-    cfg.barWidth = db.barWidth or 36
-    cfg.speedHeight = db.speedHeight or 14
-    cfg.chargeHeight = db.chargeHeight or 14
-    cfg.gap = db.gap or 0
-    cfg.showSpeedText = db.showSpeedText ~= false
-    cfg.swapPosition = db.swapPosition or false
-    cfg.hideWhenGroundedFull = db.hideWhenGroundedFull or false
-    cfg.showSecondWind = db.showSecondWind ~= false
-    cfg.showWhirlingSurge = db.showWhirlingSurge ~= false
-    cfg.colorPreset = db.colorPreset or "Classic"
-    cfg.unlocked = db.unlocked or false
-    cfg.point = db.point or "BOTTOM"
-    cfg.posX = db.posX or 0
-    cfg.posY = db.posY or 200
-    cfg.barStyle = db.barStyle or [[Interface\Buttons\WHITE8X8]]
-    cfg.speedColorR = db.speedColorR or 0.00
-    cfg.speedColorG = db.speedColorG or 0.49
-    cfg.speedColorB = db.speedColorB or 0.79
-    cfg.thrillColorR = db.thrillColorR or 1.00
-    cfg.thrillColorG = db.thrillColorG or 0.66
-    cfg.thrillColorB = db.thrillColorB or 0.00
-    cfg.chargeColorR = db.chargeColorR or 0.01
-    cfg.chargeColorG = db.chargeColorG or 0.56
-    cfg.chargeColorB = db.chargeColorB or 0.91
-    cfg.speedFont = db.speedFont or "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf"
-    cfg.speedFontSize = db.speedFontSize or 12
-    cfg.surgeIconSize = db.surgeIconSize or 0
-    cfg.surgeAnchor = db.surgeAnchor or "RIGHT"
-    cfg.surgeOffsetX = db.surgeOffsetX or 6
-    cfg.surgeOffsetY = db.surgeOffsetY or 0
-    cfg.anchorFrame = db.anchorFrame or "UIParent"
-    cfg.anchorTo = db.anchorTo or "BOTTOM"
-    cfg.matchAnchorWidth = db.matchAnchorWidth or false
-    cfg.bgColorR = db.bgColorR or 0.12
-    cfg.bgColorG = db.bgColorG or 0.12
-    cfg.bgColorB = db.bgColorB or 0.12
-    cfg.bgAlpha = db.bgAlpha or 0.8
-    cfg.borderColorR = db.borderColorR or 0.00
-    cfg.borderColorG = db.borderColorG or 0.00
-    cfg.borderColorB = db.borderColorB or 0.00
-    cfg.borderAlpha = db.borderAlpha or 1.0
-    cfg.borderSize = db.borderSize or 1
-    cfg.iconBorderColorR = db.iconBorderColorR or 0.00
-    cfg.iconBorderColorG = db.iconBorderColorG or 0.00
-    cfg.iconBorderColorB = db.iconBorderColorB or 0.00
-    cfg.iconBorderAlpha = db.iconBorderAlpha or 1.0
-    cfg.iconBorderSize = db.iconBorderSize or 1
-    cfg.hideCdmWhileMounted = db.hideCdmWhileMounted or false
-end
-
 local CDM_FRAMES = {
     BuffIconCooldownViewer = true,
     EssentialCooldownViewer = true,
@@ -109,7 +83,7 @@ local CDM_FRAMES = {
 }
 
 local function IsAnchoredToCDM()
-    return CDM_FRAMES[cfg.anchorFrame] == true
+    return CDM_FRAMES[Get("anchorFrame")] == true
 end
 
 local function StashPositionAndReanchor()
@@ -133,8 +107,8 @@ local function RestoreOriginalAnchor()
     stashedPosition = nil
 
     mainFrame:ClearAllPoints()
-    local anchorParent = L.GetAnchorFrame(cfg.anchorFrame) or UIParent
-    mainFrame:SetPoint(cfg.point, anchorParent, cfg.anchorTo, cfg.posX, cfg.posY)
+    local anchorParent = L.GetAnchorFrame(Get("anchorFrame")) or UIParent
+    mainFrame:SetPoint(Get("point"), anchorParent, Get("anchorTo"), Get("posX"), Get("posY"))
 end
 
 local function IsSkyriding()
@@ -179,7 +153,7 @@ local function GetWhirlingSurgeCooldown()
 end
 
 local function GetPreset()
-    return COLOR_PRESETS[cfg.colorPreset] or COLOR_PRESETS.Classic
+    return COLOR_PRESETS[Get("colorPreset")] or COLOR_PRESETS.Classic
 end
 
 local function ApplyColors(isThrill, isGroundSkim)
@@ -187,85 +161,100 @@ local function ApplyColors(isThrill, isGroundSkim)
     if state == lastColorState then return end
     lastColorState = state
 
+    local db = NaowhQOL.dragonriding or {}
     if isThrill then
-        speedBar:SetStatusBarColor(cfg.thrillColorR, cfg.thrillColorG, cfg.thrillColorB)
+        local r, g, b = W.GetEffectiveColor(db, "thrillColorR", "thrillColorG", "thrillColorB", "thrillColorUseClassColor")
+        speedBar:SetStatusBarColor(r, g, b)
     else
-        speedBar:SetStatusBarColor(cfg.speedColorR, cfg.speedColorG, cfg.speedColorB)
+        local r, g, b = W.GetEffectiveColor(db, "speedColorR", "speedColorG", "speedColorB", "speedColorUseClassColor")
+        speedBar:SetStatusBarColor(r, g, b)
     end
 
+    local cr, cg, cb = W.GetEffectiveColor(db, "chargeColorR", "chargeColorG", "chargeColorB", "chargeColorUseClassColor")
     for i = 1, NUM_CHARGES do
-        chargeBars[i]:SetStatusBarColor(cfg.chargeColorR, cfg.chargeColorG, cfg.chargeColorB)
+        chargeBars[i]:SetStatusBarColor(cr, cg, cb)
     end
 end
 
 local function UpdateLayout()
     if not mainFrame then return end
-    local totalHeight = cfg.speedHeight + cfg.gap + cfg.chargeHeight
+    local db = NaowhQOL.dragonriding or {}
+    local speedHeight = Get("speedHeight")
+    local chargeHeight = Get("chargeHeight")
+    local gap = Get("gap")
+    local totalHeight = speedHeight + gap + chargeHeight
 
     -- Update anchor position
     mainFrame:ClearAllPoints()
-    local anchorParent = L.GetAnchorFrame(cfg.anchorFrame) or UIParent
-    mainFrame:SetPoint(cfg.point, anchorParent, cfg.anchorTo, cfg.posX, cfg.posY)
+    local anchorParent = L.GetAnchorFrame(Get("anchorFrame")) or UIParent
+    mainFrame:SetPoint(Get("point"), anchorParent, Get("anchorTo"), Get("posX"), Get("posY"))
 
     -- Calculate widths (match anchor width if enabled)
-    local totalWidth = NUM_CHARGES * cfg.barWidth + (NUM_CHARGES - 1) * cfg.gap
-    local barWidth = cfg.barWidth
+    local barWidthCfg = Get("barWidth")
+    local totalWidth = NUM_CHARGES * barWidthCfg + (NUM_CHARGES - 1) * gap
+    local barWidth = barWidthCfg
 
-    if cfg.matchAnchorWidth and anchorParent ~= UIParent then
+    if Get("matchAnchorWidth") and anchorParent ~= UIParent then
         local anchorWidth = anchorParent:GetWidth()
         if anchorWidth and anchorWidth > 0 then
             totalWidth = anchorWidth
             -- Recalculate individual bar width to fit
-            barWidth = (totalWidth - (NUM_CHARGES - 1) * cfg.gap) / NUM_CHARGES
+            barWidth = (totalWidth - (NUM_CHARGES - 1) * gap) / NUM_CHARGES
         end
     end
 
-    mainFrame:SetSize(totalWidth, totalHeight)
+    local borderSize = Get("borderSize")
+    -- Enlarge frame to include border outside content area
+    mainFrame:SetSize(totalWidth + borderSize * 2, totalHeight + borderSize * 2)
     mainFrame:SetBackdrop({
         bgFile = BAR_TEXTURE,
         edgeFile = BAR_TEXTURE,
-        edgeSize = cfg.borderSize,
+        edgeSize = borderSize,
+        insets = { left = borderSize, right = borderSize, top = borderSize, bottom = borderSize }
     })
-    mainFrame:SetBackdropColor(cfg.bgColorR, cfg.bgColorG, cfg.bgColorB, cfg.bgAlpha)
-    mainFrame:SetBackdropBorderColor(cfg.borderColorR, cfg.borderColorG, cfg.borderColorB, cfg.borderAlpha)
+    local bgR, bgG, bgB = W.GetEffectiveColor(db, "bgColorR", "bgColorG", "bgColorB", "bgColorUseClassColor")
+    local brR, brG, brB = W.GetEffectiveColor(db, "borderColorR", "borderColorG", "borderColorB", "borderColorUseClassColor")
+    mainFrame:SetBackdropColor(bgR, bgG, bgB, Get("bgAlpha"))
+    mainFrame:SetBackdropBorderColor(brR, brG, brB, Get("borderAlpha"))
 
-    local speedY = cfg.swapPosition and 0 or -(cfg.chargeHeight + cfg.gap)
-    local chargeY = cfg.swapPosition and -(cfg.speedHeight + cfg.gap) or 0
+    local swapPosition = Get("swapPosition")
+    local speedY = swapPosition and -borderSize or -(chargeHeight + gap + borderSize)
+    local chargeY = swapPosition and -(speedHeight + gap + borderSize) or -borderSize
 
     speedBar:ClearAllPoints()
-    speedBar:SetSize(totalWidth, cfg.speedHeight)
-    speedBar:SetPoint("TOPLEFT", mainFrame, "TOPLEFT", 0, speedY)
+    speedBar:SetSize(totalWidth, speedHeight)
+    speedBar:SetPoint("TOPLEFT", mainFrame, "TOPLEFT", borderSize, speedY)
 
-    speedText:SetShown(cfg.showSpeedText)
-    speedText:SetFont(cfg.speedFont, cfg.speedFontSize, "OUTLINE")
+    speedText:SetShown(Get("showSpeedText"))
+    speedText:SetFont(Get("speedFont"), Get("speedFontSize"), "OUTLINE")
 
     for i = 1, NUM_CHARGES do
-        local xOff = (i - 1) * (barWidth + cfg.gap)
+        local xOff = borderSize + (i - 1) * (barWidth + gap)
 
         secondWindBars[i]:ClearAllPoints()
-        secondWindBars[i]:SetSize(barWidth, cfg.chargeHeight)
+        secondWindBars[i]:SetSize(barWidth, chargeHeight)
         secondWindBars[i]:SetPoint("TOPLEFT", mainFrame, "TOPLEFT", xOff, chargeY)
 
         chargeBars[i]:ClearAllPoints()
-        chargeBars[i]:SetSize(barWidth, cfg.chargeHeight)
+        chargeBars[i]:SetSize(barWidth, chargeHeight)
         chargeBars[i]:SetPoint("TOPLEFT", mainFrame, "TOPLEFT", xOff, chargeY)
 
         -- Position divider at the right edge of each bar (except last)
         if chargeDividers[i] then
             chargeDividers[i]:ClearAllPoints()
-            chargeDividers[i]:SetSize(1, cfg.chargeHeight)
+            chargeDividers[i]:SetSize(1, chargeHeight)
             chargeDividers[i]:SetPoint("TOPLEFT", mainFrame, "TOPLEFT", xOff + barWidth, chargeY)
         end
     end
 
     if surgeFrame then
         surgeFrame:ClearAllPoints()
-        local iconSize = cfg.surgeIconSize > 0 and cfg.surgeIconSize
-            or (cfg.chargeHeight + cfg.speedHeight + cfg.gap)
+        local surgeIconSize = Get("surgeIconSize")
+        local iconSize = surgeIconSize > 0 and surgeIconSize or (chargeHeight + speedHeight + gap)
         surgeFrame:SetSize(iconSize, iconSize)
 
-        local anchor = cfg.surgeAnchor
-        local ox, oy = cfg.surgeOffsetX, cfg.surgeOffsetY
+        local anchor = Get("surgeAnchor")
+        local ox, oy = Get("surgeOffsetX"), Get("surgeOffsetY")
         if anchor == "LEFT" then
             surgeFrame:SetPoint("RIGHT", mainFrame, "LEFT", -ox, oy)
         elseif anchor == "TOP" then
@@ -275,19 +264,24 @@ local function UpdateLayout()
         else
             surgeFrame:SetPoint("LEFT", mainFrame, "RIGHT", ox, oy)
         end
-        surgeFrame:SetShown(cfg.showWhirlingSurge)
+        surgeFrame:SetShown(Get("showWhirlingSurge"))
 
         if surgeBorder then
+            local iconBorderSize = Get("iconBorderSize")
+            surgeBorder:ClearAllPoints()
+            surgeBorder:SetPoint("TOPLEFT", surgeFrame, "TOPLEFT", -iconBorderSize, iconBorderSize)
+            surgeBorder:SetPoint("BOTTOMRIGHT", surgeFrame, "BOTTOMRIGHT", iconBorderSize, -iconBorderSize)
             surgeBorder:SetBackdrop({
                 edgeFile = BAR_TEXTURE,
-                edgeSize = cfg.iconBorderSize,
+                edgeSize = iconBorderSize,
             })
-            surgeBorder:SetBackdropBorderColor(cfg.iconBorderColorR, cfg.iconBorderColorG, cfg.iconBorderColorB, cfg.iconBorderAlpha)
+            local ibR, ibG, ibB = W.GetEffectiveColor(db, "iconBorderColorR", "iconBorderColorG", "iconBorderColorB", "iconBorderColorUseClassColor")
+            surgeBorder:SetBackdropBorderColor(ibR, ibG, ibB, Get("iconBorderAlpha"))
         end
     end
 
     -- Apply bar style to all status bars
-    local barTex = cfg.barStyle or BAR_TEXTURE
+    local barTex = Get("barStyle") or BAR_TEXTURE
     speedBar:SetStatusBarTexture(barTex)
     for i = 1, NUM_CHARGES do
         secondWindBars[i]:SetStatusBarTexture(barTex)
@@ -303,7 +297,7 @@ local function UpdateSpeedBar(rawSpeed)
     prevSpeed = prevSpeed + (scaled - prevSpeed) * 0.15
     speedBar:SetValue(prevSpeed)
 
-    if cfg.showSpeedText then
+    if Get("showSpeedText") then
         local display = math.floor(rawSpeed * SPEED_DISPLAY_FACTOR)
         speedText:SetText(display > 0 and tostring(display) or "")
     end
@@ -326,7 +320,7 @@ local function UpdateCharges(charges, maxCharges, startTime, duration)
 end
 
 local function UpdateSecondWind(charges, totalFilled)
-    if not cfg.showSecondWind then
+    if not Get("showSecondWind") then
         for i = 1, NUM_CHARGES do
             secondWindBars[i]:SetValue(0)
         end
@@ -338,7 +332,7 @@ local function UpdateSecondWind(charges, totalFilled)
 end
 
 local function UpdateWhirlingSurge(startTime, duration)
-    if not cfg.showWhirlingSurge or not surgeFrame then
+    if not Get("showWhirlingSurge") or not surgeFrame then
         if surgeFrame then surgeFrame:Hide() end
         return
     end
@@ -380,7 +374,7 @@ local OnUpdate = ns.PerfMonitor:Wrap("Dragonriding", function(self, dt)
         eventFrame:SetScript("OnUpdate", nil)
         prevSpeed = 0
         lastColorState = nil
-        if cfg.hideCdmWhileMounted then
+        if Get("hideCdmWhileMounted") then
             ShowCooldownManager()
         end
         return
@@ -388,11 +382,11 @@ local OnUpdate = ns.PerfMonitor:Wrap("Dragonriding", function(self, dt)
 
     local charges, maxCharges, startTime, duration, isThrill, isGroundSkim = GetVigorInfo()
 
-    if cfg.hideWhenGroundedFull and not IsGliding() and charges >= maxCharges then
+    if Get("hideWhenGroundedFull") and not IsGliding() and charges >= maxCharges then
         mainFrame:SetAlpha(0)
         mainFrame:Hide()
         eventFrame:SetScript("OnUpdate", nil)
-        if cfg.hideCdmWhileMounted then
+        if Get("hideCdmWhileMounted") then
             ShowCooldownManager()
         end
         return
@@ -401,7 +395,7 @@ local OnUpdate = ns.PerfMonitor:Wrap("Dragonriding", function(self, dt)
     mainFrame:Show()
     mainFrame:SetAlpha(1)
 
-    if cfg.hideCdmWhileMounted then
+    if Get("hideCdmWhileMounted") then
         HideCooldownManager()
     end
 
@@ -409,14 +403,14 @@ local OnUpdate = ns.PerfMonitor:Wrap("Dragonriding", function(self, dt)
     UpdateCharges(charges, maxCharges, startTime, duration)
     ApplyColors(isThrill, isGroundSkim)
 
-    if cfg.showSecondWind then
+    if Get("showSecondWind") then
         local swCharges = GetSecondWindCharges()
         UpdateSecondWind(charges, charges + swCharges)
     else
         UpdateSecondWind(0, 0)
     end
 
-    if cfg.showWhirlingSurge then
+    if Get("showWhirlingSurge") then
         local sStart, sDur = GetWhirlingSurgeCooldown()
         UpdateWhirlingSurge(sStart, sDur)
     else
@@ -434,19 +428,24 @@ local function BuildUI()
     if uiBuilt then return end
     uiBuilt = true
 
+    local db = NaowhQOL.dragonriding or {}
     local preset = GetPreset()
 
     mainFrame = CreateFrame("Frame", "NaowhQOL_Dragonriding", UIParent, "BackdropTemplate")
     mainFrame:SetFrameStrata("MEDIUM")
     mainFrame:SetFrameLevel(100)
     mainFrame:SetClampedToScreen(true)
+    local borderSize = Get("borderSize")
     mainFrame:SetBackdrop({
         bgFile = BAR_TEXTURE,
         edgeFile = BAR_TEXTURE,
-        edgeSize = cfg.borderSize,
+        edgeSize = borderSize,
+        insets = { left = borderSize, right = borderSize, top = borderSize, bottom = borderSize }
     })
-    mainFrame:SetBackdropColor(cfg.bgColorR, cfg.bgColorG, cfg.bgColorB, cfg.bgAlpha)
-    mainFrame:SetBackdropBorderColor(cfg.borderColorR, cfg.borderColorG, cfg.borderColorB, cfg.borderAlpha)
+    local bgR, bgG, bgB = W.GetEffectiveColor(db, "bgColorR", "bgColorG", "bgColorB", "bgColorUseClassColor")
+    local brR, brG, brB = W.GetEffectiveColor(db, "borderColorR", "borderColorG", "borderColorB", "borderColorUseClassColor")
+    mainFrame:SetBackdropColor(bgR, bgG, bgB, Get("bgAlpha"))
+    mainFrame:SetBackdropBorderColor(brR, brG, brB, Get("borderAlpha"))
 
     W.MakeDraggable(mainFrame, {
         db = NaowhQOL.dragonriding,
@@ -458,15 +457,15 @@ local function BuildUI()
     speedBar:SetStatusBarTexture(BAR_TEXTURE)
     speedBar:SetMinMaxValues(0, 1)
     speedBar:SetValue(0)
-    speedBar:SetStatusBarColor(cfg.speedColorR, cfg.speedColorG, cfg.speedColorB)
-
+    local sR, sG, sB = W.GetEffectiveColor(db, "speedColorR", "speedColorG", "speedColorB", "speedColorUseClassColor")
+    speedBar:SetStatusBarColor(sR, sG, sB)
 
     local speedTextFrame = CreateFrame("Frame", nil, mainFrame)
     speedTextFrame:SetAllPoints()
     speedTextFrame:SetFrameLevel(mainFrame:GetFrameLevel() + 10)
 
     speedText = speedTextFrame:CreateFontString(nil, "OVERLAY")
-    speedText:SetFont(cfg.speedFont, cfg.speedFontSize, "OUTLINE")
+    speedText:SetFont(Get("speedFont"), Get("speedFontSize"), "OUTLINE")
     speedText:SetJustifyH("RIGHT")
     speedText:SetJustifyV("MIDDLE")
     speedText:SetPoint("RIGHT", mainFrame, "RIGHT", -2, 0)
@@ -515,23 +514,18 @@ local function BuildUI()
     surgeCooldown:SetHideCountdownNumbers(false)
 
     surgeBorder = CreateFrame("Frame", nil, surgeFrame, "BackdropTemplate")
-    surgeBorder:SetAllPoints()
     surgeBorder:SetFrameLevel(surgeFrame:GetFrameLevel() + 3)
-    surgeBorder:SetBackdrop({
-        edgeFile = BAR_TEXTURE,
-        edgeSize = cfg.iconBorderSize,
-    })
-    surgeBorder:SetBackdropBorderColor(cfg.iconBorderColorR, cfg.iconBorderColorG, cfg.iconBorderColorB, cfg.iconBorderAlpha)
+    -- Border positioning handled by UpdateLayout()
 
     mainFrame:ClearAllPoints()
-    local anchorParent = L.GetAnchorFrame(cfg.anchorFrame) or UIParent
-    mainFrame:SetPoint(cfg.point, anchorParent, cfg.anchorTo, cfg.posX, cfg.posY)
+    local anchorParent = L.GetAnchorFrame(Get("anchorFrame")) or UIParent
+    mainFrame:SetPoint(Get("point"), anchorParent, Get("anchorTo"), Get("posX"), Get("posY"))
 
     UpdateLayout()
 
     -- Schedule a delayed layout refresh when matching anchor width
     -- Anchor frames may not have their final size immediately on reload
-    if cfg.matchAnchorWidth and anchorParent ~= UIParent then
+    if Get("matchAnchorWidth") and anchorParent ~= UIParent then
         C_Timer.After(0.1, function()
             if mainFrame then
                 UpdateLayout()
@@ -547,12 +541,15 @@ local function ShowPreview()
     mainFrame:Show()
     mainFrame:SetAlpha(1)
 
+    local db = NaowhQOL.dragonriding or {}
     speedBar:SetValue(0.65)
-    speedBar:SetStatusBarColor(cfg.thrillColorR, cfg.thrillColorG, cfg.thrillColorB)
-    if cfg.showSpeedText then
+    local tR, tG, tB = W.GetEffectiveColor(db, "thrillColorR", "thrillColorG", "thrillColorB", "thrillColorUseClassColor")
+    speedBar:SetStatusBarColor(tR, tG, tB)
+    if Get("showSpeedText") then
         speedText:SetText("456")
     end
 
+    local cR, cG, cB = W.GetEffectiveColor(db, "chargeColorR", "chargeColorG", "chargeColorB", "chargeColorUseClassColor")
     for i = 1, NUM_CHARGES do
         if i <= 4 then
             chargeBars[i]:SetValue(1)
@@ -561,7 +558,7 @@ local function ShowPreview()
         else
             chargeBars[i]:SetValue(0)
         end
-        chargeBars[i]:SetStatusBarColor(cfg.chargeColorR, cfg.chargeColorG, cfg.chargeColorB)
+        chargeBars[i]:SetStatusBarColor(cR, cG, cB)
         secondWindBars[i]:SetValue(i <= 5 and 1 or 0)
     end
 
@@ -582,7 +579,6 @@ function ns:HideDragonridingPreview()
 end
 
 function ns:RefreshDragonridingLayout()
-    GetConfig()
     if not uiBuilt then
         if not C_PlayerInfo or not C_PlayerInfo.GetGlidingInfo then return end
         BuildUI()
@@ -621,7 +617,6 @@ eventFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         HookPreviewCleanup()
         if not C_PlayerInfo or not C_PlayerInfo.GetGlidingInfo then return end
-        GetConfig()
         BuildUI()
         ActivateUpdater()
         return

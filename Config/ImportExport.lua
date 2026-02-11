@@ -477,6 +477,10 @@ function ns:InitImportExport()
             box:SetMaxLetters(0)
             sf:SetScrollChild(box)
 
+            -- Make entire background clickable to focus the edit box
+            bg:EnableMouse(true)
+            bg:SetScript("OnMouseDown", function() box:SetFocus() end)
+
             if readOnly then
                 local storedText = ""
                 box:SetScript("OnTextChanged", function(self, userInput)

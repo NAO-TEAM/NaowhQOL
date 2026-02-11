@@ -54,6 +54,15 @@ function ns:InitGcdTracker()
             isMaster = true,
         })
 
+        -- Standalone downtime summary toggle (works without GCD tracker enabled)
+        W:CreateCheckbox(killArea, {
+            label = L["GCD_SHOW_DOWNTIME"],
+            db = db, key = "downtimeSummaryEnabled",
+            x = 230, y = -8,
+            isMaster = true,
+            tooltip = L["GCD_DOWNTIME_TOOLTIP"],
+        })
+
         local unlockCB = W:CreateCheckbox(killArea, {
             label = L["COMMON_UNLOCK"],
             db = db, key = "unlock",
@@ -155,13 +164,6 @@ function ns:InitGcdTracker()
             rKey = "timelineColorR", gKey = "timelineColorG", bKey = "timelineColorB",
             x = GT:Col(1), y = GT:Row(2) + 5,
             onChange = onUpdate
-        })
-
-        W:CreateCheckbox(tlContent, {
-            label = L["GCD_SHOW_DOWNTIME"],
-            db = db, key = "showDowntimeSummary",
-            x = GT:Col(2), y = GT:Row(2) + 5,
-            template = "ChatConfigCheckButtonTemplate",
         })
 
         tlContent:SetHeight(GT:Height(2))

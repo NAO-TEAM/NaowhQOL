@@ -95,12 +95,12 @@ SlashCmdList["NAOWHQOL"] = function()
         if MainWindow.ResetContent then
             MainWindow:ResetContent()
         end
-        if ns.InitHomePage then
-            ns:InitHomePage()
+        -- Open directly to System > Optimizations
+        if ns.InitOptOptions then
+            ns:InitOptOptions()
         end
-
-        if ns.ResetSidebarToHome then
-            ns:ResetSidebarToHome()
+        if ns.ResetSidebarToOptimizations then
+            ns:ResetSidebarToOptimizations()
         end
     end
 end

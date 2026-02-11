@@ -744,6 +744,14 @@ function ns.Widgets:CreateCheckbox(parent, opts)
         self.check:SetVertexColor(1, 0.75, 0.1, 1)
     end)
 
+    -- Auto-update visuals when SetChecked is called programmatically
+    hooksecurefunc(cb, "SetChecked", function(self)
+        UpdateVisualState(self)
+        if self.isHovered then
+            SetHoverState(self)
+        end
+    end)
+
     return cb
 end
 

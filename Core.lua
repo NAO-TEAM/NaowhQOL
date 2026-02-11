@@ -585,7 +585,7 @@ local function InitializeDB()
         blocklist = { [6603] = true },
         timelineColorR = 0.01, timelineColorG = 0.56, timelineColorB = 0.91,
         timelineHeight = 4,
-        showDowntimeSummary = true,
+        downtimeSummaryEnabled = false,
     }
     for k, v in pairs(gtDefaults) do
         if NaowhQOL.gcdTracker[k] == nil then NaowhQOL.gcdTracker[k] = v end
