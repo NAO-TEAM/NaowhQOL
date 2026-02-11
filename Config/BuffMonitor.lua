@@ -38,7 +38,12 @@ function ns:InitBuffMonitor()
         disc:SetJustifyH("LEFT")
         disc:SetText(W.Colorize(L["BUFFMONITOR_NOTE"], C.RED) .. " " .. L["BUFFMONITOR_DISCLAIMER"])
 
-        -- on/off toggle
+        local RelayoutAll
+
+        -- ============================================================
+        -- CUSTOM BUFF MONITOR
+        -- ============================================================
+
         local killArea = CreateFrame("Frame", nil, sc, "BackdropTemplate")
         killArea:SetSize(460, 62)
         killArea:SetPoint("TOPLEFT", 10, -100)
@@ -61,78 +66,19 @@ function ns:InitBuffMonitor()
         })
         unlockCB:SetShown(db.enabled)
 
-        -- Section container
-        local sectionContainer = CreateFrame("Frame", nil, sc)
-        sectionContainer:SetPoint("TOPLEFT", killArea, "BOTTOMLEFT", 0, -10)
-        sectionContainer:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
-        sectionContainer:SetHeight(900)
-
-        local RelayoutSections
-
-        ---------------------------------------------------------------
-        -- RAID BUFFS
-        ---------------------------------------------------------------
-        local raidWrap, raidContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = L["BUFFMONITOR_SECTION_RAIDBUFFS"],
-            startOpen = false,
-            onCollapse = function() if RelayoutSections then RelayoutSections() end end,
-        })
-
-        local raidDesc = raidContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        raidDesc:SetPoint("TOPLEFT", 10, -5)
-        raidDesc:SetWidth(420)
-        raidDesc:SetJustifyH("LEFT")
-        raidDesc:SetText(W.Colorize(L["BUFFMONITOR_RAIDBUFF_DESC"], C.GRAY))
-
-        W:CreateCheckbox(raidContent, {
-            label = L["BUFFMONITOR_ENABLE_RAIDBUFFS"],
-            db = db, key = "raidBuffsEnabled",
-            x = 10, y = -30,
-            template = "ChatConfigCheckButtonTemplate",
-            onChange = refresh
-        })
-
-        W:CreateCheckbox(raidContent, {
-            label = L["BUFFMONITOR_UNLOCK_RAIDBUFFS"],
-            db = db, key = "unlockRaid",
-            x = 10, y = -55,
-            template = "ChatConfigCheckButtonTemplate",
-            onChange = function(val) ns:SetBuffMonitorRaidUnlock(val) end,
-        })
-
-        local G = ns.Layout:New(2)  -- 2-column grid
-
-        -- Row 1: Icon Size / Label Font Size (offset for checkboxes above)
-        local raidSlider = W:CreateAdvancedSlider(raidContent,
-            W.Colorize(L["BUFFMONITOR_RAIDBUFF_ICONSIZE"], C.ORANGE), 20, 80, -80, 1, false,
-            function(val) db.raidIconSize = val; refresh() end,
-            { db = db, key = "raidIconSize", moduleName = "buffMonitor" })
-        PlaceSlider(raidSlider, raidContent, G:Col(1), -80)
-
-        local raidLabelSlider = W:CreateAdvancedSlider(raidContent,
-            W.Colorize(L["BUFFMONITOR_LABEL_FONTSIZE"], C.ORANGE), 6, 18, -80, 1, false,
-            function(val) db.raidLabelFontSize = val; refresh() end,
-            { db = db, key = "raidLabelFontSize", moduleName = "buffMonitor" })
-        PlaceSlider(raidLabelSlider, raidContent, G:Col(2), -80)
-
-        -- Row 2: Label Color
-        W:CreateColorPicker(raidContent, {
-            label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
-            rKey = "raidLabelColorR", gKey = "raidLabelColorG", bKey = "raidLabelColorB",
-            x = G:Col(1), y = -130,
-            onChange = refresh
-        })
-
-        raidContent:SetHeight(180)
-        raidWrap:RecalcHeight()
+        -- Custom sections container
+        local customSections = CreateFrame("Frame", nil, sc)
+        customSections:SetPoint("TOPLEFT", killArea, "BOTTOMLEFT", 0, -10)
+        customSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
+        customSections:SetHeight(600)
 
         ---------------------------------------------------------------
         -- CUSTOM TRACKER DISPLAY
         ---------------------------------------------------------------
-        local customWrap, customContent = W:CreateCollapsibleSection(sectionContainer, {
+        local customWrap, customContent = W:CreateCollapsibleSection(customSections, {
             text = L["BUFFMONITOR_SECTION_CUSTOM_DISPLAY"] or "Custom Tracker Display",
             startOpen = false,
-            onCollapse = function() if RelayoutSections then RelayoutSections() end end,
+            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 
         local G2 = ns.Layout:New(2)  -- 2-column grid
@@ -170,10 +116,10 @@ function ns:InitBuffMonitor()
         ---------------------------------------------------------------
         -- CUSTOM BUFF TRACKERS
         ---------------------------------------------------------------
-        local trkWrap, trkContent = W:CreateCollapsibleSection(sectionContainer, {
+        local trkWrap, trkContent = W:CreateCollapsibleSection(customSections, {
             text = L["BUFFMONITOR_SECTION_CUSTOM"],
             startOpen = false,
-            onCollapse = function() if RelayoutSections then RelayoutSections() end end,
+            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
         })
 
         local trackerDesc = trkContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -592,43 +538,159 @@ function ns:InitBuffMonitor()
             listContainer:SetHeight(math.abs(yOff) + 40)
             trkContent:SetHeight(25 + math.abs(yOff) + 40 + 10)
             trkWrap:RecalcHeight()
-            if RelayoutSections then RelayoutSections() end
+            if RelayoutAll then RelayoutAll() end
         end
 
         BuildTrackerList()
         cache.buildList = BuildTrackerList
 
-        -- Relayout
-        local allSections = { raidWrap, customWrap, trkWrap }
+        -- ============================================================
+        -- RAID BUFFS
+        -- ============================================================
 
-        RelayoutSections = function()
-            for i, section in ipairs(allSections) do
+        local raidKillArea = CreateFrame("Frame", nil, sc, "BackdropTemplate")
+        raidKillArea:SetSize(460, 62)
+        raidKillArea:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
+        raidKillArea:SetBackdropColor(0.91, 0.56, 0.01, 0.08)
+
+        local raidMasterCB = W:CreateCheckbox(raidKillArea, {
+            label = L["BUFFMONITOR_ENABLE_RAIDBUFFS"],
+            db = db, key = "raidBuffsEnabled",
+            x = 15, y = -8,
+            isMaster = true,
+        })
+
+        local raidUnlockCB = W:CreateCheckbox(raidKillArea, {
+            label = L["BUFFMONITOR_UNLOCK_RAIDBUFFS"],
+            db = db, key = "unlockRaid",
+            x = 15, y = -38,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = function(val) ns:SetBuffMonitorRaidUnlock(val) end,
+        })
+        raidUnlockCB:SetShown(db.raidBuffsEnabled)
+
+        -- Raid sections container
+        local raidSections = CreateFrame("Frame", nil, sc)
+        raidSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
+        raidSections:SetHeight(200)
+
+        ---------------------------------------------------------------
+        -- RAID BUFFS SETTINGS
+        ---------------------------------------------------------------
+        local raidWrap, raidContent = W:CreateCollapsibleSection(raidSections, {
+            text = L["BUFFMONITOR_SECTION_RAIDBUFFS"],
+            startOpen = false,
+            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+        })
+
+        local raidDesc = raidContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        raidDesc:SetPoint("TOPLEFT", 10, -5)
+        raidDesc:SetWidth(420)
+        raidDesc:SetJustifyH("LEFT")
+        raidDesc:SetText(W.Colorize(L["BUFFMONITOR_RAIDBUFF_DESC"], C.GRAY))
+
+        local G = ns.Layout:New(2)  -- 2-column grid
+
+        -- Row 1: Icon Size / Label Font Size
+        local raidSlider = W:CreateAdvancedSlider(raidContent,
+            W.Colorize(L["BUFFMONITOR_RAIDBUFF_ICONSIZE"], C.ORANGE), 20, 80, -25, 1, false,
+            function(val) db.raidIconSize = val; refresh() end,
+            { db = db, key = "raidIconSize", moduleName = "buffMonitor" })
+        PlaceSlider(raidSlider, raidContent, G:Col(1), -25)
+
+        local raidLabelSlider = W:CreateAdvancedSlider(raidContent,
+            W.Colorize(L["BUFFMONITOR_LABEL_FONTSIZE"], C.ORANGE), 6, 18, -25, 1, false,
+            function(val) db.raidLabelFontSize = val; refresh() end,
+            { db = db, key = "raidLabelFontSize", moduleName = "buffMonitor" })
+        PlaceSlider(raidLabelSlider, raidContent, G:Col(2), -25)
+
+        -- Row 2: Label Color
+        W:CreateColorPicker(raidContent, {
+            label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
+            rKey = "raidLabelColorR", gKey = "raidLabelColorG", bKey = "raidLabelColorB",
+            x = G:Col(1), y = -75,
+            onChange = refresh
+        })
+
+        raidContent:SetHeight(120)
+        raidWrap:RecalcHeight()
+
+        -- ============================================================
+        -- Layout
+        -- ============================================================
+
+        local customSectionList = { customWrap, trkWrap }
+        local raidSectionList = { raidWrap }
+
+        RelayoutAll = function()
+            -- Custom sections
+            for i, section in ipairs(customSectionList) do
                 section:ClearAllPoints()
                 if i == 1 then
-                    section:SetPoint("TOPLEFT", sectionContainer, "TOPLEFT", 0, 0)
+                    section:SetPoint("TOPLEFT", customSections, "TOPLEFT", 0, 0)
                 else
-                    section:SetPoint("TOPLEFT", allSections[i - 1], "BOTTOMLEFT", 0, -12)
+                    section:SetPoint("TOPLEFT", customSectionList[i - 1], "BOTTOMLEFT", 0, -12)
                 end
-                section:SetPoint("RIGHT", sectionContainer, "RIGHT", 0, 0)
+                section:SetPoint("RIGHT", customSections, "RIGHT", 0, 0)
             end
 
-            local totalH = 100 + 62 + 10
+            local customH = 0
             if db.enabled then
-                for _, s in ipairs(allSections) do
-                    totalH = totalH + s:GetHeight() + 12
+                for _, s in ipairs(customSectionList) do
+                    customH = customH + s:GetHeight() + 12
                 end
             end
-            sc:SetHeight(math.max(totalH + 40, 600))
+            customSections:SetHeight(math.max(customH, 1))
+
+            -- Position raid kill area below custom sections
+            raidKillArea:ClearAllPoints()
+            raidKillArea:SetPoint("TOPLEFT", customSections, "BOTTOMLEFT", 0, -20)
+
+            raidSections:ClearAllPoints()
+            raidSections:SetPoint("TOPLEFT", raidKillArea, "BOTTOMLEFT", 0, -10)
+            raidSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
+
+            -- Raid sections
+            for i, section in ipairs(raidSectionList) do
+                section:ClearAllPoints()
+                if i == 1 then
+                    section:SetPoint("TOPLEFT", raidSections, "TOPLEFT", 0, 0)
+                else
+                    section:SetPoint("TOPLEFT", raidSectionList[i - 1], "BOTTOMLEFT", 0, -12)
+                end
+                section:SetPoint("RIGHT", raidSections, "RIGHT", 0, 0)
+            end
+
+            local raidH = 0
+            if db.raidBuffsEnabled then
+                for _, s in ipairs(raidSectionList) do
+                    raidH = raidH + s:GetHeight() + 12
+                end
+            end
+            raidSections:SetHeight(math.max(raidH, 1))
+
+            -- Total scroll height
+            local totalH = 100 + 62 + 10 + customH + 20 + 62 + 10 + raidH + 40
+            sc:SetHeight(math.max(totalH, 600))
         end
 
         masterCB:HookScript("OnClick", function(self)
             db.enabled = self:GetChecked() and true or false
             refresh()
             unlockCB:SetShown(db.enabled)
-            sectionContainer:SetShown(db.enabled)
-            RelayoutSections()
+            customSections:SetShown(db.enabled)
+            RelayoutAll()
         end)
-        sectionContainer:SetShown(db.enabled)
+        customSections:SetShown(db.enabled)
+
+        raidMasterCB:HookScript("OnClick", function(self)
+            db.raidBuffsEnabled = self:GetChecked() and true or false
+            refresh()
+            raidUnlockCB:SetShown(db.raidBuffsEnabled)
+            raidSections:SetShown(db.raidBuffsEnabled)
+            RelayoutAll()
+        end)
+        raidSections:SetShown(db.raidBuffsEnabled)
 
         -- Restore defaults button
         local restoreBtn = W:CreateRestoreDefaultsButton({
@@ -643,7 +705,7 @@ function ns:InitBuffMonitor()
         end
         f:SetScript("OnHide", function() if cache.hideEditors then cache.hideEditors() end end)
 
-        RelayoutSections()
+        RelayoutAll()
     end)
 
     if cache.buildList then cache.buildList() end
