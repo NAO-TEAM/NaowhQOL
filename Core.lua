@@ -108,7 +108,7 @@ local BUFF_MONITOR_DEFAULTS = {
     enabled = true, unlock = false, soundID = 8959, soundEnabled = true,
     colorR = 1, colorG = 0.2, colorB = 0.8, iconPoint = "CENTER", iconX = 0, iconY = 100, iconSize = 40,
     raidBuffsEnabled = true, raidIconSize = 40, raidIconPoint = "TOP", raidIconX = 0, raidIconY = -100, unlockRaid = false,
-    raidLabelFontSize = 9, raidLabelColorR = 0.7, raidLabelColorG = 0.7, raidLabelColorB = 0.7,
+    raidLabelFontSize = 9, raidLabelColorR = 0.7, raidLabelColorG = 0.7, raidLabelColorB = 0.7, raidLabelAlpha = 1.0,
     customLabelFontSize = 9, customTimerFontSize = 11,
     customLabelColorR = 0.7, customLabelColorG = 0.7, customLabelColorB = 0.7,
 }
@@ -430,6 +430,7 @@ local function InitializeDB()
     if bm.raidLabelColorR   == nil then bm.raidLabelColorR   = 0.7   end
     if bm.raidLabelColorG   == nil then bm.raidLabelColorG   = 0.7   end
     if bm.raidLabelColorB   == nil then bm.raidLabelColorB   = 0.7   end
+    if bm.raidLabelAlpha    == nil then bm.raidLabelAlpha    = 1.0   end
     -- Custom tracker font settings
     if bm.customLabelFontSize == nil then bm.customLabelFontSize = 9   end
     if bm.customTimerFontSize == nil then bm.customTimerFontSize = 11  end

@@ -156,9 +156,7 @@ local function SetFrameUnlocked(frame, unlocked, label)
         frame.unlockLabel:Show()
     else
         frame:StopMovingOrSizing()
-        frame:SetBackdrop(FRAME_BACKDROP)
-        frame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
-        frame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0)
+        frame:SetBackdrop(nil)
         if frame.unlockLabel then frame.unlockLabel:Hide() end
     end
 end
@@ -281,7 +279,7 @@ local function CheckRaidBuffs(auras)
                 raidSlots[i].lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
                 raidSlots[i].lbl:ClearAllPoints()
                 raidSlots[i].lbl:SetPoint("TOP", 0, labelOffset)
-                raidSlots[i].lbl:SetTextColor(db.raidLabelColorR or 0.7, db.raidLabelColorG or 0.7, db.raidLabelColorB or 0.7)
+                raidSlots[i].lbl:SetTextColor(db.raidLabelColorR or 0.7, db.raidLabelColorG or 0.7, db.raidLabelColorB or 0.7, db.raidLabelAlpha or 1.0)
             end
             raidIcons:Show()
         else

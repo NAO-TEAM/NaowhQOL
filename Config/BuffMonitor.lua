@@ -604,7 +604,7 @@ function ns:InitBuffMonitor()
             { db = db, key = "raidLabelFontSize", moduleName = "buffMonitor" })
         PlaceSlider(raidLabelSlider, raidContent, G:Col(2), -25)
 
-        -- Row 2: Label Color
+        -- Row 2: Label Color / Label Alpha
         W:CreateColorPicker(raidContent, {
             label = L["BUFFMONITOR_LABEL_COLOR"], db = db,
             rKey = "raidLabelColorR", gKey = "raidLabelColorG", bKey = "raidLabelColorB",
@@ -612,7 +612,14 @@ function ns:InitBuffMonitor()
             onChange = refresh
         })
 
-        raidContent:SetHeight(120)
+        -- Label alpha stored as 0-1, slider shows 0-100
+        local raidLabelAlphaSlider = W:CreateAdvancedSlider(raidContent,
+            W.Colorize(L["BUFFMONITOR_LABEL_ALPHA"] or "Label Opacity", C.ORANGE), 0, 100, -75, 5, true,
+            function(val) db.raidLabelAlpha = val / 100; refresh() end,
+            { value = (db.raidLabelAlpha or 1.0) * 100 })
+        PlaceSlider(raidLabelAlphaSlider, raidContent, G:Col(2), -75)
+
+        raidContent:SetHeight(130)
         raidWrap:RecalcHeight()
 
         -- ============================================================
