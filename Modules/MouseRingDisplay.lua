@@ -259,50 +259,78 @@ local function CreateTrail()
 
     local head, lastX, lastY = 0, 0, 0
     local updateTimer = 0
+    local activeCount = 0
+    local trailUpdateFunc
 
-    trailContainer:SetScript("OnUpdate", function(self, elapsed)
+    trailUpdateFunc = function(self, elapsed)
         local db = GetDB()
-        if not db.trailEnabled or not ShouldBeVisible() then return end
+        local shouldTrack = db.trailEnabled and ShouldBeVisible()
 
         updateTimer = updateTimer + elapsed
         if updateTimer < 0.025 then return end
         updateTimer = 0
 
-        local x, y = GetCursorPosition()
-        local scale = UIParent:GetEffectiveScale()
-        x, y = floor(x / scale + 0.5), floor(y / scale + 0.5)
-
         local now = GetTime()
-        local dx, dy = x - lastX, y - lastY
 
-        -- Add new point if moved enough
-        if dx * dx + dy * dy >= 4 then
-            lastX, lastY = x, y
-            head = (head % TRAIL_MAX) + 1
-            local pt = trailPoints[head]
-            pt.x, pt.y, pt.time, pt.active = x, y, now, true
+        -- Only track new points when enabled and visible
+        if shouldTrack then
+            local x, y = GetCursorPosition()
+            local scale = UIParent:GetEffectiveScale()
+            x, y = floor(x / scale + 0.5), floor(y / scale + 0.5)
+
+            local dx, dy = x - lastX, y - lastY
+
+            -- Add new point if moved enough
+            if dx * dx + dy * dy >= 4 then
+                lastX, lastY = x, y
+                head = (head % TRAIL_MAX) + 1
+                local pt = trailPoints[head]
+                if not pt.active then
+                    activeCount = activeCount + 1
+                end
+                pt.x, pt.y, pt.time, pt.active = x, y, now, true
+            end
         end
 
-        -- Update all points
-        local duration = max(db.trailDuration or 0.6, 0.1)
-        local tr, tg, tb = db.trailR or 1, db.trailG or 1, db.trailB or 1
-        local opacity = GetOpacity()
+        -- Update existing points (always, to let them fade out)
+        if activeCount > 0 then
+            local duration = max(db.trailDuration or 0.6, 0.1)
+            local tr, tg, tb = db.trailR or 1, db.trailG or 1, db.trailB or 1
+            local opacity = GetOpacity()
 
-        for i = 1, TRAIL_MAX do
-            local pt = trailPoints[i]
-            if pt.active then
-                local fade = 1 - (now - pt.time) / duration
-                if fade <= 0 then
-                    pt.active = false
-                    pt.tex:Hide()
-                else
-                    pt.tex:ClearAllPoints()
-                    pt.tex:SetPoint("CENTER", UIParent, "BOTTOMLEFT", pt.x, pt.y)
-                    pt.tex:SetVertexColor(tr, tg, tb, fade * opacity * 0.8)
-                    pt.tex:SetSize(24 * fade, 24 * fade)
-                    pt.tex:Show()
+            for i = 1, TRAIL_MAX do
+                local pt = trailPoints[i]
+                if pt.active then
+                    local fade = 1 - (now - pt.time) / duration
+                    if fade <= 0 then
+                        pt.active = false
+                        pt.tex:Hide()
+                        activeCount = activeCount - 1
+                    else
+                        pt.tex:ClearAllPoints()
+                        pt.tex:SetPoint("CENTER", UIParent, "BOTTOMLEFT", pt.x, pt.y)
+                        pt.tex:SetVertexColor(tr, tg, tb, fade * opacity * 0.8)
+                        pt.tex:SetSize(24 * fade, 24 * fade)
+                        pt.tex:Show()
+                    end
                 end
             end
+        end
+
+        -- Stop updates when disabled and all points faded
+        if not shouldTrack and activeCount == 0 then
+            self:SetScript("OnUpdate", nil)
+        end
+    end
+
+    -- Start/stop trail updates based on visibility
+    trailContainer:SetScript("OnShow", function(self)
+        self:SetScript("OnUpdate", trailUpdateFunc)
+    end)
+    trailContainer:SetScript("OnHide", function(self)
+        -- Let fade complete, OnUpdate will self-stop when activeCount reaches 0
+        if activeCount == 0 then
+            self:SetScript("OnUpdate", nil)
         end
     end)
 end

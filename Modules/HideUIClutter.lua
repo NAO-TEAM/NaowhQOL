@@ -30,6 +30,8 @@ local function SetupAlertSuppression()
     end
 end
 
+local talkingHeadWaitFrame
+
 local function SetupTalkingHeadSuppression()
     if not GetConfig("hideTalkingHead") then return end
 
@@ -43,12 +45,14 @@ local function SetupTalkingHeadSuppression()
     end
 
     if not ApplyTalkingHeadHook() then
-        local waitFrame = CreateFrame("Frame")
-        waitFrame:RegisterEvent("ADDON_LOADED")
-        waitFrame:SetScript("OnEvent", function(self, event, name)
+        talkingHeadWaitFrame = CreateFrame("Frame")
+        talkingHeadWaitFrame:RegisterEvent("ADDON_LOADED")
+        talkingHeadWaitFrame:SetScript("OnEvent", function(self, event, name)
             if name == "Blizzard_TalkingHeadUI" then
                 ApplyTalkingHeadHook()
-                self:UnregisterEvent("ADDON_LOADED")
+                self:UnregisterAllEvents()
+                self:SetScript("OnEvent", nil)
+                talkingHeadWaitFrame = nil
             end
         end)
     end

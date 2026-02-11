@@ -12,34 +12,27 @@ local function PlaceSlider(slider, parent, x, y)
     return slider
 end
 
+local BUFF_TRACKER_DEFAULTS = {
+    enabled = true, iconSize = 40, spacing = 4, textSize = 14,
+    font = "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", showMissingOnly = false,
+    combatOnly = false, showCooldown = true, showStacks = true,
+    unlocked = false, showAllRaidBuffs = false, showRaidBuffs = true,
+    showPersonalAuras = true, showStances = true,
+    growDirection = "RIGHT", maxIconsPerRow = 10,
+    point = "TOP", posX = 0, posY = -100, width = 450, height = 60,
+}
+
 function ns:InitBuffTracker()
     if not ns.MainFrame or not ns.MainFrame.Content then return end
     local p = ns.MainFrame.Content
 
     if not NaowhQOL then NaowhQOL = {} end
     if not NaowhQOL.buffTracker then
-        NaowhQOL.buffTracker = {
-            enabled = true, iconSize = 40, spacing = 4, textSize = 14,
-            font = "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", showMissingOnly = false,
-            combatOnly = false, showCooldown = true, showStacks = true,
-            unlocked = false, showAllRaidBuffs = false, showRaidBuffs = true,
-            showPersonalAuras = true, showStances = true,
-            growDirection = "RIGHT", maxIconsPerRow = 10,
-            point = "TOP", posX = 0, posY = -100, width = 450, height = 60,
-        }
+        NaowhQOL.buffTracker = {}
     end
 
     local db = NaowhQOL.buffTracker
-    local defaults = {
-        enabled = true, iconSize = 40, spacing = 4, textSize = 14,
-        font = "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", showMissingOnly = false,
-        combatOnly = false, showCooldown = true, showStacks = true,
-        unlocked = false, showAllRaidBuffs = false, showRaidBuffs = true,
-        showPersonalAuras = true, showStances = true,
-        growDirection = "RIGHT", maxIconsPerRow = 10,
-        point = "TOP", posX = 0, posY = -100, width = 450, height = 60,
-    }
-    for k, v in pairs(defaults) do if db[k] == nil then db[k] = v end end
+    for k, v in pairs(BUFF_TRACKER_DEFAULTS) do if db[k] == nil then db[k] = v end end
 
     local function refresh() if ns.RefreshBuffTracker then ns:RefreshBuffTracker() end end
 

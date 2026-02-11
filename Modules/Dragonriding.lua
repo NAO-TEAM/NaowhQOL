@@ -76,6 +76,31 @@ local function IsEnabled()
     return NaowhQOL.dragonriding and NaowhQOL.dragonriding.enabled
 end
 
+local eventsRegistered = false
+local DYNAMIC_EVENTS = {
+    "ACTIONBAR_UPDATE_COOLDOWN",
+    "ACTIONBAR_UPDATE_STATE",
+    "UPDATE_BONUS_ACTIONBAR",
+    "PLAYER_CAN_GLIDE_CHANGED",
+    "PLAYER_IS_GLIDING_CHANGED",
+}
+
+local function RegisterDynamicEvents()
+    if eventsRegistered or not eventFrame then return end
+    for _, event in ipairs(DYNAMIC_EVENTS) do
+        eventFrame:RegisterEvent(event)
+    end
+    eventsRegistered = true
+end
+
+local function UnregisterDynamicEvents()
+    if not eventsRegistered or not eventFrame then return end
+    for _, event in ipairs(DYNAMIC_EVENTS) do
+        eventFrame:UnregisterEvent(event)
+    end
+    eventsRegistered = false
+end
+
 local CDM_FRAMES = {
     BuffIconCooldownViewer = true,
     EssentialCooldownViewer = true,
@@ -570,11 +595,13 @@ function ns:HideDragonridingPreview()
     prevSpeed = 0
     lastColorState = nil
     if IsEnabled() then
+        RegisterDynamicEvents()
         ActivateUpdater()
     else
         mainFrame:Hide()
         mainFrame:SetAlpha(0)
         eventFrame:SetScript("OnUpdate", nil)
+        UnregisterDynamicEvents()
     end
 end
 
@@ -607,18 +634,16 @@ end
 eventFrame = CreateFrame("Frame", "NaowhQOL_DragonridingEvents")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("PLAYER_LOGOUT")
-eventFrame:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-eventFrame:RegisterEvent("ACTIONBAR_UPDATE_STATE")
-eventFrame:RegisterEvent("UPDATE_BONUS_ACTIONBAR")
-eventFrame:RegisterEvent("PLAYER_CAN_GLIDE_CHANGED")
-eventFrame:RegisterEvent("PLAYER_IS_GLIDING_CHANGED")
 
 eventFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         HookPreviewCleanup()
         if not C_PlayerInfo or not C_PlayerInfo.GetGlidingInfo then return end
         BuildUI()
-        ActivateUpdater()
+        if IsEnabled() then
+            RegisterDynamicEvents()
+            ActivateUpdater()
+        end
         return
     end
 
@@ -627,7 +652,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         return
     end
 
-    if not uiBuilt then return end
+    if not uiBuilt or not IsEnabled() then return end
     ActivateUpdater()
 end)
 

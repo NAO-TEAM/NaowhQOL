@@ -42,8 +42,10 @@ local recentCasts     = {}
 local DEDUP_WINDOW    = 0.15
 local gcdSpellID      = nil
 local recentSpells    = {}
-local recentSpellSet  = {}
+local recentSpellIdx  = {}  -- spellId -> index for O(1) lookup
 local MAX_RECENT      = 10
+local recentNextIdx   = 1
+local recentValidCount = 0
 
 -- Ring buffer for activity segments
 local activitySegments  = {}
@@ -519,20 +521,57 @@ local function AssignLane()
     return 0
 end
 
-local function TrackRecentSpell(spellId, icon)
-    if recentSpellSet[spellId] then
-        for i, entry in ipairs(recentSpells) do
-            if entry.spellId == spellId then
-                table.remove(recentSpells, i)
-                break
-            end
+-- Compact recentSpells array, keeping only newest MAX_RECENT entries
+local function CompactRecentSpells()
+    local newSpells = {}
+    local newIdx = 1
+    local toKeep = math.min(recentValidCount, MAX_RECENT)
+    local kept = 0
+
+    -- Collect entries to keep (iterate backwards for newest first)
+    local keepIndices = {}
+    for i = recentNextIdx - 1, 1, -1 do
+        if recentSpells[i] and kept < toKeep then
+            keepIndices[#keepIndices + 1] = i
+            kept = kept + 1
         end
     end
-    recentSpells[#recentSpells + 1] = { spellId = spellId, icon = icon }
-    recentSpellSet[spellId] = true
-    if #recentSpells > MAX_RECENT then
-        recentSpellSet[recentSpells[1].spellId] = nil
-        table.remove(recentSpells, 1)
+
+    -- Rebuild in chronological order (reverse the kept indices)
+    wipe(recentSpellIdx)
+    for i = #keepIndices, 1, -1 do
+        local entry = recentSpells[keepIndices[i]]
+        newSpells[newIdx] = entry
+        recentSpellIdx[entry.spellId] = newIdx
+        newIdx = newIdx + 1
+    end
+
+    wipe(recentSpells)
+    for i = 1, newIdx - 1 do
+        recentSpells[i] = newSpells[i]
+    end
+
+    recentNextIdx = newIdx
+    recentValidCount = kept
+end
+
+local function TrackRecentSpell(spellId, icon)
+    -- O(1) removal via index lookup instead of O(n) search
+    local existingIdx = recentSpellIdx[spellId]
+    if existingIdx then
+        recentSpells[existingIdx] = nil
+        recentValidCount = recentValidCount - 1
+    end
+
+    -- Add at end (O(1))
+    recentSpells[recentNextIdx] = { spellId = spellId, icon = icon }
+    recentSpellIdx[spellId] = recentNextIdx
+    recentNextIdx = recentNextIdx + 1
+    recentValidCount = recentValidCount + 1
+
+    -- Compact when array gets sparse or exceeds capacity
+    if recentValidCount > MAX_RECENT or recentNextIdx > MAX_RECENT * 3 then
+        CompactRecentSpells()
     end
 end
 
@@ -723,4 +762,14 @@ end)
 
 ns.GcdTrackerDisplay = container
 ns.GcdTrackerRefreshVisibility = RefreshVisibility
-ns.GcdTrackerRecentSpells = recentSpells
+-- Return compacted array for external consumers (sparse array safe)
+ns.GetGcdTrackerRecentSpells = function()
+    local result = {}
+    for i = 1, recentNextIdx - 1 do
+        if recentSpells[i] then
+            result[#result + 1] = recentSpells[i]
+        end
+    end
+    return result
+end
+ns.GcdTrackerRecentSpells = recentSpells  -- Keep for backwards compat

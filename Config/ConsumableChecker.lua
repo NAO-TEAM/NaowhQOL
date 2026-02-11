@@ -416,14 +416,16 @@ function ns:InitConsumableChecker()
                 local name = C_Item.GetItemInfo(itemId)
                 row.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
                 row.text:SetText(name or ("Item " .. itemId))
-                -- Store the index locally to avoid closure issues
-                local removeIdx = i
+                -- Capture itemId instead of index to handle list reordering
+                local capturedItemId = itemId
                 row.del:SetScript("OnClick", function()
-                    -- Validate index before removal
-                    if removeIdx >= 1 and removeIdx <= #catCustomItems then
-                        table.remove(catCustomItems, removeIdx)
-                        RefreshTrackedItemsList()
+                    for idx, id in ipairs(catCustomItems) do
+                        if id == capturedItemId then
+                            table.remove(catCustomItems, idx)
+                            break
+                        end
                     end
+                    RefreshTrackedItemsList()
                 end)
                 row:ClearAllPoints()
                 row:SetPoint("TOPLEFT", 0, yOff)

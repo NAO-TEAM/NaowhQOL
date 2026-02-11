@@ -93,3 +93,6 @@ eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 eventFrame:SetScript("OnEvent", function(self, event, ...)
     Refresh()
 end)
+
+-- Initial scan to populate cache immediately (handles /reload in group)
+cachedClasses = ScanGroupClasses()
