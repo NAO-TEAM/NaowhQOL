@@ -202,12 +202,12 @@ function ns:InitDragonriding()
             onChange = drRefresh,
         })
 
+        -- bgAlpha stored as 0-1, slider shows 0-100
         local bgAlphaSlider = W:CreateAdvancedSlider(appContent,
             W.Colorize(L["DRAGON_BG_OPACITY"], C.ORANGE), 0, 100, -130, 1, true,
-            function(val) db.bgAlpha = val / 100; drRefresh() end)
+            function(val) db.bgAlpha = val / 100; drRefresh() end,
+            { value = (db.bgAlpha or 0.8) * 100 })
         PlaceSlider(bgAlphaSlider, appContent, GAP:Col(1), GAP:Row(4))
-        -- bgAlpha stored as 0-1, slider shows 0-100
-        bgAlphaSlider:SetValue((db.bgAlpha ~= nil and db.bgAlpha or 0.8) * 100)
 
         W:CreateColorPicker(appContent, {
             label = L["DRAGON_BORDER_COLOR"],
@@ -218,9 +218,9 @@ function ns:InitDragonriding()
 
         local borderAlphaSlider = W:CreateAdvancedSlider(appContent,
             W.Colorize(L["DRAGON_BORDER_OPACITY"], C.ORANGE), 0, 100, -190, 1, true,
-            function(val) db.borderAlpha = val / 100; drRefresh() end)
+            function(val) db.borderAlpha = val / 100; drRefresh() end,
+            { value = (db.borderAlpha or 1.0) * 100 })
         PlaceSlider(borderAlphaSlider, appContent, GAP:Col(2), GAP:Row(5))
-        borderAlphaSlider:SetValue((db.borderAlpha ~= nil and db.borderAlpha or 1.0) * 100)
 
         local borderSizeSlider = W:CreateAdvancedSlider(appContent,
             W.Colorize(L["DRAGON_BORDER_SIZE"], C.ORANGE), 1, 5, -250, 1, false,
@@ -372,9 +372,9 @@ function ns:InitDragonriding()
 
         local iconBorderAlphaSlider = W:CreateAdvancedSlider(iconContent,
             W.Colorize(L["DRAGON_ICON_BORDER_OPACITY"], C.ORANGE), 0, 100, -130, 1, true,
-            function(val) db.iconBorderAlpha = val / 100; drRefresh() end)
+            function(val) db.iconBorderAlpha = val / 100; drRefresh() end,
+            { value = (db.iconBorderAlpha or 1.0) * 100 })
         PlaceSlider(iconBorderAlphaSlider, iconContent, GI:Col(2), GI:Row(3))
-        iconBorderAlphaSlider:SetValue((db.iconBorderAlpha ~= nil and db.iconBorderAlpha or 1.0) * 100)
 
         local iconBorderSizeSlider = W:CreateAdvancedSlider(iconContent,
             W.Colorize(L["DRAGON_ICON_BORDER_SIZE"], C.ORANGE), 1, 5, -190, 1, false,

@@ -90,7 +90,18 @@ local DRAGONRIDING_DEFAULTS = {
     surgeIconSize = 0, surgeAnchor = "RIGHT", surgeOffsetX = 6, surgeOffsetY = 0,
     anchorFrame = "UIParent", anchorTo = "BOTTOM", matchAnchorWidth = false,
     bgColorR = 0.12, bgColorG = 0.12, bgColorB = 0.12, bgAlpha = 0.8,
+    borderColorR = 0, borderColorG = 0, borderColorB = 0, borderAlpha = 1.0, borderSize = 1,
+    iconBorderColorR = 0, iconBorderColorG = 0, iconBorderColorB = 0, iconBorderAlpha = 1.0, iconBorderSize = 1,
     hideCdmWhileMounted = false,
+}
+
+local BUFF_TRACKER_DEFAULTS = {
+    enabled = true, iconSize = 40, spacing = 4, textSize = 14,
+    font = NAOWH_FONT, showMissingOnly = false, combatOnly = false,
+    showCooldown = true, showStacks = true, unlocked = false,
+    showAllRaidBuffs = false, showRaidBuffs = true, showPersonalAuras = true,
+    showStances = true, growDirection = "RIGHT", maxIconsPerRow = 10,
+    point = "TOP", posX = 0, posY = -100, width = 450, height = 60,
 }
 
 local BUFF_MONITOR_DEFAULTS = {
@@ -232,6 +243,7 @@ ns.ModuleDefaults = {
     crosshair = CROSSHAIR_DEFAULTS,
     combatLogger = COMBAT_LOGGER_DEFAULTS,
     dragonriding = DRAGONRIDING_DEFAULTS,
+    buffTracker = BUFF_TRACKER_DEFAULTS,
     buffMonitor = BUFF_MONITOR_DEFAULTS,
     consumableChecker = CONSUMABLE_CHECKER_DEFAULTS,
     gcdTracker = GCD_TRACKER_DEFAULTS,
@@ -353,6 +365,16 @@ local function InitializeDB()
     if dr.bgColorG == nil then dr.bgColorG = 0.12 end
     if dr.bgColorB == nil then dr.bgColorB = 0.12 end
     if dr.bgAlpha == nil then dr.bgAlpha = 0.8 end
+    if dr.borderColorR == nil then dr.borderColorR = 0 end
+    if dr.borderColorG == nil then dr.borderColorG = 0 end
+    if dr.borderColorB == nil then dr.borderColorB = 0 end
+    if dr.borderAlpha == nil then dr.borderAlpha = 1.0 end
+    if dr.borderSize == nil then dr.borderSize = 1 end
+    if dr.iconBorderColorR == nil then dr.iconBorderColorR = 0 end
+    if dr.iconBorderColorG == nil then dr.iconBorderColorG = 0 end
+    if dr.iconBorderColorB == nil then dr.iconBorderColorB = 0 end
+    if dr.iconBorderAlpha == nil then dr.iconBorderAlpha = 1.0 end
+    if dr.iconBorderSize == nil then dr.iconBorderSize = 1 end
     if dr.hideCdmWhileMounted == nil then dr.hideCdmWhileMounted = false end
 
     NaowhQOL.misc = NaowhQOL.misc or {}
