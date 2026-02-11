@@ -273,6 +273,7 @@ CreateGroup("reminders", L["SIDEBAR_GROUP_REMINDERS"], {
     { label = L["SIDEBAR_TAB_TALENT_REMINDER"], onClick = function() if ns.InitTalentReminder then ns:InitTalentReminder() end end },
     { label = L["SIDEBAR_TAB_EMOTE_DETECTION"], onClick = function() if ns.InitEmoteDetection then ns:InitEmoteDetection() end end },
     { label = L["SIDEBAR_TAB_EQUIPMENT_REMINDER"], onClick = function() if ns.InitEquipmentReminder then ns:InitEquipmentReminder() end end },
+    { label = L["SIDEBAR_TAB_CREZ"], onClick = function() if ns.InitCRez then ns:InitCRez() end end },
     { label = L["SIDEBAR_TAB_MISC"], onClick = function() if ns.InitModuleOptions then ns:InitModuleOptions() end end },
 })
 

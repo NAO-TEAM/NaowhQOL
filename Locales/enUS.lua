@@ -49,6 +49,13 @@ ns:RegisterLocale("enUS", {
     COMMON_ENTRIES_COMMA = "Entries (comma-separated):",
 
     ---------------------------------------------------------------------------
+    -- COMMON: Slider/Picker Labels (short form)
+    ---------------------------------------------------------------------------
+    COMMON_FONT_SIZE = "Font Size",
+    COMMON_COLOR = "Color",
+    COMMON_ALPHA = "Alpha",
+
+    ---------------------------------------------------------------------------
     -- COMMON: Difficulty Filters
     ---------------------------------------------------------------------------
     COMMON_DIFF_NORMAL_DUNGEON = "Normal Dungeon",
@@ -121,6 +128,7 @@ ns:RegisterLocale("enUS", {
     SIDEBAR_TAB_TALENT_REMINDER = "Talent Reminder",
     SIDEBAR_TAB_EMOTE_DETECTION = "Emote Detection",
     SIDEBAR_TAB_EQUIPMENT_REMINDER = "Equipment Reminder",
+    SIDEBAR_TAB_CREZ = "Combat Rez",
     SIDEBAR_TAB_RAID_ALERTS = "Raid Alerts",
     SIDEBAR_TAB_OPTIMIZATIONS = "Optimizations",
     SIDEBAR_TAB_MISC = "Misc",
@@ -540,6 +548,25 @@ ns:RegisterLocale("enUS", {
     STEALTH_STANCE_DEFAULT = "CHECK STANCE",
     STEALTH_ENABLE_SOUND = "Enable Sound Alert",
     STEALTH_REPEAT = "Repeat Interval (sec)",
+
+    ---------------------------------------------------------------------------
+    -- COMBAT REZ
+    ---------------------------------------------------------------------------
+    CREZ_SUBTITLE = "Combat resurrection timer and death alerts",
+    CREZ_ENABLE_TIMER = "Enable Combat Rez Timer",
+    CREZ_UNLOCK_LABEL = "Rez Timer",
+    CREZ_ICON_SIZE = "Icon Size",
+    CREZ_TIMER_LABEL = "Timer Text",
+    CREZ_COUNT_LABEL = "Stack Count",
+    CREZ_ENABLE_DEATH = "Enable Death Notice",
+    CREZ_DEATH_UNLOCK_LABEL = "Death Notice",
+    CREZ_SECTION_SOUND = "SOUND SETTINGS",
+    CREZ_ENABLE_SOUND = "Enable Sound",
+    CREZ_DEATH_SOUND = "Death Sound",
+    CREZ_SECTION_TEXT = "TEXT SETTINGS",
+    CREZ_ENABLE_TEXT = "Show Text",
+    CREZ_TEXT_DURATION = "Display Duration",
+    CREZ_DIED = "died",
 
     ---------------------------------------------------------------------------
     -- STATIC POPUPS

@@ -167,6 +167,17 @@ local TYPE_SCHEMAS = {
         enabled = "boolean",
         commands = "table",
     },
+    cRez = {
+        enabled = "boolean", unlock = "boolean",
+        point = "string", x = "number", y = "number", iconSize = "number",
+        timerFontSize = "number", timerColorR = "number", timerColorG = "number", timerColorB = "number", timerAlpha = "number",
+        countFontSize = "number", countColorR = "number", countColorG = "number", countColorB = "number", countAlpha = "number",
+        deathEnabled = "boolean", deathSoundEnabled = "boolean", deathSoundID = "number",
+        deathTextEnabled = "boolean", deathTextDuration = "number",
+        deathPoint = "string", deathX = "number", deathY = "number",
+        deathWidth = "number", deathHeight = "number", deathUnlock = "boolean",
+        deathFontSize = "number", deathTextR = "number", deathTextG = "number", deathTextB = "number", deathTextAlpha = "number",
+    },
 }
 
 -- Validate imported data against schema
@@ -716,3 +727,4 @@ ns.SettingsIO:RegisterSimple("emoteDetection",   "Emote Detection")
 ns.SettingsIO:RegisterSimple("rangeCheck",       "Range Check")
 ns.SettingsIO:RegisterSimple("focusCastBar",     "Focus Cast Bar")
 ns.SettingsIO:RegisterSimple("slashCommands",    "Slash Commands")
+ns.SettingsIO:RegisterSimple("cRez",             "Combat Rez")

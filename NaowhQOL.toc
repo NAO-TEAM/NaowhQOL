@@ -52,6 +52,7 @@ Modules/DeathReleaseProtection.lua
 Modules/AuctionHouseFilter.lua
 Modules/TalentReminder.lua
 Modules/EquipmentReminder.lua
+Modules/CRezDisplay.lua
 Modules/SlashCommands.lua
 Config/Profiler.lua
 Config/MouseCursor.lua
@@ -70,6 +71,7 @@ Config/EmoteDetection.lua
 Config/FocusCastBar.lua
 Config/TalentReminder.lua
 Config/EquipmentReminder.lua
+Config/CRez.lua
 Config/Modules.lua
 Config/ImportExport.lua
 Config/SlashCommands.lua

@@ -238,6 +238,22 @@ local MOUSE_RING_DEFAULTS = {
     castSwipeR = 1.0, castSwipeG = 0.66, castSwipeB = 0.0,
 }
 
+local CREZ_DEFAULTS = {
+    -- Combat Rez Timer
+    enabled = false, unlock = false,
+    point = "CENTER", x = 0, y = 150, iconSize = 40,
+    timerFontSize = 11, timerColorR = 1, timerColorG = 1, timerColorB = 1, timerAlpha = 1.0,
+    countFontSize = 11, countColorR = 1, countColorG = 1, countColorB = 1, countAlpha = 1.0,
+    -- Death Notice
+    deathEnabled = false,
+    deathSoundEnabled = true, deathSoundID = 8959,
+    deathTextEnabled = true, deathTextDuration = 3,
+    deathPoint = "CENTER", deathX = 0, deathY = 0,
+    deathWidth = 300, deathHeight = 40,
+    deathUnlock = false,
+    deathFontSize = 16, deathTextR = 1, deathTextG = 1, deathTextB = 1, deathTextAlpha = 1.0,
+}
+
 -- Expose module defaults for restore functionality
 ns.ModuleDefaults = {
     combatTimer = COMBAT_TIMER_DEFAULTS,
@@ -258,6 +274,7 @@ ns.ModuleDefaults = {
     poisonReminder = POISON_REMINDER_DEFAULTS,
     equipmentReminder = EQUIPMENT_REMINDER_DEFAULTS,
     mouseRing = MOUSE_RING_DEFAULTS,
+    cRez = CREZ_DEFAULTS,
 }
 
 -- Restore a module to default settings
@@ -725,6 +742,46 @@ local function InitializeDB()
     local tr = NaowhQOL.talentReminder
     if tr.enabled == nil then tr.enabled = false end
     tr.loadouts = tr.loadouts or {}
+
+    -- Combat Rez
+    NaowhQOL.cRez = NaowhQOL.cRez or {}
+    local cr = NaowhQOL.cRez
+    -- Rez Timer
+    if cr.enabled           == nil then cr.enabled           = false     end
+    if cr.unlock            == nil then cr.unlock            = false     end
+    if cr.point             == nil then cr.point             = "CENTER"  end
+    if cr.x                 == nil then cr.x                 = 0         end
+    if cr.y                 == nil then cr.y                 = 150       end
+    if cr.iconSize          == nil then cr.iconSize          = 40        end
+    if cr.timerFontSize     == nil then cr.timerFontSize     = 11        end
+    if cr.timerColorR       == nil then cr.timerColorR       = 1         end
+    if cr.timerColorG       == nil then cr.timerColorG       = 1         end
+    if cr.timerColorB       == nil then cr.timerColorB       = 1         end
+    if cr.timerAlpha        == nil then cr.timerAlpha        = 1.0       end
+    if cr.countFontSize     == nil then cr.countFontSize     = 11        end
+    if cr.countColorR       == nil then cr.countColorR       = 1         end
+    if cr.countColorG       == nil then cr.countColorG       = 1         end
+    if cr.countColorB       == nil then cr.countColorB       = 1         end
+    if cr.countAlpha        == nil then cr.countAlpha        = 1.0       end
+    -- Death Notice
+    if cr.deathEnabled      == nil then cr.deathEnabled      = false     end
+    if cr.deathSoundEnabled == nil then cr.deathSoundEnabled = true      end
+    if cr.deathTankSoundID  == nil then cr.deathTankSoundID  = 8959      end
+    if cr.deathHealerSoundID == nil then cr.deathHealerSoundID = 8960    end
+    if cr.deathDPSSoundID   == nil then cr.deathDPSSoundID   = 878       end
+    if cr.deathTextEnabled  == nil then cr.deathTextEnabled  = true      end
+    if cr.deathTextDuration == nil then cr.deathTextDuration = 3         end
+    if cr.deathPoint        == nil then cr.deathPoint        = "CENTER"  end
+    if cr.deathX            == nil then cr.deathX            = 0         end
+    if cr.deathY            == nil then cr.deathY            = 0         end
+    if cr.deathWidth        == nil then cr.deathWidth        = 300       end
+    if cr.deathHeight       == nil then cr.deathHeight       = 40        end
+    if cr.deathUnlock       == nil then cr.deathUnlock       = false     end
+    if cr.deathFontSize     == nil then cr.deathFontSize     = 16        end
+    if cr.deathTextR        == nil then cr.deathTextR        = 1         end
+    if cr.deathTextG        == nil then cr.deathTextG        = 1         end
+    if cr.deathTextB        == nil then cr.deathTextB        = 1         end
+    if cr.deathTextAlpha    == nil then cr.deathTextAlpha    = 1.0       end
 
     -- Slash Commands
     NaowhQOL.slashCommands = NaowhQOL.slashCommands or {}
