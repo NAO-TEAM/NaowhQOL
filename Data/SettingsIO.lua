@@ -172,11 +172,16 @@ local TYPE_SCHEMAS = {
         point = "string", x = "number", y = "number", iconSize = "number",
         timerFontSize = "number", timerColorR = "number", timerColorG = "number", timerColorB = "number", timerAlpha = "number",
         countFontSize = "number", countColorR = "number", countColorG = "number", countColorB = "number", countAlpha = "number",
-        deathEnabled = "boolean", deathSoundEnabled = "boolean", deathSoundID = "number",
-        deathTextEnabled = "boolean", deathTextDuration = "number",
-        deathPoint = "string", deathX = "number", deathY = "number",
-        deathWidth = "number", deathHeight = "number", deathUnlock = "boolean",
-        deathFontSize = "number", deathTextR = "number", deathTextG = "number", deathTextB = "number", deathTextAlpha = "number",
+        deathWarning = "boolean",
+    },
+    petTracker = {
+        enabled = "boolean", unlock = "boolean",
+        showIcon = "boolean", onlyInInstance = "boolean",
+        point = "string", x = "number", y = "number",
+        width = "number", height = "number",
+        textSize = "number", iconSize = "number",
+        missingText = "string", passiveText = "string", wrongPetText = "string",
+        colorR = "number", colorG = "number", colorB = "number",
     },
 }
 
@@ -728,3 +733,4 @@ ns.SettingsIO:RegisterSimple("rangeCheck",       "Range Check")
 ns.SettingsIO:RegisterSimple("focusCastBar",     "Focus Cast Bar")
 ns.SettingsIO:RegisterSimple("slashCommands",    "Slash Commands")
 ns.SettingsIO:RegisterSimple("cRez",             "Combat Rez")
+ns.SettingsIO:RegisterSimple("petTracker",       "Pet Tracker")

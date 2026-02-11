@@ -558,14 +558,7 @@ ns:RegisterLocale("enUS", {
     CREZ_ICON_SIZE = "Icon Size",
     CREZ_TIMER_LABEL = "Timer Text",
     CREZ_COUNT_LABEL = "Stack Count",
-    CREZ_ENABLE_DEATH = "Enable Death Notice",
-    CREZ_DEATH_UNLOCK_LABEL = "Death Notice",
-    CREZ_SECTION_SOUND = "SOUND SETTINGS",
-    CREZ_ENABLE_SOUND = "Enable Sound",
-    CREZ_DEATH_SOUND = "Death Sound",
-    CREZ_SECTION_TEXT = "TEXT SETTINGS",
-    CREZ_ENABLE_TEXT = "Show Text",
-    CREZ_TEXT_DURATION = "Display Duration",
+    CREZ_DEATH_WARNING = "Death as Warning",
     CREZ_DIED = "died",
 
     ---------------------------------------------------------------------------
@@ -711,6 +704,23 @@ ns:RegisterLocale("enUS", {
     CROSSHAIR_SPELL_UNSUPPORTED = "Not supported for this spec",
     CROSSHAIR_SPELL_NONE = "No spell configured",
     CROSSHAIR_RESET_SPELL = "Reset to Default",
+
+    ---------------------------------------------------------------------------
+    -- PET TRACKER
+    ---------------------------------------------------------------------------
+    SIDEBAR_TAB_PET_TRACKER = "Pet Tracker",
+    PETTRACKER_SUBTITLE = "Alerts for missing or passive pets",
+    PETTRACKER_ENABLE = "Enable Pet Tracker",
+    PETTRACKER_SHOW_ICON = "Show Pet Icon",
+    PETTRACKER_INSTANCE_ONLY = "Only Show in Instances",
+    PETTRACKER_SECTION_WARNINGS = "WARNING TEXT",
+    PETTRACKER_MISSING_LABEL = "Missing Text:",
+    PETTRACKER_MISSING_DEFAULT = "Pet Missing",
+    PETTRACKER_PASSIVE_LABEL = "Passive Text:",
+    PETTRACKER_PASSIVE_DEFAULT = "Pet Passive",
+    PETTRACKER_WRONGPET_LABEL = "Wrong Pet Text:",
+    PETTRACKER_WRONGPET_DEFAULT = "Wrong Pet",
+    PETTRACKER_CLASS_NOTE = "Supports: Hunter, Warlock, Death Knight (Unholy), Mage (Frost)",
 
     ---------------------------------------------------------------------------
     -- CORE

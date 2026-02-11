@@ -53,6 +53,7 @@ Modules/AuctionHouseFilter.lua
 Modules/TalentReminder.lua
 Modules/EquipmentReminder.lua
 Modules/CRezDisplay.lua
+Modules/PetTrackerDisplay.lua
 Modules/SlashCommands.lua
 Config/Profiler.lua
 Config/MouseCursor.lua
@@ -72,6 +73,7 @@ Config/FocusCastBar.lua
 Config/TalentReminder.lua
 Config/EquipmentReminder.lua
 Config/CRez.lua
+Config/PetTracker.lua
 Config/Modules.lua
 Config/ImportExport.lua
 Config/SlashCommands.lua

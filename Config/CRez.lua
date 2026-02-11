@@ -55,6 +55,14 @@ function ns:InitCRez()
         })
         rezUnlockCB:SetShown(db.enabled)
 
+        local deathWarnCB = W:CreateCheckbox(rezKillArea, {
+            label = L["CREZ_DEATH_WARNING"] or "Death as Warning",
+            db = db, key = "deathWarning",
+            x = 200, y = -38,
+            template = "ChatConfigCheckButtonTemplate",
+        })
+        deathWarnCB:SetShown(db.enabled)
+
         -- Rez sections container
         local rezSections = CreateFrame("Frame", nil, sc)
         rezSections:SetPoint("TOPLEFT", rezKillArea, "BOTTOMLEFT", 0, -10)
@@ -131,86 +139,10 @@ function ns:InitCRez()
         rezAppWrap:RecalcHeight()
 
         -- ============================================================
-        -- DEATH NOTICE
-        -- ============================================================
-
-        local deathKillArea = CreateFrame("Frame", nil, sc, "BackdropTemplate")
-        deathKillArea:SetSize(460, 40)
-        deathKillArea:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
-        deathKillArea:SetBackdropColor(0.91, 0.56, 0.01, 0.08)
-
-        local deathMasterCB = W:CreateCheckbox(deathKillArea, {
-            label = L["CREZ_ENABLE_DEATH"] or "Enable Death Notice",
-            db = db, key = "deathEnabled",
-            x = 15, y = -18,
-            isMaster = true,
-        })
-
-        -- Death sections container
-        local deathSections = CreateFrame("Frame", nil, sc)
-        deathSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
-        deathSections:SetHeight(400)
-
-        -- SOUND SETTINGS
-        local soundWrap, soundContent = W:CreateCollapsibleSection(deathSections, {
-            text = L["CREZ_SECTION_SOUND"] or "Sound Settings",
-            startOpen = false,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
-        })
-
-        local G2 = ns.Layout:New(1)
-
-        -- Row 1: Enable Sound
-        W:CreateCheckbox(soundContent, {
-            label = L["CREZ_ENABLE_SOUND"] or "Enable Sound",
-            db = db, key = "deathSoundEnabled",
-            x = 10, y = G2:Row(1) + 5,
-            template = "ChatConfigCheckButtonTemplate",
-        })
-
-        -- Row 2: Death sound picker
-        local soundLbl = soundContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        soundLbl:SetPoint("TOPLEFT", 10, G2:Row(2) + 10)
-        soundLbl:SetText(W.Colorize(L["CREZ_DEATH_SOUND"] or "Death Sound", C.ORANGE))
-
-        W:CreateSoundPicker(soundContent, 10, G2:Row(2) - 10, { id = db.deathSoundID or 8959 },
-            function(entry) db.deathSoundID = entry.id end)
-
-        soundContent:SetHeight(G2:Height(2) + 20)
-        soundWrap:RecalcHeight()
-
-        -- TEXT SETTINGS
-        local textWrap, textContent = W:CreateCollapsibleSection(deathSections, {
-            text = L["CREZ_SECTION_TEXT"] or "Text Settings",
-            startOpen = false,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
-        })
-
-        local G3 = ns.Layout:New(2)
-
-        -- Row 1: Enable Text + Color
-        W:CreateCheckbox(textContent, {
-            label = L["CREZ_ENABLE_TEXT"] or "Show Text",
-            db = db, key = "deathTextEnabled",
-            x = 10, y = G3:Row(1) + 5,
-            template = "ChatConfigCheckButtonTemplate",
-        })
-
-        W:CreateColorPicker(textContent, {
-            label = L["COMMON_COLOR"] or "Color", db = db,
-            rKey = "deathTextR", gKey = "deathTextG", bKey = "deathTextB",
-            x = G3:Col(2), y = G3:ColorY(1),
-        })
-
-        textContent:SetHeight(G3:Height(1))
-        textWrap:RecalcHeight()
-
-        -- ============================================================
         -- Layout
         -- ============================================================
 
         local rezSectionList = { rezAppWrap }
-        local deathSectionList = { soundWrap, textWrap }
 
         RelayoutAll = function()
             -- Rez sections
@@ -232,35 +164,8 @@ function ns:InitCRez()
             end
             rezSections:SetHeight(math.max(rezH, 1))
 
-            -- Position death kill area below rez sections
-            deathKillArea:ClearAllPoints()
-            deathKillArea:SetPoint("TOPLEFT", rezSections, "BOTTOMLEFT", 0, -20)
-
-            deathSections:ClearAllPoints()
-            deathSections:SetPoint("TOPLEFT", deathKillArea, "BOTTOMLEFT", 0, -10)
-            deathSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
-
-            -- Death sections
-            for i, section in ipairs(deathSectionList) do
-                section:ClearAllPoints()
-                if i == 1 then
-                    section:SetPoint("TOPLEFT", deathSections, "TOPLEFT", 0, 0)
-                else
-                    section:SetPoint("TOPLEFT", deathSectionList[i - 1], "BOTTOMLEFT", 0, -12)
-                end
-                section:SetPoint("RIGHT", deathSections, "RIGHT", 0, 0)
-            end
-
-            local deathH = 0
-            if db.deathEnabled then
-                for _, s in ipairs(deathSectionList) do
-                    deathH = deathH + s:GetHeight() + 12
-                end
-            end
-            deathSections:SetHeight(math.max(deathH, 1))
-
             -- Total scroll height
-            local totalH = 75 + 62 + 10 + rezH + 20 + 62 + 10 + deathH + 40
+            local totalH = 75 + 62 + 10 + rezH + 40
             sc:SetHeight(math.max(totalH, 800))
         end
 
@@ -268,17 +173,11 @@ function ns:InitCRez()
             db.enabled = self:GetChecked() and true or false
             refreshRez()
             rezUnlockCB:SetShown(db.enabled)
+            deathWarnCB:SetShown(db.enabled)
             rezSections:SetShown(db.enabled)
             RelayoutAll()
         end)
         rezSections:SetShown(db.enabled)
-
-        deathMasterCB:HookScript("OnClick", function(self)
-            db.deathEnabled = self:GetChecked() and true or false
-            deathSections:SetShown(db.deathEnabled)
-            RelayoutAll()
-        end)
-        deathSections:SetShown(db.deathEnabled)
 
         -- Restore defaults button
         local restoreBtn = W:CreateRestoreDefaultsButton({

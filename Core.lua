@@ -244,14 +244,20 @@ local CREZ_DEFAULTS = {
     point = "CENTER", x = 0, y = 150, iconSize = 40,
     timerFontSize = 11, timerColorR = 1, timerColorG = 1, timerColorB = 1, timerAlpha = 1.0,
     countFontSize = 11, countColorR = 1, countColorG = 1, countColorB = 1, countAlpha = 1.0,
-    -- Death Notice
-    deathEnabled = false,
-    deathSoundEnabled = true, deathSoundID = 8959,
-    deathTextEnabled = true, deathTextDuration = 3,
-    deathPoint = "CENTER", deathX = 0, deathY = 0,
-    deathWidth = 300, deathHeight = 40,
-    deathUnlock = false,
-    deathFontSize = 16, deathTextR = 1, deathTextG = 1, deathTextB = 1, deathTextAlpha = 1.0,
+    -- Death Warning
+    deathWarning = false,
+}
+
+local PET_TRACKER_DEFAULTS = {
+    enabled = false, unlock = false,
+    showIcon = true, onlyInInstance = false,
+    point = "CENTER", x = 0, y = 200,
+    width = 200, height = 50,
+    textSize = 20, iconSize = 32,
+    missingText = "Pet Missing",
+    passiveText = "Pet Passive",
+    wrongPetText = "Wrong Pet",
+    colorR = 1, colorG = 0, colorB = 0,
 }
 
 -- Expose module defaults for restore functionality
@@ -275,6 +281,7 @@ ns.ModuleDefaults = {
     equipmentReminder = EQUIPMENT_REMINDER_DEFAULTS,
     mouseRing = MOUSE_RING_DEFAULTS,
     cRez = CREZ_DEFAULTS,
+    petTracker = PET_TRACKER_DEFAULTS,
 }
 
 -- Restore a module to default settings
@@ -763,25 +770,12 @@ local function InitializeDB()
     if cr.countColorG       == nil then cr.countColorG       = 1         end
     if cr.countColorB       == nil then cr.countColorB       = 1         end
     if cr.countAlpha        == nil then cr.countAlpha        = 1.0       end
-    -- Death Notice
-    if cr.deathEnabled      == nil then cr.deathEnabled      = false     end
-    if cr.deathSoundEnabled == nil then cr.deathSoundEnabled = true      end
-    if cr.deathTankSoundID  == nil then cr.deathTankSoundID  = 8959      end
-    if cr.deathHealerSoundID == nil then cr.deathHealerSoundID = 8960    end
-    if cr.deathDPSSoundID   == nil then cr.deathDPSSoundID   = 878       end
-    if cr.deathTextEnabled  == nil then cr.deathTextEnabled  = true      end
-    if cr.deathTextDuration == nil then cr.deathTextDuration = 3         end
-    if cr.deathPoint        == nil then cr.deathPoint        = "CENTER"  end
-    if cr.deathX            == nil then cr.deathX            = 0         end
-    if cr.deathY            == nil then cr.deathY            = 0         end
-    if cr.deathWidth        == nil then cr.deathWidth        = 300       end
-    if cr.deathHeight       == nil then cr.deathHeight       = 40        end
-    if cr.deathUnlock       == nil then cr.deathUnlock       = false     end
-    if cr.deathFontSize     == nil then cr.deathFontSize     = 16        end
-    if cr.deathTextR        == nil then cr.deathTextR        = 1         end
-    if cr.deathTextG        == nil then cr.deathTextG        = 1         end
-    if cr.deathTextB        == nil then cr.deathTextB        = 1         end
-    if cr.deathTextAlpha    == nil then cr.deathTextAlpha    = 1.0       end
+    -- Death Warning
+    if cr.deathWarning      == nil then cr.deathWarning      = false     end
+
+    -- Pet Tracker
+    NaowhQOL.petTracker = NaowhQOL.petTracker or {}
+    ApplyDefaults(NaowhQOL.petTracker, PET_TRACKER_DEFAULTS)
 
     -- Slash Commands
     NaowhQOL.slashCommands = NaowhQOL.slashCommands or {}

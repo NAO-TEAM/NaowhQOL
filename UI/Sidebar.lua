@@ -266,6 +266,7 @@ CreateGroup("tracking", L["SIDEBAR_GROUP_TRACKING"], {
     { label = L["SIDEBAR_TAB_CONSUMABLES"], onClick = function() if ns.InitConsumableChecker then ns:InitConsumableChecker() end end },
     { label = L["SIDEBAR_TAB_STEALTH"], onClick = function() if ns.InitStealthReminder then ns:InitStealthReminder() end end },
     { label = L["SIDEBAR_TAB_RANGE_CHECK"], onClick = function() if ns.InitRangeCheck then ns:InitRangeCheck() end end },
+    { label = L["SIDEBAR_TAB_PET_TRACKER"], onClick = function() if ns.InitPetTracker then ns:InitPetTracker() end end },
 })
 
 -- REMINDERS/MISC group

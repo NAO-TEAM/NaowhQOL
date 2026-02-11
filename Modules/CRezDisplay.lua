@@ -116,7 +116,7 @@ end
 
 local function OnUnitDied(unitGUID)
     local db = NaowhQOL.cRez
-    if not db or not db.deathEnabled then return end
+    if not db or not db.enabled or not db.deathWarning then return end
 
     -- Handle restricted/secret values
     if issecretvalue and issecretvalue(unitGUID) then return end
@@ -130,17 +130,13 @@ local function OnUnitDied(unitGUID)
     local isPlayer = UnitIsUnit(unit, "player")
     if not inGroup and not isPlayer then return end
 
-    -- Play sound
-    if db.deathSoundEnabled then
-        PlaySound(SOUNDKIT.LOOT_WINDOW_COIN_SOUND or 567, "Master")
-    end
+    -- Play warning sound
+    PlaySound(SOUNDKIT.RAID_WARNING or 8959, "Master")
 
-    -- Show text via UIErrorsFrame
-    if db.deathTextEnabled then
-        local name = UnitNameUnmodified(unit) or UnitName(unit) or "Unknown"
-        local msg = name .. " " .. (L["CREZ_DIED"] or "died")
-        UIErrorsFrame:AddMessage(msg, db.deathTextR or 1, db.deathTextG or 0.5, db.deathTextB or 0.5)
-    end
+    -- Show warning text via RaidWarningFrame
+    local name = UnitNameUnmodified(unit) or UnitName(unit) or "Unknown"
+    local msg = name .. " " .. (L["CREZ_DIED"] or "died")
+    RaidNotice_AddMessage(RaidWarningFrame, msg, ChatTypeInfo["RAID_WARNING"])
 end
 
 -- ----------------------------------------------------------------
