@@ -8,7 +8,6 @@ local COLORS = {
     ERROR   = "ff0000",
 }
 
-local lastCheckedBoss = nil
 local lastCheckedZone = nil
 
 local function ChatMsg(text)
@@ -168,31 +167,6 @@ end
 
 local function BuildDungeonKey(specID, instanceID, difficulty)
     return specID .. ":" .. instanceID .. ":" .. difficulty
-end
-
-local function BuildBossKey(specID, bossID, difficulty)
-    return specID .. ":" .. bossID .. ":" .. difficulty
-end
-
-local function IsTargetRaidBoss()
-    if not UnitExists("target") then return nil, nil end
-
-    -- Check if it's a boss-level mob (skull level, boss frame)
-    local isBoss = UnitLevel("target") == -1 or
-                   UnitClassification("target") == "worldboss" or
-                   UnitClassification("target") == "raidboss"
-
-    if not isBoss then return nil, nil end
-
-    local guid = UnitGUID("target")
-    if not guid then return nil, nil end
-
-    local unitType, _, _, _, _, npcID = strsplit("-", guid)
-    if unitType == "Creature" then
-        return tonumber(npcID), UnitName("target")
-    end
-
-    return nil, nil
 end
 
 local function SwapToSaved(saved)
@@ -530,40 +504,8 @@ local function OnZoneChanged(zoneData)
     end)
 end
 
-local function OnTargetChanged()
-    if InCombatLockdown() then return end
-
-    local db = NaowhQOL.talentReminder
-    if not db or not db.enabled then return end
-
-    -- Only in raids
-    local zoneData = ns.ZoneUtil and ns.ZoneUtil.GetCurrentZone()
-    if not zoneData or zoneData.instanceType ~= "raid" then return end
-
-    local bossID, bossName = IsTargetRaidBoss()
-    if not bossID then return end
-
-    local specID = GetSpecID()
-    if specID == 0 then return end
-
-    local difficulty = zoneData.difficulty
-    local diffName = zoneData.difficultyName
-
-    local key = BuildBossKey(specID, bossID, difficulty)
-
-    -- Avoid repeated prompts for same boss at same difficulty
-    if lastCheckedBoss == key then return end
-    lastCheckedBoss = key
-
-    C_Timer.After(0.5, function()
-        if InCombatLockdown() then return end
-        CheckTalents(key, bossName, diffName)
-    end)
-end
-
 local loader = CreateFrame("Frame", "NaowhQOL_TalentReminder")
 loader:RegisterEvent("PLAYER_LOGIN")
-loader:RegisterEvent("PLAYER_TARGET_CHANGED")
 loader:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 loader:RegisterEvent("TRAIT_CONFIG_UPDATED")
 
@@ -587,17 +529,12 @@ loader:SetScript("OnEvent", function(self, event, ...)
 
         self:UnregisterEvent("PLAYER_LOGIN")
 
-    elseif event == "PLAYER_TARGET_CHANGED" then
-        OnTargetChanged()
-
     elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
         -- Reset checks when spec changes
-        lastCheckedBoss = nil
         lastCheckedZone = nil
 
     elseif event == "TRAIT_CONFIG_UPDATED" then
         -- Re-check when talents change
-        lastCheckedBoss = nil
         lastCheckedZone = nil
         C_Timer.After(0.5, function()
             if InCombatLockdown() then return end
@@ -605,8 +542,6 @@ loader:SetScript("OnEvent", function(self, event, ...)
             if ns.ZoneUtil then
                 OnZoneChanged(ns.ZoneUtil.GetCurrentZone())
             end
-            -- Re-trigger boss check if targeting one
-            OnTargetChanged()
         end)
     end
 end)
@@ -615,14 +550,12 @@ end)
 function loader:TriggerZoneCheck()
     -- Reset last checked to allow re-prompting
     lastCheckedZone = nil
-    lastCheckedBoss = nil
 
     C_Timer.After(0.5, function()
         if InCombatLockdown() then return end
         if ns.ZoneUtil then
             OnZoneChanged(ns.ZoneUtil.GetCurrentZone())
         end
-        OnTargetChanged()
     end)
 end
 
