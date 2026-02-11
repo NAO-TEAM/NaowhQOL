@@ -4,7 +4,9 @@
 ## SavedVariablesPerCharacter: NaowhQOL
 ## SavedVariables: NaowhQOL_Profiles
 ## AddonCompartmentFunc: NaowhQOL_OnAddonCompartmentClick
-## IconTexture: 136243
+## IconTexture: Interface\AddOns\NaowhQOL\Assets\LogoAddon.tga
+## Category: Quality of Life
+## X-Category: Quality of Life
 Libs/LibStub/LibStub.lua
 Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
 Libs/LibSharedMedia-3.0/lib.xml
