@@ -38,6 +38,7 @@ local function GetExpiryThreshold(cat)
 end
 
 local inCombat = false
+local pendingHide = false  -- Deferred hide when combat blocked the action
 
 ---------------------------------------------------------------------------
 -- Bag scanning for consumable items
@@ -241,9 +242,14 @@ end
 -- Safe hide (respects unlock mode)
 ---------------------------------------------------------------------------
 local function SafeHide(frame, unlockKey)
-    if InCombatLockdown() then return end  -- Can't hide secure frames in combat
     local db = NaowhQOL.consumableChecker
-    if not db or not db.enabled or not db[unlockKey] then frame:Hide() end
+    local shouldHide = not db or not db.enabled or not db[unlockKey]
+    if not shouldHide then return end
+    if InCombatLockdown() then
+        pendingHide = true  -- Defer until combat ends
+        return
+    end
+    frame:Hide()
 end
 
 ---------------------------------------------------------------------------
@@ -529,6 +535,11 @@ loader:SetScript("OnEvent", function(self, ev, a1)
         SafeHide(ccIcons, "unlock")
     elseif ev == "PLAYER_REGEN_ENABLED" then
         inCombat = false
+        -- Process deferred hide if combat blocked it
+        if pendingHide then
+            pendingHide = false
+            ccIcons:Hide()
+        end
         -- Re-apply macro attributes now that combat ended
         C_Timer.After(0.5, function() pcall(CheckConsumables) end)
     end
@@ -540,7 +551,11 @@ ns.ConsumableCheckerIcon = ccIcons
 -- Module cleanup for disable
 ---------------------------------------------------------------------------
 function ns:DisableConsumableChecker()
-    if not InCombatLockdown() then ccIcons:Hide() end
+    if InCombatLockdown() then
+        pendingHide = true
+    else
+        ccIcons:Hide()
+    end
     -- Unregister all dynamic events (not ADDON_LOADED/PLAYER_LOGIN which are one-time)
     loader:UnregisterEvent("UNIT_AURA")
     loader:UnregisterEvent("BAG_UPDATE")
