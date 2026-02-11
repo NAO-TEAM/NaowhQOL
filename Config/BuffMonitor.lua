@@ -614,7 +614,7 @@ function ns:InitBuffMonitor()
 
         -- Label alpha stored as 0-1, slider shows 0-100
         local raidLabelAlphaSlider = W:CreateAdvancedSlider(raidContent,
-            W.Colorize(L["BUFFMONITOR_LABEL_ALPHA"] or "Label Opacity", C.ORANGE), 0, 100, -75, 5, true,
+            W.Colorize(L["BUFFMONITOR_LABEL_OPACITY"], C.ORANGE), 0, 100, -75, 5, true,
             function(val) db.raidLabelAlpha = val / 100; refresh() end,
             { value = (db.raidLabelAlpha or 1.0) * 100 })
         PlaceSlider(raidLabelAlphaSlider, raidContent, G:Col(2), -75)
