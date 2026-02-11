@@ -208,6 +208,7 @@ local FRAME_BACKDROP = {
 }
 
 local function SetFrameUnlocked(frame, unlocked)
+    if InCombatLockdown() then return end  -- Can't modify secure frames in combat
     if unlocked then
         frame:SetBackdrop(FRAME_BACKDROP)
         frame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
@@ -240,6 +241,7 @@ end
 -- Safe hide (respects unlock mode)
 ---------------------------------------------------------------------------
 local function SafeHide(frame, unlockKey)
+    if InCombatLockdown() then return end  -- Can't hide secure frames in combat
     local db = NaowhQOL.consumableChecker
     if not db or not db.enabled or not db[unlockKey] then frame:Hide() end
 end
@@ -443,7 +445,7 @@ local function CheckConsumables()
             slots[i]:Hide()
         end
 
-        ccIcons:Show()
+        if not InCombatLockdown() then ccIcons:Show() end
     else
         SafeHide(ccIcons, "unlock")
     end
@@ -538,7 +540,7 @@ ns.ConsumableCheckerIcon = ccIcons
 -- Module cleanup for disable
 ---------------------------------------------------------------------------
 function ns:DisableConsumableChecker()
-    ccIcons:Hide()
+    if not InCombatLockdown() then ccIcons:Hide() end
     -- Unregister all dynamic events (not ADDON_LOADED/PLAYER_LOGIN which are one-time)
     loader:UnregisterEvent("UNIT_AURA")
     loader:UnregisterEvent("BAG_UPDATE")
