@@ -142,7 +142,7 @@ local function ApplyLayout()
     local size      = db.size or 20
     local thick     = db.thickness or 2
     local gap       = db.gap or 6
-    local r1, g1, b1 = db.colorR or 0, db.colorG or 1, db.colorB or 0
+    local r1, g1, b1 = ns.Widgets.GetEffectiveColor(db, "colorR", "colorG", "colorB", "useClassColor")
     local alpha     = db.opacity or 0.8
     local ox        = db.offsetX or 0
     local oy        = db.offsetY or 0

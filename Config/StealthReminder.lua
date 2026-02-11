@@ -372,7 +372,7 @@ function ns:InitStealthReminder()
             sc:SetHeight(math.max(totalH, 800))
         end
 
-        masterCB:SetScript("OnClick", function(self)
+        masterCB:HookScript("OnClick", function(self)
             db.enabled = self:GetChecked() and true or false
             refreshStealth()
             unlockCB:SetShown(db.enabled)
@@ -381,7 +381,7 @@ function ns:InitStealthReminder()
         end)
         stealthSections:SetShown(db.enabled)
 
-        stanceMasterCB:SetScript("OnClick", function(self)
+        stanceMasterCB:HookScript("OnClick", function(self)
             db.stanceEnabled = self:GetChecked() and true or false
             refreshStance()
             stanceUnlockCB:SetShown(db.stanceEnabled)

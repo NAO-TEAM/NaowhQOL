@@ -160,7 +160,12 @@ function ns:InitTalentReminder()
 
                     local displayName = entry.name or "Unknown"
                     local diffText = entry.diffName and (" (" .. entry.diffName .. ")") or ""
-                    local configText = entry.configName and (" - " .. W.Colorize(entry.configName, C.SUCCESS)) or ""
+                    local configText
+                    if entry.tlxMode then
+                        configText = " - " .. W.Colorize("[TLX] " .. (entry.tlxName or "Unknown"), C.SUCCESS)
+                    else
+                        configText = entry.configName and (" - " .. W.Colorize(entry.configName, C.SUCCESS)) or ""
+                    end
                     label:SetText(displayName .. W.Colorize(diffText, C.GRAY) .. configText)
 
                     local deleteBtn = W:CreateButton(row, { text = "|cffff0000X|r", width = 22, height = 18, onClick = function()
@@ -219,10 +224,18 @@ function ns:InitTalentReminder()
             sc:SetHeight(math.max(totalH + 40, 600))
         end
 
-        masterCB:SetScript("OnClick", function(self)
+        masterCB:HookScript("OnClick", function(self)
+            local wasEnabled = db.enabled
             db.enabled = self:GetChecked() and true or false
             sectionContainer:SetShown(db.enabled)
             RelayoutSections()
+
+            -- If just enabled, trigger a zone check in case we're already in a mythic instance
+            if db.enabled and not wasEnabled then
+                if ns.TalentReminder and ns.TalentReminder.TriggerZoneCheck then
+                    ns.TalentReminder:TriggerZoneCheck()
+                end
+            end
         end)
         sectionContainer:SetShown(db.enabled)
 

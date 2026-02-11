@@ -124,21 +124,21 @@ local OPTIMAL_FPS_CVARS = {
     -- View Distance & Detail
     {
         cvar = "graphicsViewDistance",
-        optimal = "4",
+        optimal = "3",
         name = "View Distance",
         desc = "Level 4",
         category = "detail",
     },
     {
         cvar = "graphicsEnvironmentDetail",
-        optimal = "4",
+        optimal = "3",
         name = "Environment Detail",
         desc = "Level 4",
         category = "detail",
     },
     {
         cvar = "graphicsGroundClutter",
-        optimal = "1",
+        optimal = "0",
         name = "Ground Clutter",
         desc = "Level 1",
         category = "detail",
@@ -453,7 +453,13 @@ function ns:GetCVarStatus(cvar, optimal)
         return displayValue, isOptimal, displayOptimal
     end
     
-    if cvar == "maxFPSBk" or cvar == "targetFPS" then
+    -- SPECIAL CASE: View Distance, Environment Detail, Ground Clutter (0-indexed to 1-indexed)
+    if cvar == "graphicsViewDistance" or cvar == "graphicsEnvironmentDetail" or cvar == "graphicsGroundClutter" then
+        local levelCurrent = (tonumber(current) or 0) + 1
+        local levelOptimal = (tonumber(optimal) or 0) + 1
+        displayValue = "" .. levelCurrent
+        displayOptimal = "" .. levelOptimal
+    elseif cvar == "maxFPSBk" or cvar == "targetFPS" then
         displayValue = current .. " FPS"
         displayOptimal = optimal .. " FPS"
     elseif cvar == "useTargetFPS" or cvar == "gxVSync" or cvar == "gxMaximize" or 
@@ -1084,7 +1090,7 @@ function ns:InitOptOptions()
         local sectionContainer = CreateFrame("Frame", nil, sc)
         sectionContainer:SetPoint("TOPLEFT", 10, -75)
         sectionContainer:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
-        sectionContainer:SetHeight(1)  -- Will be updated by RelayoutSections
+        sectionContainer:SetHeight(2400)
 
         local RelayoutSections
         local allSections = {}
@@ -1094,7 +1100,7 @@ function ns:InitOptOptions()
         -----------------------------------------------------------------------
         local presetsWrap, presetsContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "PRESETS",
-            startOpen = false,
+            startOpen = true,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -1217,16 +1223,15 @@ function ns:InitOptOptions()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
-        local queueInitVal = tonumber(GetCVar("SpellQueueWindow")) or 130
         local queueSlider = W:CreateAdvancedSlider(advContent,
             W.Colorize("Spell Queue Window (ms)", C.BLUE), 50, 500, -5, 1, false,
             function(val)
                 SetCVar("SpellQueueWindow", val)
                 if not NaowhQOL then NaowhQOL = {} end
                 NaowhQOL.spellQueueWindow = val
-            end,
-            { value = queueInitVal })
+            end)
         PlaceSlider(queueSlider, advContent, 110, -5)
+        queueSlider:SetValue(tonumber(GetCVar("SpellQueueWindow")) or 130)
 
         local recommendText = advContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         recommendText:SetPoint("TOP", queueSlider:GetParent(), "BOTTOM", 0, 5)
@@ -1279,7 +1284,7 @@ function ns:InitOptOptions()
         -----------------------------------------------------------------------
         local monWrap, monContent = W:CreateCollapsibleSection(sectionContainer, {
             text = "REAL-TIME MONITOR",
-            startOpen = false,
+            startOpen = true,
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
@@ -1417,7 +1422,6 @@ function ns:InitOptOptions()
             end
             totalH = totalH + footerContainer:GetHeight() + 40
             sc:SetHeight(math.max(totalH, 600))
-            sectionContainer:SetHeight(totalH - 35)
         end
 
         RelayoutSections()

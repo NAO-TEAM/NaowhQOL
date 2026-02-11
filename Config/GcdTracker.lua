@@ -426,7 +426,7 @@ function ns:InitGcdTracker()
             sc:SetHeight(math.max(totalH + 40, 600))
         end
 
-        masterCB:SetScript("OnClick", function(self)
+        masterCB:HookScript("OnClick", function(self)
             db.enabled = self:GetChecked() and true or false
             visRefresh()
             unlockCB:SetShown(db.enabled)

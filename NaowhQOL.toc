@@ -36,6 +36,7 @@ Modules/DisableLootWarnings.lua
 Modules/HideUIClutter.lua
 Modules/Dragonriding.lua
 Modules/CrosshairDisplay.lua
+Modules/MouseRingDisplay.lua
 Modules/BuffMonitorDisplay.lua
 Modules/ConsumableCheckerDisplay.lua
 Modules/CombatLoggerDisplay.lua

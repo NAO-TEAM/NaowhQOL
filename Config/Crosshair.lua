@@ -191,6 +191,7 @@ function ns:InitCrosshair()
         W:CreateColorPicker(appContent, {
             label = L["CROSSHAIR_COLOR_PRIMARY"], db = db,
             rKey = "colorR", gKey = "colorG", bKey = "colorB",
+            classColorKey = "useClassColor",
             x = 10, y = -5,
             onChange = refresh
         })
@@ -526,7 +527,7 @@ function ns:InitCrosshair()
             sc:SetHeight(math.max(totalH + 40, 600))
         end
 
-        masterCB:SetScript("OnClick", function(self)
+        masterCB:HookScript("OnClick", function(self)
             db.enabled = self:GetChecked() and true or false
             refresh()
             combatCB:SetShown(db.enabled)

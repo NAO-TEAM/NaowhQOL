@@ -114,7 +114,7 @@ function ns:InitRangeCheck()
         end
 
         -- Master enable click
-        masterCB:SetScript("OnClick", function(self)
+        masterCB:HookScript("OnClick", function(self)
             db.enabled = self:GetChecked() and true or false
             db.rangeEnabled = db.enabled  -- Keep in sync for compatibility
             refreshRange()

@@ -428,7 +428,7 @@ function ns:InitEmoteDetection()
             sc:SetHeight(math.max(scrollH, 800))
         end
 
-        masterCB:SetScript("OnClick", function(self)
+        masterCB:HookScript("OnClick", function(self)
             db.enabled = self:GetChecked() and true or false
             refreshDisplay()
             unlockCB:SetShown(db.enabled)

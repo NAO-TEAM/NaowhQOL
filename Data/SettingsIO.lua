@@ -33,7 +33,7 @@ local TYPE_SCHEMAS = {
     },
     crosshair = {
         enabled = "boolean", size = "number", thickness = "number",
-        gap = "number", colorR = "number", colorG = "number", colorB = "number",
+        gap = "number", colorR = "number", colorG = "number", colorB = "number", useClassColor = "boolean",
         opacity = "number", offsetX = "number", offsetY = "number",
         combatOnly = "boolean", dotEnabled = "boolean", dotSize = "number",
         outlineEnabled = "boolean", outlineWeight = "number",
@@ -52,7 +52,7 @@ local TYPE_SCHEMAS = {
     combatLogger = {
         enabled = "boolean", instances = "table",
     },
-    CursorTracker = "table", -- Per-spec table with nested settings
+    mouseRing = "table", -- Mouse ring settings
     dragonriding = {
         enabled = "boolean", barWidth = "number", speedHeight = "number",
         chargeHeight = "number", gap = "number", showSpeedText = "boolean",
@@ -705,7 +705,7 @@ ns.SettingsIO:RegisterSimple("combatTimer",   "Combat Timer")
 ns.SettingsIO:RegisterSimple("combatAlert",   "Combat Alert")
 ns.SettingsIO:RegisterSimple("crosshair",     "Crosshair")
 ns.SettingsIO:RegisterSimple("combatLogger",  "Combat Logger")
-ns.SettingsIO:RegisterSimple("CursorTracker", "Action Halo")
+ns.SettingsIO:RegisterSimple("mouseRing",     "Mouse Ring")
 ns.SettingsIO:RegisterSimple("dragonriding",  "Dragonriding")
 ns.SettingsIO:RegisterSimple("misc",          "Misc Toggles")
 ns.SettingsIO:RegisterSimple("buffMonitor",   "Buff Monitor")

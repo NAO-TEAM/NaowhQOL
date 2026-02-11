@@ -28,12 +28,125 @@ local function GetSpecName()
     return "Unknown"
 end
 
+-- Check if TalentLoadoutsEx addon is loaded and available
+local function IsTLXAvailable()
+    local success, result = pcall(function()
+        return C_AddOns.IsAddOnLoaded("TalentLoadoutsEx")
+            and _G.TLX ~= nil
+            and _G.TalentLoadoutEx ~= nil
+    end)
+    return success and result
+end
+
+-- Get all TLX loadouts for the current spec
+local function GetTLXLoadouts()
+    if not IsTLXAvailable() then return nil end
+
+    local success, result = pcall(function()
+        local _, englishClass = UnitClass("player")
+        local specIndex = GetSpecialization()
+        if not englishClass or not specIndex then return nil end
+
+        local tlxData = _G.TalentLoadoutEx
+        if not tlxData or not tlxData[englishClass] then return nil end
+        local specTable = tlxData[englishClass][specIndex]
+        if not specTable then return nil end
+
+        local loadouts = {}
+        for _, entry in ipairs(specTable) do
+            if entry.text and not entry.isLegacy then
+                table.insert(loadouts, entry)
+            end
+        end
+        return #loadouts > 0 and loadouts or nil
+    end)
+
+    return success and result or nil
+end
+
+-- Find a TLX loadout by name
+local function GetTLXLoadoutByName(name)
+    local loadouts = GetTLXLoadouts()
+    if not loadouts then return nil end
+    for _, loadout in ipairs(loadouts) do
+        if loadout.name == name then return loadout end
+    end
+    return nil
+end
+
+-- Get the currently active TLX loadout (if any matches current talents)
+local function GetCurrentTLXLoadout()
+    if not IsTLXAvailable() then return nil, nil end
+
+    local success, result = pcall(function()
+        local tlx = _G.TLX
+        if not tlx or not tlx.GetLoadedData then return nil end
+        local loaded = { tlx.GetLoadedData() }
+        if loaded[1] then
+            return { name = loaded[1].name, text = loaded[1].text }
+        end
+        return nil
+    end)
+
+    if success and result then
+        return result.name, result.text
+    end
+    return nil, nil
+end
+
+-- Swap to a TLX loadout using its slash command
+local function SwapToTLXLoadout(loadoutName)
+    if InCombatLockdown() then
+        ChatMsg("|cff" .. COLORS.ERROR .. L["TALENT_COMBAT_ERROR"] .. "|r")
+        return false
+    end
+    local loadout = GetTLXLoadoutByName(loadoutName)
+    if not loadout then
+        ChatMsg("|cff" .. COLORS.ERROR .. L["TALENT_NOT_FOUND"] .. "|r")
+        return false
+    end
+    -- Defer execution to break taint chain
+    C_Timer.After(0, function()
+        if InCombatLockdown() then return end
+        local success = pcall(function()
+            local slashHandler = SlashCmdList["TalentLoadoutsEx_Load"]
+            if slashHandler then
+                slashHandler(loadoutName)
+            end
+        end)
+        if not success then
+            -- Fallback: try chat input method
+            local editBox = ChatFrame1 and ChatFrame1.editBox
+            if editBox and ChatEdit_SendText then
+                ChatEdit_ActivateChat(editBox)
+                editBox:SetText("/tlx " .. loadoutName)
+                ChatEdit_SendText(editBox)
+            end
+        end
+    end)
+    ChatMsg(string.format(L["TALENT_SWAPPED"], "|cff" .. COLORS.ORANGE .. loadoutName .. "|r"))
+    return true
+end
+
 local function GetCurrentTalentInfo()
+    -- Check TLX first if available
+    if IsTLXAvailable() then
+        local tlxName, tlxExport = GetCurrentTLXLoadout()
+        if tlxName then
+            return tlxName, tlxExport, tlxName
+        else
+            -- TLX active but no matching loadout = unsaved
+            local activeConfigID = C_ClassTalents.GetActiveConfigID()
+            local exportString = activeConfigID and C_Traits.GenerateImportString(activeConfigID)
+            return nil, exportString, "Unsaved Build"
+        end
+    end
+
+    -- Fallback to Blizzard API
     local specID = GetSpecID()
     local activeConfigID = C_ClassTalents.GetActiveConfigID()
     if not activeConfigID then return nil, nil, nil end
 
-    -- Get the saved loadout ID (this has the user-defined name)
     local savedConfigID = C_ClassTalents.GetLastSelectedSavedConfigID(specID)
     local configName = "Unsaved Build"
 
@@ -88,6 +201,12 @@ local function SwapToSaved(saved)
         return false
     end
 
+    -- Use TLX if this was saved as a TLX loadout
+    if saved.tlxMode and saved.tlxName then
+        return SwapToTLXLoadout(saved.tlxName)
+    end
+
+    -- Fallback to Blizzard API
     local specID = GetSpecID()
     local configs = C_ClassTalents.GetConfigIDsBySpecID(specID) or {}
     for index, id in ipairs(configs) do
@@ -119,6 +238,29 @@ StaticPopupDialogs["NAOWHQOL_TALENT_SAVE"] = {
         if not db then return end
         db.loadouts = db.loadouts or {}
 
+        -- Use TLX storage if available
+        if IsTLXAvailable() then
+            local tlxName, tlxExport = GetCurrentTLXLoadout()
+            if tlxName then
+                db.loadouts[data.key] = {
+                    tlxMode = true,
+                    tlxName = tlxName,
+                    exportString = tlxExport,
+                    name = data.name,
+                    diffName = data.diffName,
+                }
+                ChatMsg(string.format(
+                    L["TALENT_SAVED"],
+                    "|cff" .. COLORS.ORANGE .. data.name .. "|r"
+                ))
+                return
+            else
+                ChatMsg("|cff" .. COLORS.ERROR .. "No TLX loadout active. Select a loadout first.|r")
+                return
+            end
+        end
+
+        -- Fallback to Blizzard storage
         local configID, exportString, configName = GetCurrentTalentInfo()
         db.loadouts[data.key] = {
             configID = configID,
@@ -158,6 +300,29 @@ StaticPopupDialogs["NAOWHQOL_TALENT_MISMATCH"] = {
         if not db then return end
         db.loadouts = db.loadouts or {}
 
+        -- Use TLX storage if available
+        if IsTLXAvailable() then
+            local tlxName, tlxExport = GetCurrentTLXLoadout()
+            if tlxName then
+                db.loadouts[data.key] = {
+                    tlxMode = true,
+                    tlxName = tlxName,
+                    exportString = tlxExport,
+                    name = data.name,
+                    diffName = data.diffName,
+                }
+                ChatMsg(string.format(
+                    L["TALENT_OVERWRITTEN"],
+                    "|cff" .. COLORS.ORANGE .. data.name .. "|r"
+                ))
+                return
+            else
+                ChatMsg("|cff" .. COLORS.ERROR .. "No TLX loadout active. Select a loadout first.|r")
+                return
+            end
+        end
+
+        -- Fallback to Blizzard storage
         local configID, exportString, configName = GetCurrentTalentInfo()
         db.loadouts[data.key] = {
             configID = configID,
@@ -179,6 +344,59 @@ StaticPopupDialogs["NAOWHQOL_TALENT_MISMATCH"] = {
     preferredIndex = 3,
 }
 
+-- TLX Loadout Unavailable Dialog
+StaticPopupDialogs["NAOWHQOL_TALENT_TLX_UNAVAILABLE"] = {
+    text = "%s",
+    button1 = L["TALENT_OVERWRITE_BTN"],
+    button2 = L["TALENT_IGNORE_BTN"],
+    OnAccept = function(self)
+        local data = self.data
+        if not data then return end
+
+        local db = NaowhQOL.talentReminder
+        if not db then return end
+        db.loadouts = db.loadouts or {}
+
+        -- Save current loadout (TLX or Blizzard mode)
+        if IsTLXAvailable() then
+            local tlxName, tlxExport = GetCurrentTLXLoadout()
+            if tlxName then
+                db.loadouts[data.key] = {
+                    tlxMode = true,
+                    tlxName = tlxName,
+                    exportString = tlxExport,
+                    name = data.name,
+                    diffName = data.diffName,
+                }
+                ChatMsg(string.format(
+                    L["TALENT_OVERWRITTEN"],
+                    "|cff" .. COLORS.ORANGE .. data.name .. "|r"
+                ))
+                return
+            end
+        end
+
+        -- Fallback to Blizzard storage
+        local configID, exportString, configName = GetCurrentTalentInfo()
+        db.loadouts[data.key] = {
+            configID = configID,
+            exportString = exportString,
+            configName = configName,
+            name = data.name,
+            diffName = data.diffName,
+        }
+        ChatMsg(string.format(
+            L["TALENT_OVERWRITTEN"],
+            "|cff" .. COLORS.ORANGE .. data.name .. "|r"
+        ))
+    end,
+    OnCancel = function() end,
+    timeout = 0,
+    whileDead = false,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
+
 local function CheckTalents(key, displayName, diffName)
     if InCombatLockdown() then return end
 
@@ -190,7 +408,17 @@ local function CheckTalents(key, displayName, diffName)
     local configID, exportString, configName = GetCurrentTalentInfo()
 
     if not saved then
-        -- First visit, prompt to save
+        -- First visit - check if TLX is active but no loadout selected
+        if IsTLXAvailable() then
+            local tlxName = GetCurrentTLXLoadout()
+            if not tlxName then
+                ChatMsg(string.format("No TLX loadout active for %s. Select a loadout first.",
+                    "|cff" .. COLORS.ORANGE .. displayName .. "|r"))
+                return
+            end
+        end
+
+        -- Prompt to save
         local promptText = "|cff" .. COLORS.BLUE .. "Naowh QOL|r\n\n"
             .. string.format(
                 L["TALENT_SAVE_POPUP"],
@@ -208,25 +436,69 @@ local function CheckTalents(key, displayName, diffName)
                 diffName = diffName,
             }
         end
-    elseif saved.configID ~= configID then
-        -- Mismatch detected
-        local savedName = saved.configName or "Saved Build"
-        local promptText = "|cff" .. COLORS.BLUE .. "Naowh QOL|r\n\n"
-            .. string.format(
-                L["TALENT_MISMATCH_POPUP"],
-                "|cff" .. COLORS.ORANGE .. displayName .. "|r",
-                "|cff" .. COLORS.ERROR .. configName .. "|r",
-                "|cff" .. COLORS.SUCCESS .. savedName .. "|r"
-            )
+    else
+        -- Check for mismatch
+        local isMismatch = false
+        local savedDisplayName = saved.configName or saved.tlxName or "Saved Build"
 
-        local dialog = StaticPopup_Show("NAOWHQOL_TALENT_MISMATCH", promptText)
-        if dialog then
-            dialog.data = {
-                key = key,
-                name = displayName,
-                diffName = diffName,
-                saved = saved,
-            }
+        if saved.tlxMode then
+            -- TLX mode: check if TLX is available and loadout still exists
+            local tlxUnavailableReason = nil
+
+            if not IsTLXAvailable() then
+                tlxUnavailableReason = "TalentLoadoutsEx not loaded"
+            else
+                local tlxLoadout = GetTLXLoadoutByName(saved.tlxName)
+                if not tlxLoadout then
+                    tlxUnavailableReason = "Loadout '" .. saved.tlxName .. "' not found"
+                end
+            end
+
+            if tlxUnavailableReason then
+                -- Show unavailable dialog with overwrite/ignore options
+                local promptText = "|cff" .. COLORS.BLUE .. "Naowh QOL|r\n\n"
+                    .. "|cff" .. COLORS.ERROR .. tlxUnavailableReason .. "|r\n\n"
+                    .. "Saved TLX loadout for:\n"
+                    .. "|cff" .. COLORS.ORANGE .. displayName .. "|r\n\n"
+                    .. "Current: |cff" .. COLORS.SUCCESS .. configName .. "|r"
+
+                local dialog = StaticPopup_Show("NAOWHQOL_TALENT_TLX_UNAVAILABLE", promptText)
+                if dialog then
+                    dialog.data = {
+                        key = key,
+                        name = displayName,
+                        diffName = diffName,
+                    }
+                end
+                return
+            end
+
+            local currentTLX = GetCurrentTLXLoadout()
+            isMismatch = (currentTLX ~= saved.tlxName)
+            savedDisplayName = saved.tlxName
+        else
+            -- Blizzard mode: compare by configID
+            isMismatch = (saved.configID ~= configID)
+        end
+
+        if isMismatch then
+            local promptText = "|cff" .. COLORS.BLUE .. "Naowh QOL|r\n\n"
+                .. string.format(
+                    L["TALENT_MISMATCH_POPUP"],
+                    "|cff" .. COLORS.ORANGE .. displayName .. "|r",
+                    "|cff" .. COLORS.ERROR .. configName .. "|r",
+                    "|cff" .. COLORS.SUCCESS .. savedDisplayName .. "|r"
+                )
+
+            local dialog = StaticPopup_Show("NAOWHQOL_TALENT_MISMATCH", promptText)
+            if dialog then
+                dialog.data = {
+                    key = key,
+                    name = displayName,
+                    diffName = diffName,
+                    saved = saved,
+                }
+            end
         end
     end
 end
@@ -338,5 +610,20 @@ loader:SetScript("OnEvent", function(self, event, ...)
         end)
     end
 end)
+
+-- Public function to trigger a zone check (called when module is enabled)
+function loader:TriggerZoneCheck()
+    -- Reset last checked to allow re-prompting
+    lastCheckedZone = nil
+    lastCheckedBoss = nil
+
+    C_Timer.After(0.5, function()
+        if InCombatLockdown() then return end
+        if ns.ZoneUtil then
+            OnZoneChanged(ns.ZoneUtil.GetCurrentZone())
+        end
+        OnTargetChanged()
+    end)
+end
 
 ns.TalentReminder = loader

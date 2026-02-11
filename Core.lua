@@ -58,7 +58,7 @@ local COMBAT_ALERT_DEFAULTS = {
 
 local CROSSHAIR_DEFAULTS = {
     enabled = false, size = 20, thickness = 2, gap = 6,
-    colorR = 0, colorG = 1, colorB = 0, opacity = 0.8,
+    colorR = 0, colorG = 1, colorB = 0, useClassColor = false, opacity = 0.8,
     offsetX = 0, offsetY = 0, combatOnly = false,
     dotEnabled = false, dotSize = 2,
     outlineEnabled = true, outlineWeight = 1,
@@ -202,6 +202,29 @@ local CURSOR_TRACKER_DEFAULTS = {
     castSwipeColor = { r = 1.0, g = 0.66, b = 0.0 },
 }
 
+local MOUSE_RING_DEFAULTS = {
+    enabled = true,
+    size = 48,
+    shape = "ring.tga",
+    colorR = 1.0, colorG = 0.66, colorB = 0.0,
+    useClassColor = false,
+    showOutOfCombat = true,
+    opacityInCombat = 1.0,
+    opacityOutOfCombat = 1.0,
+    trailEnabled = false,
+    trailDuration = 0.6,
+    trailR = 1.0, trailG = 1.0, trailB = 1.0,
+    gcdEnabled = true,
+    gcdR = 0.004, gcdG = 0.56, gcdB = 0.91,
+    gcdReadyR = 0.0, gcdReadyG = 0.8, gcdReadyB = 0.3,
+    gcdReadyMatchSwipe = false,
+    gcdAlpha = 1.0,
+    hideOnMouseClick = false,
+    hideBackground = false,
+    castSwipeEnabled = true,
+    castSwipeR = 1.0, castSwipeG = 0.66, castSwipeB = 0.0,
+}
+
 -- Expose module defaults for restore functionality
 ns.ModuleDefaults = {
     combatTimer = COMBAT_TIMER_DEFAULTS,
@@ -220,7 +243,7 @@ ns.ModuleDefaults = {
     raidAlerts = RAID_ALERTS_DEFAULTS,
     poisonReminder = POISON_REMINDER_DEFAULTS,
     equipmentReminder = EQUIPMENT_REMINDER_DEFAULTS,
-    CursorTracker = CURSOR_TRACKER_DEFAULTS,
+    mouseRing = MOUSE_RING_DEFAULTS,
 }
 
 -- Restore a module to default settings
@@ -278,6 +301,9 @@ local function InitializeDB()
 
     -- Action Halo (per-spec settings managed by MouseCursor.lua)
     NaowhQOL.CursorTracker = NaowhQOL.CursorTracker or {}
+
+    NaowhQOL.mouseRing = NaowhQOL.mouseRing or {}
+    ApplyDefaults(NaowhQOL.mouseRing, MOUSE_RING_DEFAULTS)
 
     NaowhQOL.crosshair = NaowhQOL.crosshair or {}
     ApplyDefaults(NaowhQOL.crosshair, CROSSHAIR_DEFAULTS)
