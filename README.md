@@ -73,14 +73,15 @@ It helps you:
 ## Installation
 
 1. Download the latest release
-2. Extract into:
+2. Rename it to NaowhQOL
+3. Extract into:
 
 ```
 World of Warcraft/_retail_/Interface/AddOns/
 ```
 
-3. Restart the game
-4. Configure using `/nao`
+4. Restart the game
+5. Configure using `/nao`
 
 
 ## Distribution
