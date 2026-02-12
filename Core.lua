@@ -13,6 +13,9 @@ end
 
 NaowhQOL = NaowhQOL or {}
 
+-- Session-only suppression flag (resets on reload)
+ns.notificationsSuppressed = false
+
 ns.DB = ns.DB or {}
 ns.DefaultConfig = {
     config = {
@@ -935,3 +938,18 @@ eventFrame:SetScript("OnEvent", function(self, event, name)
         self:UnregisterEvent("ADDON_LOADED")
     end
 end)
+
+-- Suppress notifications slash command (session only, resets on reload)
+SLASH_NAOWHQOLSUP1 = "/nsup"
+SlashCmdList["NAOWHQOLSUP"] = function()
+    ns.notificationsSuppressed = not ns.notificationsSuppressed
+    if ns.notificationsSuppressed then
+        print("|cff00ff00NaowhQOL:|r Notifications suppressed until reload")
+        if ns.DisableConsumableChecker then ns:DisableConsumableChecker() end
+        if ns.DisableBuffMonitor then ns:DisableBuffMonitor() end
+    else
+        print("|cff00ff00NaowhQOL:|r Notifications re-enabled")
+        if ns.EnableConsumableChecker then ns:EnableConsumableChecker() end
+        if ns.RefreshBuffMonitor then ns:RefreshBuffMonitor() end
+    end
+end

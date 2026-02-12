@@ -228,6 +228,7 @@ end
 ---------------------------------------------------------------------------
 local function CheckRaidBuffs(auras)
     local db = NaowhQOL.buffMonitor
+    if ns.notificationsSuppressed then SafeHide(raidIcons, "unlockRaid"); return end
     if not db or not db.enabled or not db.raidBuffsEnabled then
         SafeHide(raidIcons, "unlockRaid"); return
     end
@@ -301,6 +302,10 @@ local loader
 
 local function CheckTrackers()
     local db = NaowhQOL.buffMonitor
+    if ns.notificationsSuppressed then
+        SafeHide(icons, "unlock"); SafeHide(raidIcons, "unlockRaid")
+        return
+    end
     if not db or not db.enabled then
         SafeHide(icons, "unlock"); SafeHide(raidIcons, "unlockRaid")
         return

@@ -75,6 +75,7 @@ end
 -- Zone / difficulty check
 ---------------------------------------------------------------------------
 local function ShouldShow(db)
+    if ns.notificationsSuppressed then return false end
     if not db.enabled then return false end
     local zone = ns.ZoneUtil and ns.ZoneUtil.GetCurrentZone()
     if not zone or zone.instanceType == "none" then
