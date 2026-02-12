@@ -44,6 +44,7 @@ Modules/ConsumableCheckerDisplay.lua
 Modules/CombatLoggerDisplay.lua
 Modules/GcdTrackerDisplay.lua
 Modules/StealthReminderDisplay.lua
+Modules/MovementAlertDisplay.lua
 Modules/RangeCheckDisplay.lua
 Modules/EmoteDetection.lua
 Modules/FocusCastBarDisplay.lua
@@ -69,6 +70,7 @@ Config/Dragonriding.lua
 Config/CombatLogger.lua
 Config/GcdTracker.lua
 Config/StealthReminder.lua
+Config/MovementAlert.lua
 Config/RangeCheck.lua
 Config/EmoteDetection.lua
 Config/FocusCastBar.lua

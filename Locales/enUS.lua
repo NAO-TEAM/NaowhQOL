@@ -723,6 +723,31 @@ ns:RegisterLocale("enUS", {
     PETTRACKER_CLASS_NOTE = "Supports: Hunter, Warlock, Death Knight (Unholy), Mage (Frost)",
 
     ---------------------------------------------------------------------------
+    -- MOVEMENT ALERT
+    ---------------------------------------------------------------------------
+    SIDEBAR_TAB_MOVEMENT_ALERT = "Movement Alert",
+    MOVEMENT_ALERT_SUBTITLE = "Track movement cooldowns and Time Spiral procs",
+    MOVEMENT_ALERT_ENABLE = "Enable Movement Cooldown Alert",
+    MOVEMENT_ALERT_SETTINGS = "MOVEMENT COOLDOWN SETTINGS",
+    MOVEMENT_ALERT_DISPLAY_MODE = "Display Mode:",
+    MOVEMENT_ALERT_MODE_TEXT = "Text Only",
+    MOVEMENT_ALERT_MODE_ICON = "Icon + Timer",
+    MOVEMENT_ALERT_MODE_BAR = "Progress Bar",
+    MOVEMENT_ALERT_PRECISION = "Timer Decimals",
+    MOVEMENT_ALERT_POLL_RATE = "Update Rate (ms)",
+    MOVEMENT_ALERT_TEXT_FORMAT = "Text Format:",
+    MOVEMENT_ALERT_TEXT_FORMAT_HELP = "%a = ability name, %t = time remaining",
+    MOVEMENT_ALERT_BAR_SHOW_ICON = "Show Icon on Progress Bar",
+    TIME_SPIRAL_ENABLE = "Enable Time Spiral Tracker",
+    TIME_SPIRAL_SETTINGS = "TIME SPIRAL SETTINGS",
+    TIME_SPIRAL_TEXT = "Display Text:",
+    TIME_SPIRAL_COLOR = "Text Color",
+    TIME_SPIRAL_SOUND_ON = "Play Sound on Activation",
+    TIME_SPIRAL_TTS_ON = "Play TTS on Activation",
+    TIME_SPIRAL_TTS_MESSAGE = "TTS Message:",
+    TIME_SPIRAL_TTS_VOLUME = "TTS Volume",
+
+    ---------------------------------------------------------------------------
     -- CORE
     ---------------------------------------------------------------------------
     CORE_LOADED = "Loaded. Type |cff00ff00/nao|r to open settings.",

@@ -145,6 +145,25 @@ local STEALTH_REMINDER_DEFAULTS = {
     stanceSoundEnabled = false, stanceSoundID = 8959, stanceSoundInterval = 3, stanceWarnText = "CHECK STANCE",
 }
 
+local MOVEMENT_ALERT_DEFAULTS = {
+    -- Movement Cooldown sub-feature
+    enabled = false, unlock = false, font = NAOWH_FONT,
+    displayMode = "text",  -- "text", "icon", "bar"
+    textFormat = "No %a - %ts",  -- %a = ability name, %t = time
+    barShowIcon = true,
+    textColorR = 1, textColorG = 1, textColorB = 1,
+    precision = 1,
+    pollRate = 100,  -- ms between countdown updates
+    point = "CENTER", x = 0, y = 50, width = 200, height = 40,
+    combatOnly = false,
+    -- Time Spiral sub-feature
+    tsEnabled = false, tsUnlock = false,
+    tsText = "FREE MOVEMENT", tsColorR = 0.53, tsColorG = 1, tsColorB = 0,
+    tsPoint = "CENTER", tsX = 0, tsY = 100, tsWidth = 200, tsHeight = 40,
+    tsSoundEnabled = false, tsSoundID = 8959,
+    tsTtsEnabled = false, tsTtsMessage = "Free movement", tsTtsVolume = 50, tsTtsRate = 0,
+}
+
 local RANGE_CHECK_DEFAULTS = {
     enabled = false, rangeEnabled = true, rangeUnlock = false, rangeFont = NAOWH_FONT,
     rangeColorR = 0.01, rangeColorG = 0.56, rangeColorB = 0.91,
@@ -272,6 +291,7 @@ ns.ModuleDefaults = {
     consumableChecker = CONSUMABLE_CHECKER_DEFAULTS,
     gcdTracker = GCD_TRACKER_DEFAULTS,
     stealthReminder = STEALTH_REMINDER_DEFAULTS,
+    movementAlert = MOVEMENT_ALERT_DEFAULTS,
     rangeCheck = RANGE_CHECK_DEFAULTS,
     emoteDetection = EMOTE_DETECTION_DEFAULTS,
     focusCastBar = FOCUS_CAST_BAR_DEFAULTS,
@@ -654,6 +674,43 @@ local function InitializeDB()
     if sr.stanceSoundID        == nil then sr.stanceSoundID        = 8959  end
     if sr.stanceSoundInterval  == nil then sr.stanceSoundInterval  = 3     end
     if sr.stanceWarnText       == nil then sr.stanceWarnText       = "CHECK STANCE" end
+
+    -- Movement Alert
+    NaowhQOL.movementAlert = NaowhQOL.movementAlert or {}
+    local ma = NaowhQOL.movementAlert
+    -- Movement Cooldown
+    if ma.enabled     == nil then ma.enabled     = false              end
+    if ma.unlock      == nil then ma.unlock      = false              end
+    if ma.font        == nil then ma.font        = NAOWH_FONT         end
+    if ma.displayMode == nil then ma.displayMode = "text"             end
+    if ma.textColorR  == nil then ma.textColorR  = 1                  end
+    if ma.textColorG  == nil then ma.textColorG  = 1                  end
+    if ma.textColorB  == nil then ma.textColorB  = 1                  end
+    if ma.precision   == nil then ma.precision   = 1                  end
+    if ma.point       == nil then ma.point       = "CENTER"           end
+    if ma.x           == nil then ma.x           = 0                  end
+    if ma.y           == nil then ma.y           = 50                 end
+    if ma.width       == nil then ma.width       = 200                end
+    if ma.height      == nil then ma.height      = 40                 end
+    if ma.combatOnly  == nil then ma.combatOnly  = false              end
+    -- Time Spiral
+    if ma.tsEnabled      == nil then ma.tsEnabled      = false           end
+    if ma.tsUnlock       == nil then ma.tsUnlock       = false           end
+    if ma.tsText         == nil then ma.tsText         = "FREE MOVEMENT" end
+    if ma.tsColorR       == nil then ma.tsColorR       = 0.53            end
+    if ma.tsColorG       == nil then ma.tsColorG       = 1               end
+    if ma.tsColorB       == nil then ma.tsColorB       = 0               end
+    if ma.tsPoint        == nil then ma.tsPoint        = "CENTER"        end
+    if ma.tsX            == nil then ma.tsX            = 0               end
+    if ma.tsY            == nil then ma.tsY            = 100             end
+    if ma.tsWidth        == nil then ma.tsWidth        = 200             end
+    if ma.tsHeight       == nil then ma.tsHeight       = 40              end
+    if ma.tsSoundEnabled == nil then ma.tsSoundEnabled = false           end
+    if ma.tsSoundID      == nil then ma.tsSoundID      = 8959            end
+    if ma.tsTtsEnabled   == nil then ma.tsTtsEnabled   = false           end
+    if ma.tsTtsMessage   == nil then ma.tsTtsMessage   = "Free movement" end
+    if ma.tsTtsVolume    == nil then ma.tsTtsVolume    = 50              end
+    if ma.tsTtsRate      == nil then ma.tsTtsRate      = 0               end
 
     -- Range Check
     NaowhQOL.rangeCheck = NaowhQOL.rangeCheck or {}

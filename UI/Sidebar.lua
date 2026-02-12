@@ -258,6 +258,7 @@ CreateGroup("hud", L["SIDEBAR_GROUP_HUD"], {
     { label = L["SIDEBAR_TAB_CROSSHAIR"], onClick = function() if ns.InitCrosshair then ns:InitCrosshair() end end },
     { label = L["SIDEBAR_TAB_FOCUS_CASTBAR"], onClick = function() if ns.InitFocusCastBar then ns:InitFocusCastBar() end end },
     { label = L["SIDEBAR_TAB_DRAGONRIDING"], onClick = function() if ns.InitDragonriding then ns:InitDragonriding() end end },
+    { label = L["SIDEBAR_TAB_MOVEMENT_ALERT"], onClick = function() if ns.InitMovementAlert then ns:InitMovementAlert() end end },
 })
 
 -- TRACKING group
