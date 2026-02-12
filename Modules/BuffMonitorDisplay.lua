@@ -229,16 +229,24 @@ end
 local function CheckRaidBuffs(auras)
     local db = NaowhQOL.buffMonitor
     if ns.notificationsSuppressed then SafeHide(raidIcons, "unlockRaid"); return end
-    if not db or not db.enabled or not db.raidBuffsEnabled then
-        SafeHide(raidIcons, "unlockRaid"); return
+    -- Force hide when raid buffs disabled (bypass SafeHide unlock check)
+    if not db or not db.raidBuffsEnabled then
+        raidIcons:Hide(); return
     end
     if inCombat or (ns.ZoneUtil and ns.ZoneUtil.IsInMythicPlus()) then
         SafeHide(raidIcons, "unlockRaid"); return
     end
+    -- Instance only check
+    if db.raidBuffsInstanceOnly then
+        local inInstance = IsInInstance()
+        if not inInstance then
+            SafeHide(raidIcons, "unlockRaid"); return
+        end
+    end
     if not auras then SafeHide(raidIcons, "unlockRaid"); return end
 
     pcall(function()
-        local groupClasses = ns.GroupUtil and ns.GroupUtil.GetGroupClasses() or {}
+        local groupClasses = ns.GroupUtil and ns.GroupUtil.GetGroupClassesVisible() or {}
         local now = GetTime()
         local slots = {}
 
@@ -416,7 +424,11 @@ end
 local function GuardTick()
     local db = NaowhQOL.buffMonitor
     local hasWork = #activeTrackers > 0 or (db and db.raidBuffsEnabled)
-    if not hasWork then return end
+    if not hasWork then
+        loader:UnregisterEvent("UNIT_AURA")
+        icons:Hide(); raidIcons:Hide()
+        return
+    end
     if inCombat or (ns.ZoneUtil and ns.ZoneUtil.IsInMythicPlus()) then
         loader:UnregisterEvent("UNIT_AURA")
         SafeHide(icons, "unlock"); SafeHide(raidIcons, "unlockRaid")
@@ -429,8 +441,22 @@ local function GuardTick()
     end
 end
 
+local function UpdateVisibleCallback()
+    local db = NaowhQOL.buffMonitor
+    if ns.GroupUtil then
+        if db and db.raidBuffsEnabled then
+            ns.GroupUtil.RegisterVisibleCallback("BuffMonitor", function()
+                if not inCombat then pcall(CheckTrackers) end
+            end)
+        else
+            ns.GroupUtil.UnregisterVisibleCallback("BuffMonitor")
+        end
+    end
+end
+
 function ns:RefreshBuffMonitor()
     pcall(FilterTrackers)
+    pcall(UpdateVisibleCallback)
     pcall(GuardTick)
 end
 
@@ -469,6 +495,8 @@ loader:SetScript("OnEvent", function(self, ev, a1)
                 if not inCombat then pcall(CheckTrackers) end
             end)
         end
+        -- Visible callback managed by UpdateVisibleCallback based on raidBuffsEnabled
+        pcall(UpdateVisibleCallback)
     elseif ev == "UNIT_AURA" and a1 == "player" then
         if not auraDirty then auraDirty = true; C_Timer.After(0.15, FlushAura) end
     elseif ev == "PLAYER_REGEN_DISABLED" then

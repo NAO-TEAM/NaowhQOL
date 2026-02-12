@@ -582,6 +582,15 @@ function ns:InitBuffMonitor()
         })
         raidUnlockCB:SetShown(db.raidBuffsEnabled)
 
+        local raidInstanceOnlyCB = W:CreateCheckbox(raidKillArea, {
+            label = "Instance Only",
+            db = db, key = "raidBuffsInstanceOnly",
+            x = 200, y = -38,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = refresh,
+        })
+        raidInstanceOnlyCB:SetShown(db.raidBuffsEnabled)
+
         -- Raid sections container
         local raidSections = CreateFrame("Frame", nil, sc)
         raidSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
@@ -719,6 +728,7 @@ function ns:InitBuffMonitor()
             db.raidBuffsEnabled = self:GetChecked() and true or false
             refresh()
             raidUnlockCB:SetShown(db.raidBuffsEnabled)
+            raidInstanceOnlyCB:SetShown(db.raidBuffsEnabled)
             raidSections:SetShown(db.raidBuffsEnabled)
             RelayoutAll()
         end)

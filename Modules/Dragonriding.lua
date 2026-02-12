@@ -615,7 +615,23 @@ function ns:RefreshDragonridingLayout()
         BuildUI()
     end
     UpdateLayout()
-    ShowPreview()
+    -- Only show preview if module is enabled
+    if IsEnabled() then
+        -- Re-enable mouse if unlocked
+        if mainFrame then
+            mainFrame:EnableMouse(Get("unlocked"))
+        end
+        ShowPreview()
+    else
+        -- Force hide and disable interaction when disabled
+        if mainFrame then
+            mainFrame:Hide()
+            mainFrame:SetAlpha(0)
+            mainFrame:EnableMouse(false)
+        end
+        eventFrame:SetScript("OnUpdate", nil)
+        UnregisterDynamicEvents()
+    end
 end
 
 local previewHooked = false
