@@ -113,6 +113,9 @@ local cachedMovementSpellIcon = nil
 local movementCountdownTimer = nil
 local timeSpiralCountdownTimer = nil
 
+-- Forward declaration for self-referencing timer
+local CheckMovementCooldown
+
 -- ----------------------------------------------------------------
 -- Time Spiral Frame
 -- ----------------------------------------------------------------
@@ -322,14 +325,14 @@ local function HideMovementDisplay()
     CancelMovementCountdown()
 end
 
--- Show movement cooldown with remaining time (using timeUntilEndOfStartRecovery)
-local function ShowMovementWithTime(remaining, duration)
+-- Show movement cooldown display (no arithmetic on secret values)
+-- Secret values can be passed to string.format and SetText, just not used in arithmetic
+local function ShowMovementDisplay(cdInfo)
     local db = NaowhQOL.movementAlert
     if not db then return end
 
     local displayMode = db.displayMode or "text"
     local precision = db.precision or 1
-    local timeStr = string.format("%." .. precision .. "f", remaining)
     local spellName = cachedMovementSpellName or L["MOVEMENT_ALERT_FALLBACK"] or "Movement"
 
     -- Hide all elements first
@@ -338,84 +341,54 @@ local function ShowMovementWithTime(remaining, duration)
     movementBar:Hide()
 
     if displayMode == "text" then
-        -- Text mode: format with %a (ability) and %t (time) placeholders
+        -- Text mode: convert format to use %s placeholder, then pass secret value to SetFormattedText
+        -- Cannot use gsub with secret string as replacement - must pass directly to API
         local textFormat = db.textFormat or "No %a - %ts"
-        local displayText = textFormat:gsub("%%a", spellName):gsub("%%t", timeStr)
-        movementText:SetText(displayText)
+        local fmtStr = textFormat:gsub("%%a", spellName):gsub("%%t", "%%s")
+        movementText:SetFormattedText(fmtStr, string.format("%." .. precision .. "f", cdInfo.timeUntilEndOfStartRecovery))
         movementText:Show()
     elseif displayMode == "icon" then
-        -- Icon mode: show icon (cooldown spiral set separately via SetCooldown)
+        -- Icon mode: use cooldown frame with SetCooldown (AllowedWhenTainted)
         if cachedMovementSpellIcon then
             movementIcon.tex:SetTexture(cachedMovementSpellIcon)
+            movementIcon.cooldown:SetCooldown(cdInfo.startTime, cdInfo.duration, cdInfo.modRate or 1)
+            movementIcon.cooldown:SetHideCountdownNumbers(false)
             movementIcon:Show()
         else
             -- Fallback to text if no icon
             local textFormat = db.textFormat or "No %a - %ts"
-            local displayText = textFormat:gsub("%%a", spellName):gsub("%%t", timeStr)
-            movementText:SetText(displayText)
+            local fmtStr = textFormat:gsub("%%a", spellName):gsub("%%t", "%%s")
+            movementText:SetFormattedText(fmtStr, string.format("%." .. precision .. "f", cdInfo.timeUntilEndOfStartRecovery))
             movementText:Show()
         end
     elseif displayMode == "bar" then
-        -- Bar mode: show progress bar with fill
-        local progress = remaining / duration
-        movementBar:SetMinMaxValues(0, 1)
-        movementBar:SetValue(1 - progress)
+        -- Bar mode: pass secret values directly to StatusBar (AllowedWhenTainted)
+        -- SetMinMaxValues and SetValue don't require arithmetic
+        movementBar:SetMinMaxValues(0, cdInfo.duration)
+        movementBar:SetValue(cdInfo.timeUntilEndOfStartRecovery)
         movementBar:SetStatusBarColor(db.textColorR or 1, db.textColorG or 1, db.textColorB or 1)
-        movementBar.text:SetText(string.format("%s - %ss", spellName, timeStr))
+
+        -- Timer text - use secret value in string.format (allowed)
+        local timeStr = string.format("%." .. precision .. "f", cdInfo.timeUntilEndOfStartRecovery)
+        movementBar.text:SetText(timeStr)
+
+        -- Optional icon
         if db.barShowIcon ~= false and cachedMovementSpellIcon then
             movementBar.icon:SetTexture(cachedMovementSpellIcon)
             movementBar.icon:Show()
         else
             movementBar.icon:Hide()
         end
+
         movementBar:Show()
     end
 
     movementFrame:Show()
 end
 
--- Update countdown using timeUntilEndOfStartRecovery (combat-safe)
-local function UpdateMovementCountdown()
-    local db = NaowhQOL.movementAlert
-    if not db or not db.enabled then
-        HideMovementDisplay()
-        return
-    end
-
-    if not cachedMovementSpellId then
-        HideMovementDisplay()
-        return
-    end
-
-    local cdInfo = C_Spell.GetSpellCooldown(cachedMovementSpellId)
-
-    -- Use timeUntilEndOfStartRecovery for remaining time (combat-safe!)
-    -- Filter GCD: isOnGCD is nil for double jumps, true during actual GCD
-    if cdInfo and cdInfo.timeUntilEndOfStartRecovery and not cdInfo.isOnGCD and cdInfo.isOnGCD ~= nil then
-        local remaining = cdInfo.timeUntilEndOfStartRecovery
-        local duration = cdInfo.duration or remaining
-
-        if DEBUG_MODE then
-            print("[MovementAlert] Countdown - remaining:", remaining, "duration:", duration)
-        end
-
-        ShowMovementWithTime(remaining, duration)
-
-        -- Schedule next update (pollRate is in ms, NewTimer takes seconds)
-        local pollInterval = (db.pollRate or 100) / 1000
-        movementCountdownTimer = C_Timer.NewTimer(pollInterval, UpdateMovementCountdown)
-    else
-        -- Cooldown ended or just GCD
-        HideMovementDisplay()
-    end
-end
-
 local function CheckMovementCooldown()
     local db = NaowhQOL.movementAlert
     if not db then return end
-
-    -- Cancel any existing countdown timer
-    CancelMovementCountdown()
 
     -- Skip if module disabled
     if not db.enabled then
@@ -438,26 +411,24 @@ local function CheckMovementCooldown()
         return
     end
 
-    -- Get cooldown info and check timeUntilEndOfStartRecovery
-    -- This field exists when spell is on cooldown (combat-safe!)
-    -- isOnGCD filter: nil for double jumps, true for GCD (skip both)
+    -- Get cooldown info
     local cdInfo = C_Spell.GetSpellCooldown(cachedMovementSpellId)
 
     if DEBUG_MODE then
         print("[MovementAlert] cdInfo:", cdInfo and "exists" or "nil",
-              "timeUntil:", cdInfo and cdInfo.timeUntilEndOfStartRecovery,
               "isOnGCD:", cdInfo and cdInfo.isOnGCD)
     end
 
-    if cdInfo and cdInfo.timeUntilEndOfStartRecovery and not cdInfo.isOnGCD and cdInfo.isOnGCD ~= nil then
-        -- Spell is on cooldown (not GCD) - show display
-        -- For icon mode, set the cooldown spiral
-        if db.displayMode == "icon" and cachedMovementSpellIcon then
-            movementIcon.cooldown:SetCooldown(cdInfo.startTime or 0, cdInfo.duration or 0, cdInfo.modRate or 1)
-        end
+    -- Check if on actual cooldown (not GCD)
+    -- isOnGCD: nil for double jumps, true for GCD, false for actual cooldown
+    if cdInfo and cdInfo.isOnGCD == false then
+        -- Spell is on cooldown - show and schedule next poll
+        ShowMovementDisplay(cdInfo)
 
-        -- Start the countdown updates
-        UpdateMovementCountdown()
+        -- Schedule next poll for smooth countdown updates
+        CancelMovementCountdown()
+        local pollMs = math.max(50, db.pollRate or 100)
+        movementCountdownTimer = C_Timer.NewTimer(pollMs / 1000, CheckMovementCooldown)
     else
         -- Spell is ready or just GCD - hide display
         HideMovementDisplay()
