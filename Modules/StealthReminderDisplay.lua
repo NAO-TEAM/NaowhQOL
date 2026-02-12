@@ -270,6 +270,9 @@ function stanceFrame:UpdateDisplay()
         stanceFrame:Show()
         if db.stanceSoundEnabled and not stanceSoundTicker and not stanceSoundFired then
             StartStanceSound(db)
+        elseif not db.stanceSoundEnabled then
+            StopStanceSound()
+            stanceSoundFired = false
         end
     else
         stanceSoundFired = false
