@@ -24,6 +24,22 @@ local function HasAttackableTarget()
 end
 
 ---------------------------------------------------------------------------
+-- Color helpers
+---------------------------------------------------------------------------
+local function GetColorForRange(minRange)
+    local db = NaowhQOL.rangeCheck
+    if not db or not db.rangeColors then
+        return db and db.rangeColorR or 0.01, db and db.rangeColorG or 0.56, db and db.rangeColorB or 0.91
+    end
+    local bracket = math.floor((minRange or 0) / 5) * 5
+    local color = db.rangeColors[bracket] or db.rangeColors[0]
+    if color then
+        return color.r, color.g, color.b
+    end
+    return 0.01, 0.56, 0.91
+end
+
+---------------------------------------------------------------------------
 -- Range to Target Frame
 ---------------------------------------------------------------------------
 local rangeFrame = CreateFrame("Frame", "NaowhQOL_RangeToTarget", UIParent, "BackdropTemplate")
@@ -113,7 +129,7 @@ local function TickRangeCheck()
             else
                 rangeLabel:SetText("-- yd")
             end
-            rangeLabel:SetTextColor(db.rangeColorR or 0.01, db.rangeColorG or 0.56, db.rangeColorB or 0.91)
+            rangeLabel:SetTextColor(GetColorForRange(minRange))
             if not db.rangeUnlock then
                 rangeFrame:Show()
             end
@@ -168,6 +184,7 @@ loader:SetScript("OnEvent", function(self, event)
             db = db,
             unlockKey = "rangeUnlock",
             widthKey = "rangeWidth", heightKey = "rangeHeight",
+            minW = 75, minH = 10,
             onResize = function() rangeFrame:UpdateDisplay() end,
         })
 

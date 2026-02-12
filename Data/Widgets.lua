@@ -1903,6 +1903,7 @@ function ns.Widgets.MakeDraggable(frame, opts)
     local db = opts.db
     local unlockKey = opts.unlockKey or "unlock"
     local pointKey = opts.pointKey or "point"
+    local anchorToKey = opts.anchorToKey
     local xKey = opts.xKey or "x"
     local yKey = opts.yKey or "y"
 
@@ -1920,9 +1921,12 @@ function ns.Widgets.MakeDraggable(frame, opts)
 
     frame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        local point, _, _, x, y = self:GetPoint()
+        local point, _, relativePoint, x, y = self:GetPoint()
         if point and x and y then
             db[pointKey] = point
+            if anchorToKey and relativePoint then
+                db[anchorToKey] = relativePoint
+            end
             db[xKey] = math.floor(x)
             db[yKey] = math.floor(y)
         end

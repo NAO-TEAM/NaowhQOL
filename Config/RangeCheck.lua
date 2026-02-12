@@ -80,14 +80,70 @@ function ns:InitRangeCheck()
             refreshRange()
         end)
 
-        W:CreateColorPicker(appContent, {
-            label = L["COMMON_LABEL_TEXT_COLOR"], db = db,
-            rKey = "rangeColorR", gKey = "rangeColorG", bKey = "rangeColorB",
-            x = 10, y = -50,
-            onChange = refreshRange
-        })
+        -- Initialize rangeColors table if needed
+        if not db.rangeColors then
+            db.rangeColors = {
+                [0]  = {r = 0.01, g = 0.91, b = 0.15},
+                [5]  = {r = 0.01, g = 0.91, b = 0.15},
+                [10] = {r = 0.91, g = 0.91, b = 0.01},
+                [15] = {r = 0.91, g = 0.56, b = 0.01},
+                [20] = {r = 0.91, g = 0.56, b = 0.01},
+                [25] = {r = 0.91, g = 0.20, b = 0.01},
+                [30] = {r = 0.91, g = 0.01, b = 0.01},
+                [35] = {r = 0.91, g = 0.01, b = 0.01},
+                [40] = {r = 0.91, g = 0.01, b = 0.01},
+            }
+        end
 
-        appContent:SetHeight(90)
+        -- Range bracket color pickers
+        local brackets = {0, 5, 10, 15, 20, 25, 30, 35, 40}
+        local yOffset = -50
+        for i, bracket in ipairs(brackets) do
+            local nextBracket = brackets[i + 1] or (bracket + 5)
+            local label = bracket .. "-" .. (nextBracket - 1) .. " yd"
+            if not db.rangeColors[bracket] then
+                db.rangeColors[bracket] = {r = 0.01, g = 0.56, b = 0.91}
+            end
+            local colorBtn = CreateFrame("Button", nil, appContent)
+            colorBtn:SetSize(20, 20)
+            colorBtn:SetPoint("TOPLEFT", 10, yOffset)
+
+            local border = colorBtn:CreateTexture(nil, "BACKGROUND")
+            border:SetPoint("TOPLEFT", -1, 1)
+            border:SetPoint("BOTTOMRIGHT", 1, -1)
+            border:SetColorTexture(0.3, 0.3, 0.3)
+
+            local tex = colorBtn:CreateTexture(nil, "ARTWORK")
+            tex:SetAllPoints()
+            tex:SetColorTexture(db.rangeColors[bracket].r, db.rangeColors[bracket].g, db.rangeColors[bracket].b)
+            colorBtn.tex = tex
+
+            local lbl = appContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            lbl:SetPoint("LEFT", colorBtn, "RIGHT", 8, 0)
+            lbl:SetText(label)
+
+            colorBtn:SetScript("OnClick", function()
+                local c = db.rangeColors[bracket]
+                ColorPickerFrame:SetupColorPickerAndShow({
+                    r = c.r, g = c.g, b = c.b,
+                    hasOpacity = false,
+                    swatchFunc = function()
+                        local r, g, b = ColorPickerFrame:GetColorRGB()
+                        db.rangeColors[bracket] = {r = r, g = g, b = b}
+                        tex:SetColorTexture(r, g, b)
+                        refreshRange()
+                    end,
+                    cancelFunc = function(prev)
+                        db.rangeColors[bracket] = {r = prev.r, g = prev.g, b = prev.b}
+                        tex:SetColorTexture(prev.r, prev.g, prev.b)
+                        refreshRange()
+                    end,
+                })
+            end)
+            yOffset = yOffset - 28
+        end
+
+        appContent:SetHeight(50 + (#brackets * 28) + 10)
         appWrap:RecalcHeight()
 
         -- Layout

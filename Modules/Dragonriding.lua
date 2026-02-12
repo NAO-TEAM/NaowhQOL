@@ -474,7 +474,11 @@ local function BuildUI()
 
     W.MakeDraggable(mainFrame, {
         db = NaowhQOL.dragonriding,
-        unlockKey = "unlocked", xKey = "posX", yKey = "posY",
+        unlockKey = "unlocked",
+        pointKey = "point",
+        anchorToKey = "anchorTo",
+        xKey = "posX",
+        yKey = "posY",
         userPlaced = false,
     })
 
