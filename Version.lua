@@ -1,7 +1,7 @@
 local addonName, ns = ...
 
 ns.Version = {
-    stage = "STABLE",
+    stage = "UNSTABLE",
     number = "v1.0.0"
 }
 
