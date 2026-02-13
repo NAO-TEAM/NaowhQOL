@@ -161,9 +161,45 @@ function ns:InitModuleOptions()
         durWrap:RecalcHeight()
 
         -- ============================================================
+        -- QUESTING
+        -- ============================================================
+        local questWrap, questContent = W:CreateCollapsibleSection(sections, {
+            text = L["MODULES_SECTION_QUESTING"],
+            startOpen = false,
+            onCollapse = function() if RelayoutSections then RelayoutSections() end end,
+        })
+
+        W:CreateCheckbox(questContent, {
+            label = L["MODULES_AUTO_ACCEPT"], db = db, key = "autoQuestAccept",
+            x = 10, y = -5, template = "ChatConfigCheckButtonTemplate",
+        })
+        W:CreateCheckbox(questContent, {
+            label = L["MODULES_AUTO_TURNIN"], db = db, key = "autoQuestTurnIn",
+            x = 10, y = -35, template = "ChatConfigCheckButtonTemplate",
+        })
+        W:CreateCheckbox(questContent, {
+            label = L["MODULES_AUTO_GOSSIP"], db = db, key = "autoGossipSelect",
+            x = 10, y = -65, template = "ChatConfigCheckButtonTemplate",
+        })
+        W:CreateCheckbox(questContent, {
+            label = L["MODULES_INTERACT_RANGE"], db = db, key = "enhancedInteractRange",
+            x = 10, y = -95, template = "ChatConfigCheckButtonTemplate",
+            description = L["MODULES_INTERACT_RANGE_DESC"],
+            descWidth = 350,
+            onChange = function(enabled)
+                if enabled and ns.QuestAutomation then
+                    ns.QuestAutomation.ApplyInteractRange()
+                end
+            end,
+        })
+
+        questContent:SetHeight(125)
+        questWrap:RecalcHeight()
+
+        -- ============================================================
         -- Layout
         -- ============================================================
-        local sectionList = { itemsWrap, clutterWrap, durWrap }
+        local sectionList = { itemsWrap, clutterWrap, durWrap, questWrap }
 
         RelayoutSections = function()
             for i, section in ipairs(sectionList) do

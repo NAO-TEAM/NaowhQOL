@@ -57,7 +57,7 @@ local function ShouldBeVisible()
     local db = GetDB()
     if not db.enabled then return false end
     if db.hideOnMouseClick and state.isRightMouseDown then return false end
-    if state.inCombat or state.inInstance then return true end
+    if state.inCombat then return true end
     return db.showOutOfCombat ~= false
 end
 
@@ -108,6 +108,8 @@ local function UpdateRender()
         if db.hideBackground then
             ring:Hide()
         else
+            local r, g, b = GetRingColor()
+            ring:SetVertexColor(r, g, b, 1)
             ring:SetAlpha(alpha)
             ring:Show()
         end
@@ -150,10 +152,12 @@ local function UpdateRender()
                           and not state.isCasting and not state.isChanneling
 
         if showReady then
-            -- Set ready ring color
+            -- Set ready ring color (supports class color toggle)
             local readyR, readyG, readyB
             if db.gcdReadyMatchSwipe then
                 readyR, readyG, readyB = db.gcdR or 0.004, db.gcdG or 0.56, db.gcdB or 0.91
+            elseif db.gcdReadyUseClassColor then
+                readyR, readyG, readyB = W.GetEffectiveColor(db, "gcdReadyR", "gcdReadyG", "gcdReadyB", "gcdReadyUseClassColor")
             else
                 readyR, readyG, readyB = db.gcdReadyR or 0, db.gcdReadyG or 0.8, db.gcdReadyB or 0.3
             end

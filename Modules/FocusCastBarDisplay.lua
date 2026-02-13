@@ -493,14 +493,8 @@ function castBarFrame:UpdateDisplay()
     if db.unlock then
         castBarFrame:SetBackdrop({
             bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-            tile = true,
-            tileSize = 16,
-            edgeSize = 16,
-            insets = { left = 4, right = 4, top = 4, bottom = 4 }
         })
         castBarFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
-        castBarFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
         if resizeHandle then resizeHandle:Show() end
 
         -- Show preview when unlocked

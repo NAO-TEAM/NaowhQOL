@@ -192,6 +192,7 @@ function ns.InitMouseOptions()
         local readyBtn, readyPreview, readyToggle = W:CreateColorPicker(gcdContent, {
             label = L["MOUSE_COLOR_READY"], db = db,
             rKey = "gcdReadyR", gKey = "gcdReadyG", bKey = "gcdReadyB",
+            classColorKey = "gcdReadyUseClassColor",
             x = GG:Col(2), y = GG:Row(2) - 10,
             onChange = function()
                 if display then display:RefreshGCD() end

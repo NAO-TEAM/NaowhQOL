@@ -426,6 +426,12 @@ ns:RegisterLocale("enUS", {
     MODULES_DURABILITY = "Durability Warning",
     MODULES_DURABILITY_DESC = "Alert when durability low",
     MODULES_DURABILITY_THRESHOLD = "Warning Threshold",
+    MODULES_SECTION_QUESTING = "QUESTING",
+    MODULES_AUTO_ACCEPT = "Auto Accept Quests (Alt to bypass)",
+    MODULES_AUTO_TURNIN = "Auto Turn-in Quests (Alt to bypass)",
+    MODULES_AUTO_GOSSIP = "Auto Select Gossip Quests (Alt to bypass)",
+    MODULES_INTERACT_RANGE = "Enhanced Interact Range",
+    MODULES_INTERACT_RANGE_DESC = "Increase NPC/object interact range",
 
     ---------------------------------------------------------------------------
     -- OPTIMIZATIONS

@@ -51,6 +51,7 @@ Modules/FocusCastBarDisplay.lua
 Modules/DurabilityDisplay.lua
 Modules/AutoKeystone.lua
 Modules/SkipQueueConfirm.lua
+Modules/QuestAutomation.lua
 Modules/DeathReleaseProtection.lua
 Modules/AuctionHouseFilter.lua
 Modules/TalentReminder.lua
