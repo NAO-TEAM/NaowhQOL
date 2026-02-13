@@ -9,6 +9,8 @@ MainWindow:SetSize(950, 650)
 MainWindow:SetPoint("CENTER")
 MainWindow:SetFrameStrata("HIGH")
 MainWindow:SetMovable(true)
+MainWindow:SetResizable(true)
+MainWindow:SetResizeBounds(400, 300, 1400, 900)
 MainWindow:EnableMouse(true)
 MainWindow:RegisterForDrag("LeftButton")
 MainWindow:SetScript("OnDragStart", MainWindow.StartMoving)
@@ -46,6 +48,14 @@ local CloseButton = CreateFrame("Button", nil, MainWindow, "UIPanelCloseButton")
 CloseButton:SetPoint("TOPRIGHT", -3, -3)
 CloseButton:SetSize(32, 32)
 
+local ResizeHandle = CreateFrame("Button", nil, MainWindow)
+ResizeHandle:SetSize(16, 16)
+ResizeHandle:SetPoint("BOTTOMRIGHT", -2, 2)
+ResizeHandle:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+ResizeHandle:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+ResizeHandle:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+ResizeHandle:SetScript("OnMouseDown", function() MainWindow:StartSizing("BOTTOMRIGHT") end)
+ResizeHandle:SetScript("OnMouseUp", function() MainWindow:StopMovingOrSizing() end)
 
 local ContentArea = CreateFrame("Frame", nil, MainWindow, "BackdropTemplate")
 ContentArea:SetPoint("TOPLEFT", 202, -5)
@@ -95,12 +105,17 @@ SlashCmdList["NAOWHQOL"] = function()
         if MainWindow.ResetContent then
             MainWindow:ResetContent()
         end
-        -- Open directly to System > Optimizations
-        if ns.InitOptOptions then
-            ns:InitOptOptions()
-        end
-        if ns.ResetSidebarToOptimizations then
-            ns:ResetSidebarToOptimizations()
+        -- Restore last tab or default to Optimizations
+        local lastTab = NaowhQOL and NaowhQOL.config and NaowhQOL.config.lastTab
+        if lastTab and ns.OpenTab then
+            ns:OpenTab(lastTab)
+        else
+            if ns.InitOptOptions then
+                ns:InitOptOptions()
+            end
+            if ns.ResetSidebarToOptimizations then
+                ns:ResetSidebarToOptimizations()
+            end
         end
     end
 end

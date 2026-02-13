@@ -552,6 +552,14 @@ function ns.Widgets:CreateScrollFrame(parent, contentHeight)
     sf:SetPoint("TOPLEFT", 0, 0)
     sf:SetPoint("BOTTOMRIGHT", -26, 0)
 
+    -- Shorten scrollbar from top and bottom for cleaner look
+    local scrollBar = sf.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPRIGHT", sf, "TOPRIGHT", 22, -40)
+        scrollBar:SetPoint("BOTTOMRIGHT", sf, "BOTTOMRIGHT", 22, 40)
+    end
+
     local sc = CreateFrame("Frame", nil, sf)
     sc:SetWidth(sf:GetWidth() or 700)
     sc:SetHeight(contentHeight or 900)

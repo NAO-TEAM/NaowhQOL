@@ -79,8 +79,9 @@ ActiveTabIndicator:SetColorTexture(COLORS.NAOWH_ORANGE.r, COLORS.NAOWH_ORANGE.g,
 ActiveTabIndicator:Hide()
 
 local selectedButton = nil
+local tabRegistry = {}  -- Maps tab keys to {button, groupName, initFunc}
 
-local function SwitchTab(button, initFunction)
+local function SwitchTab(button, initFunction, tabKey)
     if not ns.MainFrame or not ns.MainFrame.Content then return end
 
     if ns.MainFrame.ResetContent then
@@ -105,6 +106,11 @@ local function SwitchTab(button, initFunction)
 
     if initFunction then
         initFunction()
+    end
+
+    -- Save last tab for session restore
+    if tabKey and NaowhQOL and NaowhQOL.config then
+        NaowhQOL.config.lastTab = tabKey
     end
 end
 
@@ -189,7 +195,7 @@ local function CreateGroupHeader(label, groupName)
     return btn
 end
 
-local function CreateChildButton(label, onClickFunc)
+local function CreateChildButton(label, onClickFunc, tabKey)
     local btn = CreateFrame("Button", nil, scrollContent, "BackdropTemplate")
     btn:SetSize(186, 32)
     btn:SetBackdrop({
@@ -225,9 +231,10 @@ local function CreateChildButton(label, onClickFunc)
     end)
 
     btn:SetScript("OnClick", function(self)
-        SwitchTab(self, onClickFunc)
+        SwitchTab(self, onClickFunc, tabKey)
     end)
 
+    btn.tabKey = tabKey
     return btn
 end
 
@@ -235,9 +242,13 @@ local function CreateGroup(name, label, childDefs)
     local header = CreateGroupHeader(label, name)
     local children = {}
     for _, def in ipairs(childDefs) do
-        local child = CreateChildButton(def.label, def.onClick)
+        local child = CreateChildButton(def.label, def.onClick, def.key)
         children[#children + 1] = child
         if not firstChildBtn then firstChildBtn = child end
+        -- Register tab for restore functionality
+        if def.key then
+            tabRegistry[def.key] = { button = child, groupName = name, initFunc = def.onClick }
+        end
     end
     groupStates[name] = false -- default collapsed
     allGroups[#allGroups + 1] = { name = name, header = header, children = children }
@@ -246,44 +257,44 @@ end
 
 -- COMBAT group
 CreateGroup("combat", L["SIDEBAR_GROUP_COMBAT"], {
-    { label = L["SIDEBAR_TAB_COMBAT_TIMER"], onClick = function() if ns.InitCombatTimer then ns:InitCombatTimer() end end },
-    { label = L["SIDEBAR_TAB_COMBAT_ALERT"], onClick = function() if ns.InitCombatAlerts then ns:InitCombatAlerts() end end },
-    { label = L["SIDEBAR_TAB_COMBAT_LOGGER"], onClick = function() if ns.InitCombatLogger then ns:InitCombatLogger() end end },
-    { label = L["SIDEBAR_TAB_GCD_TRACKER"], onClick = function() if ns.InitGcdTracker then ns:InitGcdTracker() end end },
+    { key = "combat_timer", label = L["SIDEBAR_TAB_COMBAT_TIMER"], onClick = function() if ns.InitCombatTimer then ns:InitCombatTimer() end end },
+    { key = "combat_alert", label = L["SIDEBAR_TAB_COMBAT_ALERT"], onClick = function() if ns.InitCombatAlerts then ns:InitCombatAlerts() end end },
+    { key = "combat_logger", label = L["SIDEBAR_TAB_COMBAT_LOGGER"], onClick = function() if ns.InitCombatLogger then ns:InitCombatLogger() end end },
+    { key = "gcd_tracker", label = L["SIDEBAR_TAB_GCD_TRACKER"], onClick = function() if ns.InitGcdTracker then ns:InitGcdTracker() end end },
 })
 
 -- HUD group
 CreateGroup("hud", L["SIDEBAR_GROUP_HUD"], {
-    { label = L["SIDEBAR_TAB_MOUSE_RING"], onClick = function() if ns.InitMouseOptions then ns:InitMouseOptions() end end },
-    { label = L["SIDEBAR_TAB_CROSSHAIR"], onClick = function() if ns.InitCrosshair then ns:InitCrosshair() end end },
-    { label = L["SIDEBAR_TAB_FOCUS_CASTBAR"], onClick = function() if ns.InitFocusCastBar then ns:InitFocusCastBar() end end },
-    { label = L["SIDEBAR_TAB_DRAGONRIDING"], onClick = function() if ns.InitDragonriding then ns:InitDragonriding() end end },
-    { label = L["SIDEBAR_TAB_MOVEMENT_ALERT"], onClick = function() if ns.InitMovementAlert then ns:InitMovementAlert() end end },
+    { key = "mouse_ring", label = L["SIDEBAR_TAB_MOUSE_RING"], onClick = function() if ns.InitMouseOptions then ns:InitMouseOptions() end end },
+    { key = "crosshair", label = L["SIDEBAR_TAB_CROSSHAIR"], onClick = function() if ns.InitCrosshair then ns:InitCrosshair() end end },
+    { key = "focus_castbar", label = L["SIDEBAR_TAB_FOCUS_CASTBAR"], onClick = function() if ns.InitFocusCastBar then ns:InitFocusCastBar() end end },
+    { key = "dragonriding", label = L["SIDEBAR_TAB_DRAGONRIDING"], onClick = function() if ns.InitDragonriding then ns:InitDragonriding() end end },
+    { key = "movement_alert", label = L["SIDEBAR_TAB_MOVEMENT_ALERT"], onClick = function() if ns.InitMovementAlert then ns:InitMovementAlert() end end },
 })
 
 -- TRACKING group
 CreateGroup("tracking", L["SIDEBAR_GROUP_TRACKING"], {
-    { label = L["SIDEBAR_TAB_BUFF_MONITOR"], onClick = function() if ns.InitBuffMonitor then ns:InitBuffMonitor() end end },
-    { label = L["SIDEBAR_TAB_CONSUMABLES"], onClick = function() if ns.InitConsumableChecker then ns:InitConsumableChecker() end end },
-    { label = L["SIDEBAR_TAB_STEALTH"], onClick = function() if ns.InitStealthReminder then ns:InitStealthReminder() end end },
-    { label = L["SIDEBAR_TAB_RANGE_CHECK"], onClick = function() if ns.InitRangeCheck then ns:InitRangeCheck() end end },
-    { label = L["SIDEBAR_TAB_PET_TRACKER"], onClick = function() if ns.InitPetTracker then ns:InitPetTracker() end end },
+    { key = "buff_monitor", label = L["SIDEBAR_TAB_BUFF_MONITOR"], onClick = function() if ns.InitBuffMonitor then ns:InitBuffMonitor() end end },
+    { key = "consumables", label = L["SIDEBAR_TAB_CONSUMABLES"], onClick = function() if ns.InitConsumableChecker then ns:InitConsumableChecker() end end },
+    { key = "stealth", label = L["SIDEBAR_TAB_STEALTH"], onClick = function() if ns.InitStealthReminder then ns:InitStealthReminder() end end },
+    { key = "range_check", label = L["SIDEBAR_TAB_RANGE_CHECK"], onClick = function() if ns.InitRangeCheck then ns:InitRangeCheck() end end },
+    { key = "pet_tracker", label = L["SIDEBAR_TAB_PET_TRACKER"], onClick = function() if ns.InitPetTracker then ns:InitPetTracker() end end },
 })
 
 -- REMINDERS/MISC group
 CreateGroup("reminders", L["SIDEBAR_GROUP_REMINDERS"], {
-    { label = L["SIDEBAR_TAB_TALENT_REMINDER"], onClick = function() if ns.InitTalentReminder then ns:InitTalentReminder() end end },
-    { label = L["SIDEBAR_TAB_EMOTE_DETECTION"], onClick = function() if ns.InitEmoteDetection then ns:InitEmoteDetection() end end },
-    { label = L["SIDEBAR_TAB_EQUIPMENT_REMINDER"], onClick = function() if ns.InitEquipmentReminder then ns:InitEquipmentReminder() end end },
-    { label = L["SIDEBAR_TAB_CREZ"], onClick = function() if ns.InitCRez then ns:InitCRez() end end },
-    { label = L["SIDEBAR_TAB_MISC"], onClick = function() if ns.InitModuleOptions then ns:InitModuleOptions() end end },
+    { key = "talent_reminder", label = L["SIDEBAR_TAB_TALENT_REMINDER"], onClick = function() if ns.InitTalentReminder then ns:InitTalentReminder() end end },
+    { key = "emote_detection", label = L["SIDEBAR_TAB_EMOTE_DETECTION"], onClick = function() if ns.InitEmoteDetection then ns:InitEmoteDetection() end end },
+    { key = "equipment_reminder", label = L["SIDEBAR_TAB_EQUIPMENT_REMINDER"], onClick = function() if ns.InitEquipmentReminder then ns:InitEquipmentReminder() end end },
+    { key = "crez", label = L["SIDEBAR_TAB_CREZ"], onClick = function() if ns.InitCRez then ns:InitCRez() end end },
+    { key = "misc", label = L["SIDEBAR_TAB_MISC"], onClick = function() if ns.InitModuleOptions then ns:InitModuleOptions() end end },
 })
 
 -- SYSTEM group
 CreateGroup("system", L["SIDEBAR_GROUP_SYSTEM"], {
-    { label = L["SIDEBAR_TAB_OPTIMIZATIONS"], onClick = function() if ns.InitOptOptions then ns:InitOptOptions() end end },
-    { label = L["SIDEBAR_TAB_PROFILES"], onClick = function() if ns.InitImportExport then ns:InitImportExport() end end },
-    { label = L["SIDEBAR_TAB_SLASH_COMMANDS"], onClick = function() if ns.InitSlashCommands then ns:InitSlashCommands() end end },
+    { key = "optimizations", label = L["SIDEBAR_TAB_OPTIMIZATIONS"], onClick = function() if ns.InitOptOptions then ns:InitOptOptions() end end },
+    { key = "profiles", label = L["SIDEBAR_TAB_PROFILES"], onClick = function() if ns.InitImportExport then ns:InitImportExport() end end },
+    { key = "slash_commands", label = L["SIDEBAR_TAB_SLASH_COMMANDS"], onClick = function() if ns.InitSlashCommands then ns:InitSlashCommands() end end },
 })
 
 function ns:ResetSidebarToOptimizations()
@@ -303,6 +314,31 @@ function ns:ResetSidebarToHome()
         ActiveTabIndicator:Hide()
     end
     selectedButton = nil
+end
+
+function ns:OpenTab(tabKey)
+    local tabInfo = tabRegistry[tabKey]
+    if not tabInfo then
+        -- Fallback to optimizations
+        if ns.InitOptOptions then ns:InitOptOptions() end
+        ns:ResetSidebarToOptimizations()
+        return
+    end
+
+    -- Expand the parent group
+    for _, group in ipairs(allGroups) do
+        if group.name == tabInfo.groupName then
+            groupStates[group.name] = true
+            group.header.iconTxt:SetText("-")
+        else
+            groupStates[group.name] = false
+            group.header.iconTxt:SetText("+")
+        end
+    end
+    RecalculateLayout()
+
+    -- Switch to the tab
+    SwitchTab(tabInfo.button, tabInfo.initFunc, tabKey)
 end
 
 -- Reset all groups to collapsed and expand only the one with selected item
