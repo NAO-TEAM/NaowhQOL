@@ -292,10 +292,8 @@ local function CreateSegFrame()
     local f = CreateFrame("Frame", nil, container)
     f.tex = f:CreateTexture(nil, "ARTWORK")
     f.tex:SetAllPoints()
-    f.tex:SetColorTexture(
-        db and db.timelineColorR or 0.01,
-        db and db.timelineColorG or 0.56,
-        db and db.timelineColorB or 0.91, 0.6)
+    local tlR, tlG, tlB = W.GetEffectiveColor(db, "timelineColorR", "timelineColorG", "timelineColorB", "timelineColorUseClassColor")
+    f.tex:SetColorTexture(tlR, tlG, tlB, 0.6)
     f:Hide()
     return f
 end
@@ -447,9 +445,7 @@ local function LayoutIcons()
     end
 
     local tlHeight = db.timelineHeight or 4
-    local tlR = db.timelineColorR or 0.01
-    local tlG = db.timelineColorG or 0.56
-    local tlB = db.timelineColorB or 0.91
+    local tlR, tlG, tlB = W.GetEffectiveColor(db, "timelineColorR", "timelineColorG", "timelineColorB", "timelineColorUseClassColor")
     local barPerpOff = iconSize / 2 + TIMELINE_GAP + tlHeight / 2
 
     for seg in SegmentIterate() do

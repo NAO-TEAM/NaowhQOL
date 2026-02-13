@@ -226,7 +226,7 @@ function petFrame:UpdateDisplay()
     end
 
     -- Set warning text and color based on state
-    local r, g, b = db.colorR or 1, db.colorG or 0, db.colorB or 0
+    local r, g, b = W.GetEffectiveColor(db, "colorR", "colorG", "colorB", "colorUseClassColor")
 
     if warning == WARNING_MISSING then
         warningLabel:SetText(db.missingText or L["PETTRACKER_MISSING_DEFAULT"])

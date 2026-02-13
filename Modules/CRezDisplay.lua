@@ -44,9 +44,11 @@ local function UpdateRezDisplay()
 
     -- Apply font settings
     rezSlot.timer:SetFont(NAOWH_FONT, db.timerFontSize or 11, "OUTLINE")
-    rezSlot.timer:SetTextColor(db.timerColorR or 1, db.timerColorG or 1, db.timerColorB or 1, db.timerAlpha or 1)
+    local tcR, tcG, tcB = W.GetEffectiveColor(db, "timerColorR", "timerColorG", "timerColorB", "timerColorUseClassColor")
+    rezSlot.timer:SetTextColor(tcR, tcG, tcB, db.timerAlpha or 1)
     rezSlot.count:SetFont(NAOWH_FONT, db.countFontSize or 11, "OUTLINE")
-    rezSlot.count:SetTextColor(db.countColorR or 1, db.countColorG or 1, db.countColorB or 1, db.countAlpha or 1)
+    local ccR, ccG, ccB = W.GetEffectiveColor(db, "countColorR", "countColorG", "countColorB", "countColorUseClassColor")
+    rezSlot.count:SetTextColor(ccR, ccG, ccB, db.countAlpha or 1)
 
     local charges = C_Spell.GetSpellCharges(REBIRTH_SPELL_ID)
     if not charges then

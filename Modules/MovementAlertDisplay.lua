@@ -285,7 +285,8 @@ function movementFrame:UpdateDisplay()
     if not success then
         movementText:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", fontSize, "OUTLINE")
     end
-    movementText:SetTextColor(db.textColorR or 1, db.textColorG or 1, db.textColorB or 1)
+    local tR, tG, tB = W.GetEffectiveColor(db, "textColorR", "textColorG", "textColorB", "textColorUseClassColor")
+    movementText:SetTextColor(tR, tG, tB)
 
     -- Bar mode sizing - scale with frame
     local barH = math.max(12, math.floor(frameH * 0.5))
@@ -345,7 +346,8 @@ function timeSpiralFrame:UpdateDisplay()
     if not success then
         timeSpiralText:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", fontSize, "OUTLINE")
     end
-    timeSpiralText:SetTextColor(db.tsColorR or 0.53, db.tsColorG or 1, db.tsColorB or 0)
+    local tsR, tsG, tsB = W.GetEffectiveColor(db, "tsColorR", "tsColorG", "tsColorB", "tsColorUseClassColor")
+    timeSpiralText:SetTextColor(tsR, tsG, tsB)
 
     -- Update event registration when display is refreshed
     UpdateEventRegistration()
@@ -408,7 +410,8 @@ local function ShowMovementDisplay(cdInfo)
         -- SetMinMaxValues and SetValue don't require arithmetic
         movementBar:SetMinMaxValues(0, cdInfo.duration)
         movementBar:SetValue(cdInfo.timeUntilEndOfStartRecovery)
-        movementBar:SetStatusBarColor(db.textColorR or 1, db.textColorG or 1, db.textColorB or 1)
+        local barR, barG, barB = W.GetEffectiveColor(db, "textColorR", "textColorG", "textColorB", "textColorUseClassColor")
+        movementBar:SetStatusBarColor(barR, barG, barB)
 
         -- Timer text - use secret value in string.format (allowed)
         local timeStr = string.format("%." .. precision .. "f", cdInfo.timeUntilEndOfStartRecovery)

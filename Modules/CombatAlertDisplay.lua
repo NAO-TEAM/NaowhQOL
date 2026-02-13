@@ -101,7 +101,7 @@ function alertFrame:UpdateDisplay()
 
         -- Preview text for unlock mode
         alertText:SetText(db.enterText or "++ Combat")
-        txtColor.r, txtColor.g, txtColor.b = db.enterR or 0, db.enterG or 1, db.enterB or 0
+        txtColor.r, txtColor.g, txtColor.b = W.GetEffectiveColor(db, "enterR", "enterG", "enterB", "enterUseClassColor")
         ApplyColor()
         alertFrame:Show()
     else
@@ -218,13 +218,15 @@ loader:SetScript("OnEvent", function(self, event)
 
     elseif event == "PLAYER_REGEN_DISABLED" then
         if db.enabled then
-            ShowAlert(db.enterText or "++ Combat", db.enterR or 0, db.enterG or 1, db.enterB or 0)
+            local eR, eG, eB = W.GetEffectiveColor(db, "enterR", "enterG", "enterB", "enterUseClassColor")
+            ShowAlert(db.enterText or "++ Combat", eR, eG, eB)
             PlayCombatAudio("enter")
         end
 
     elseif event == "PLAYER_REGEN_ENABLED" then
         if db.enabled then
-            ShowAlert(db.leaveText or "-- Combat", db.leaveR or 1, db.leaveG or 0, db.leaveB or 0)
+            local lR, lG, lB = W.GetEffectiveColor(db, "leaveR", "leaveG", "leaveB", "leaveUseClassColor")
+            ShowAlert(db.leaveText or "-- Combat", lR, lG, lB)
             PlayCombatAudio("leave")
         end
     end

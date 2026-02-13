@@ -1,5 +1,6 @@
 local addonName, ns = ...
 local L = ns.L
+local W = ns.Widgets
 
 -- Use shared utilities from DisplayUtils
 local DU = ns.DisplayUtils
@@ -380,10 +381,12 @@ local function CheckConsumables()
             local labelAlpha = db.labelAlpha or 1.0
             local timerAlpha = db.timerAlpha or 1.0
             slot.lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
-            slot.lbl:SetTextColor(db.labelColorR or 0.7, db.labelColorG or 0.7, db.labelColorB or 0.7, labelAlpha)
+            local lcR, lcG, lcB = W.GetEffectiveColor(db, "labelColorR", "labelColorG", "labelColorB", "labelColorUseClassColor")
+            slot.lbl:SetTextColor(lcR, lcG, lcB, labelAlpha)
             slot.timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
             slot.count:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", stackSize, "OUTLINE")
-            slot.count:SetTextColor(db.stackColorR or 1, db.stackColorG or 1, db.stackColorB or 1, db.stackAlpha or 1)
+            local scR, scG, scB = W.GetEffectiveColor(db, "stackColorR", "stackColorG", "stackColorB", "stackColorUseClassColor")
+            slot.count:SetTextColor(scR, scG, scB, db.stackAlpha or 1)
 
             -- Prefer the item texture (what clicking will use) over generic icons
             local displayTex = m.itemTex

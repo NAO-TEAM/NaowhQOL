@@ -107,14 +107,16 @@ function stealthFrame:UpdateDisplay()
             return
         end
         stealthLabel:SetText(db.stealthText or L["STEALTH_DEFAULT"])
-        stealthLabel:SetTextColor(db.stealthR or 0, db.stealthG or 1, db.stealthB or 0)
+        local sR, sG, sB = W.GetEffectiveColor(db, "stealthR", "stealthG", "stealthB", "stealthUseClassColor")
+        stealthLabel:SetTextColor(sR, sG, sB)
     else
         if db.showNotStealthed == false and not db.unlock then
             stealthFrame:Hide()
             return
         end
         stealthLabel:SetText(db.warningText or L["STEALTH_WARNING_DEFAULT"])
-        stealthLabel:SetTextColor(db.warningR or 1, db.warningG or 0, db.warningB or 0)
+        local wR, wG, wB = W.GetEffectiveColor(db, "warningR", "warningG", "warningB", "warningUseClassColor")
+        stealthLabel:SetTextColor(wR, wG, wB)
     end
 
     stealthFrame:Show()
@@ -266,7 +268,8 @@ function stanceFrame:UpdateDisplay()
 
     if not IsInExpectedForm(expected) then
         stanceLabel:SetText(db.stanceWarnText or L["STEALTH_STANCE_DEFAULT"])
-        stanceLabel:SetTextColor(db.stanceWarnR or 1, db.stanceWarnG or 0.4, db.stanceWarnB or 0)
+        local swR, swG, swB = W.GetEffectiveColor(db, "stanceWarnR", "stanceWarnG", "stanceWarnB", "stanceWarnUseClassColor")
+        stanceLabel:SetTextColor(swR, swG, swB)
         stanceFrame:Show()
         if db.stanceSoundEnabled and not stanceSoundTicker and not stanceSoundFired then
             StartStanceSound(db)

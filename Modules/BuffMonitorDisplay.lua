@@ -1,5 +1,6 @@
 local addonName, ns = ...
 local L = ns.L
+local W = ns.Widgets
 
 -- Use shared utilities from DisplayUtils
 local DU = ns.DisplayUtils
@@ -290,7 +291,8 @@ local function CheckRaidBuffs(auras)
                 raidSlots[i].lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
                 raidSlots[i].lbl:ClearAllPoints()
                 raidSlots[i].lbl:SetPoint("TOP", 0, labelOffset)
-                raidSlots[i].lbl:SetTextColor(db.raidLabelColorR or 0.7, db.raidLabelColorG or 0.7, db.raidLabelColorB or 0.7, db.raidLabelAlpha or 1.0)
+                local rlR, rlG, rlB = W.GetEffectiveColor(db, "raidLabelColorR", "raidLabelColorG", "raidLabelColorB", "raidLabelColorUseClassColor")
+                raidSlots[i].lbl:SetTextColor(rlR, rlG, rlB, db.raidLabelAlpha or 1.0)
                 raidSlots[i].timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
                 raidSlots[i].timer:ClearAllPoints()
                 raidSlots[i].timer:SetPoint("BOTTOM", 0, timerOffset)
@@ -405,7 +407,8 @@ local function CheckTrackers()
                 iconSlots[i].lbl:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", labelSize, "OUTLINE")
                 iconSlots[i].lbl:ClearAllPoints()
                 iconSlots[i].lbl:SetPoint("TOP", 0, labelOffset)
-                iconSlots[i].lbl:SetTextColor(db.customLabelColorR or 0.7, db.customLabelColorG or 0.7, db.customLabelColorB or 0.7, db.customLabelAlpha or 1.0)
+                local clR, clG, clB = W.GetEffectiveColor(db, "customLabelColorR", "customLabelColorG", "customLabelColorB", "customLabelColorUseClassColor")
+                iconSlots[i].lbl:SetTextColor(clR, clG, clB, db.customLabelAlpha or 1.0)
                 iconSlots[i].timer:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", timerSize, "OUTLINE")
                 iconSlots[i].timer:ClearAllPoints()
                 iconSlots[i].timer:SetPoint("BOTTOM", 0, timerOffset)

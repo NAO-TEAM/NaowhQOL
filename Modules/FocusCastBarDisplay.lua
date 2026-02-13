@@ -139,8 +139,10 @@ local function UpdateBarColor()
     local isReady = cooldownDuration:IsZero()
     local barTexture = progressBar:GetStatusBarTexture()
 
-    local readyColor = CreateColor(db.barColorR, db.barColorG, db.barColorB, 1)
-    local cdColor = CreateColor(db.barColorCdR, db.barColorCdG, db.barColorCdB, 1)
+    local bcR, bcG, bcB = W.GetEffectiveColor(db, "barColorR", "barColorG", "barColorB", "barColorUseClassColor")
+    local readyColor = CreateColor(bcR, bcG, bcB, 1)
+    local cdcR, cdcG, cdcB = W.GetEffectiveColor(db, "barColorCdR", "barColorCdG", "barColorCdB", "barColorCdUseClassColor")
+    local cdColor = CreateColor(cdcR, cdcG, cdcB, 1)
 
     barTexture:SetVertexColorFromBoolean(isReady, readyColor, cdColor)
 end
@@ -181,10 +183,8 @@ local function UpdateInterruptibleDisplay()
 
     -- Color overlay: use SetAlphaFromBoolean to show overlay when non-interruptible
     if db.colorNonInterrupt then
-        local r = db.nonIntColorR or 0.8
-        local g = db.nonIntColorG or 0.2
-        local b = db.nonIntColorB or 0.2
-        nonIntOverlay:SetVertexColor(r, g, b, 1)
+        local niR, niG, niB = W.GetEffectiveColor(db, "nonIntColorR", "nonIntColorG", "nonIntColorB", "nonIntColorUseClassColor")
+        nonIntOverlay:SetVertexColor(niR, niG, niB, 1)
         nonIntOverlay:SetAlphaFromBoolean(notInterruptible, 1, 0)
     else
         nonIntOverlay:SetAlpha(0)
@@ -240,7 +240,8 @@ local function UpdateLayout()
     end
 
     -- Update background color
-    bgTexture:SetVertexColor(db.bgColorR, db.bgColorG, db.bgColorB, db.bgAlpha)
+    local bgR, bgG, bgB = W.GetEffectiveColor(db, "bgColorR", "bgColorG", "bgColorB", "bgColorUseClassColor")
+    bgTexture:SetVertexColor(bgR, bgG, bgB, db.bgAlpha)
 
     -- Re-anchor text frame to follow progressBar
     textFrame:ClearAllPoints()
@@ -251,8 +252,9 @@ local function UpdateLayout()
     local fontSize = db.fontSize or 12
     spellNameText:SetFont(fontPath, fontSize, "OUTLINE")
     castTimeText:SetFont(fontPath, fontSize, "OUTLINE")
-    spellNameText:SetTextColor(db.textColorR, db.textColorG, db.textColorB)
-    castTimeText:SetTextColor(db.textColorR, db.textColorG, db.textColorB)
+    local tcR, tcG, tcB = W.GetEffectiveColor(db, "textColorR", "textColorG", "textColorB", "textColorUseClassColor")
+    spellNameText:SetTextColor(tcR, tcG, tcB)
+    castTimeText:SetTextColor(tcR, tcG, tcB)
 
     -- Show/hide text elements
     if db.showSpellName then
