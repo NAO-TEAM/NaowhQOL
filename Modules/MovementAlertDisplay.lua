@@ -57,6 +57,7 @@ local TIME_SPIRAL_ABILITIES = {
 
 -- Talents that trigger false positive glow events on movement abilities
 -- Structure: CLASS[talentSpellId][triggerSpellId] = discardDelay
+-- Credit: Spell IDs sourced from TimeSpiralTracker addon
 local TS_FALSE_POSITIVE_TALENTS = {
     DEMONHUNTER = {
         [427640] = { [198793] = 0.1, [370965] = 1.1 },  -- Inertia: Vengeful Retreat, The Hunt
