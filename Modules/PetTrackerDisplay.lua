@@ -100,11 +100,18 @@ local function IsWrongPet()
         if IsPlayerSpell(FELGUARD_SPELL) then
             local petFamily = UnitCreatureFamily("pet")
             if petFamily then
-                -- Check if pet is NOT a Felguard
+                -- Check if pet is NOT a Felguard using user-configurable family name
+                local db = NaowhQOL.petTracker
+                local felguardNames = db and db.felguardFamily or "felguard,teufelswache"
                 local lowerFamily = petFamily:lower()
-                if not lowerFamily:find("felguard") and not lowerFamily:find("teufelswache") then
-                    return true
+
+                for name in felguardNames:gmatch("[^,]+") do
+                    local trimmed = name:match("^%s*(.-)%s*$"):lower()
+                    if trimmed ~= "" and lowerFamily:find(trimmed, 1, true) then
+                        return false  -- Pet is a Felguard variant
+                    end
                 end
+                return true  -- Pet family didn't match any configured names
             end
         end
     end

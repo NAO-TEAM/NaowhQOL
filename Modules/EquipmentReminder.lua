@@ -269,24 +269,8 @@ loader:RegisterEvent("UNIT_INVENTORY_CHANGED")
 
 loader:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
-        if not NaowhQOL.equipmentReminder then
-            NaowhQOL.equipmentReminder = {
-                enabled = true,
-                showOnInstance = true,
-                showOnReadyCheck = true,
-                autoHideDelay = 10,
-                iconSize = 40,
-                point = "CENTER",
-                x = 0,
-                y = 100,
-            }
-        end
-        local db = NaowhQOL.equipmentReminder
-        if db.enabled == nil then db.enabled = true end
-        if db.showOnInstance == nil then db.showOnInstance = true end
-        if db.showOnReadyCheck == nil then db.showOnReadyCheck = true end
-        if db.autoHideDelay == nil then db.autoHideDelay = 10 end
-        if db.iconSize == nil then db.iconSize = 40 end
+        -- Defaults are handled by Core.lua at ADDON_LOADED
+        return
 
     elseif event == "PLAYER_ENTERING_WORLD" then
         OnInstanceEnter()

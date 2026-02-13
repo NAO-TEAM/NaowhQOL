@@ -205,7 +205,33 @@ function ns:InitPetTracker()
             refresh()
         end)
 
-        textContent:SetHeight(115)
+        -- Felguard Family Names (for localization)
+        local felguardLbl = textContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        felguardLbl:SetPoint("TOPLEFT", 10, -115)
+        felguardLbl:SetText(L["PETTRACKER_FELGUARD_LABEL"])
+
+        local felguardBox = CreateFrame("EditBox", nil, textContent, "BackdropTemplate")
+        felguardBox:SetSize(180, 24)
+        felguardBox:SetPoint("LEFT", felguardLbl, "RIGHT", 8, 0)
+        felguardBox:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]],
+            edgeFile = [[Interface\Buttons\WHITE8x8]], edgeSize = 1 })
+        felguardBox:SetBackdropColor(0, 0, 0, 1)
+        felguardBox:SetBackdropBorderColor(0, 0, 0, 1)
+        felguardBox:SetFontObject("GameFontHighlightSmall")
+        felguardBox:SetAutoFocus(false)
+        felguardBox:SetTextInsets(6, 6, 0, 0)
+        felguardBox:SetMaxLetters(60)
+        felguardBox:SetText(db.felguardFamily or "felguard,teufelswache")
+        felguardBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+        felguardBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+        felguardBox:SetScript("OnEditFocusLost", function(self)
+            local val = strtrim(self:GetText())
+            if val == "" then val = "felguard,teufelswache"; self:SetText(val) end
+            db.felguardFamily = val
+            refresh()
+        end)
+
+        textContent:SetHeight(150)
         textWrap:RecalcHeight()
 
         -- Layout management
