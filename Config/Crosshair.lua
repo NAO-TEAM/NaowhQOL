@@ -414,7 +414,7 @@ function ns:InitCrosshair()
         spellInput:SetPoint("LEFT", 0, 0)
         spellInput:SetAutoFocus(false)
         spellInput:SetNumeric(true)
-        spellInput:SetMaxLetters(6)
+        spellInput:SetMaxLetters(9)
 
         local function UpdateSpellDisplay()
             local info = ns.MeleeRangeInfo
