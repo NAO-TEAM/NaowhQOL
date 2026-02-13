@@ -1223,21 +1223,24 @@ function ns:InitOptOptions()
             onCollapse = function() if RelayoutSections then RelayoutSections() end end,
         })
 
+        local spellQueueValue = tonumber(GetCVar("SpellQueueWindow"))
+        if not spellQueueValue then
+            print("|cffff6600NaowhQOL:|r Failed to get SpellQueueWindow CVar")
+            spellQueueValue = 50
+        end
+
         local queueSlider = W:CreateAdvancedSlider(advContent,
             W.Colorize("Spell Queue Window (ms)", C.BLUE), 50, 500, -5, 1, false,
             function(val)
                 SetCVar("SpellQueueWindow", val)
                 if not NaowhQOL then NaowhQOL = {} end
                 NaowhQOL.spellQueueWindow = val
-            end)
+            end, { value = spellQueueValue })
         PlaceSlider(queueSlider, advContent, 110, -5)
-        queueSlider:SetValue(tonumber(GetCVar("SpellQueueWindow")) or 130)
 
         local recommendText = advContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         recommendText:SetPoint("TOP", queueSlider:GetParent(), "BOTTOM", 0, 5)
-        recommendText:SetText(W.Colorize("Recommended Settings: ", C.GRAY)
-            .. W.Colorize("Melee: Ping + 100, ", C.WHITE)
-            .. W.Colorize("Ranged: Ping + 150", C.WHITE))
+        recommendText:SetText(W.Colorize("Recommended: 200-400ms, casters should use a slightly higher value", C.GRAY))
 
         advContent:SetHeight(75)
         advWrap:RecalcHeight()

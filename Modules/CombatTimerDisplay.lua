@@ -119,7 +119,8 @@ function timerFrame:UpdateDisplay()
         timerFrame.initialized = true
     end
 
-    timerText:SetTextColor(db.colorR or 1, db.colorG or 0.66, db.colorB or 0)
+    local r, g, b = W.GetEffectiveColor(db, "colorR", "colorG", "colorB", "useClassColor")
+    timerText:SetTextColor(r, g, b)
 
     local elapsed
     if inCombat then

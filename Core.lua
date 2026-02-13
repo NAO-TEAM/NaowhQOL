@@ -41,7 +41,7 @@ local NAOWH_FONT = "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf"
 
 local COMBAT_TIMER_DEFAULTS = {
     enabled = false, unlock = false, font = NAOWH_FONT,
-    colorR = 1, colorG = 1, colorB = 1, point = "CENTER",
+    colorR = 1, colorG = 1, colorB = 1, useClassColor = false, point = "CENTER",
     x = 0, y = -200, width = 400, height = 100, hidePrefix = false,
     instanceOnly = false, chatReport = true, stickyTimer = false,
 }

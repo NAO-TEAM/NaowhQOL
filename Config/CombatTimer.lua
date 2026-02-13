@@ -114,6 +114,7 @@ function ns:InitCombatTimer()
         W:CreateColorPicker(appContent, {
             label = L["COMBATTIMER_COLOR"], db = db,
             rKey = "colorR", gKey = "colorG", bKey = "colorB",
+            classColorKey = "useClassColor",
             x = 10, y = -80,
             onChange = refresh
         })
