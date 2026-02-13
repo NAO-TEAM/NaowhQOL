@@ -50,7 +50,7 @@ local COMBAT_ALERT_DEFAULTS = {
     enabled = true, unlock = false, font = NAOWH_FONT,
     enterR = 0, enterG = 1, enterB = 0, leaveR = 1, leaveG = 0, leaveB = 0,
     point = "CENTER", x = 0, y = 100, width = 200, height = 50,
-    enterText = "++ Combat", leaveText = "-- Combat",
+    enterText = "+Combat", leaveText = "-Combat",
     -- Enter combat audio (audioMode: "none", "sound", "tts")
     enterAudioMode = "none", enterSoundID = 8959,
     enterTtsMessage = "Combat", enterTtsVolume = 50, enterTtsRate = 0, enterTtsVoiceID = 0,
@@ -238,7 +238,7 @@ local CURSOR_TRACKER_DEFAULTS = {
 }
 
 local MOUSE_RING_DEFAULTS = {
-    enabled = true,
+    enabled = false,
     size = 48,
     shape = "ring.tga",
     colorR = 1.0, colorG = 0.66, colorB = 0.0,

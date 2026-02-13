@@ -218,17 +218,16 @@ local function UpdateLayout()
     local barWidthCfg = Get("barWidth")
     local totalWidth = NUM_CHARGES * barWidthCfg + (NUM_CHARGES - 1) * gap
     local barWidth = barWidthCfg
+    local borderSize = Get("borderSize")
 
     if Get("matchAnchorWidth") and anchorParent ~= UIParent then
         local anchorWidth = anchorParent:GetWidth()
         if anchorWidth and anchorWidth > 0 then
-            totalWidth = anchorWidth
-            -- Recalculate individual bar width to fit
+            -- Subtract border so total frame width matches anchor exactly
+            totalWidth = anchorWidth - (borderSize * 2)
             barWidth = (totalWidth - (NUM_CHARGES - 1) * gap) / NUM_CHARGES
         end
     end
-
-    local borderSize = Get("borderSize")
     -- Enlarge frame to include border outside content area
     mainFrame:SetSize(totalWidth + borderSize * 2, totalHeight + borderSize * 2)
     mainFrame:SetBackdrop({
