@@ -51,6 +51,8 @@ local trailContainer, trailPoints = nil, {}
 --------------------------------------------------------------------------------
 -- HELPERS
 --------------------------------------------------------------------------------
+local UpdateMouseWatcher  -- forward declaration
+
 local function ShouldBeVisible()
     local db = GetDB()
     if not db.enabled then return false end
@@ -88,6 +90,9 @@ local function UpdateRender()
     if not container then return end
     local db = GetDB()
     local alpha = GetOpacity()
+
+    -- Update mouse watcher state (must run regardless of visibility)
+    UpdateMouseWatcher()
 
     -- Hide everything if not visible
     if not ShouldBeVisible() then
@@ -344,19 +349,32 @@ local function RefreshCombatState()
     state.inInstance = inInst and (instType == "party" or instType == "raid" or instType == "pvp" or instType == "arena")
 end
 
--- Right mouse button watcher
+-- Right mouse button watcher (conditional - only runs when enabled and hideOnMouseClick is on)
 local mouseWatcher = CreateFrame("Frame")
-mouseWatcher:SetScript("OnUpdate", function()
-    local db = GetDB()
-    if not db.hideOnMouseClick then return end
+local mouseWatcherActive = false
 
+local function MouseWatcherOnUpdate()
     local wasDown = state.isRightMouseDown
     state.isRightMouseDown = IsMouseButtonDown("RightButton")
 
     if wasDown ~= state.isRightMouseDown then
         UpdateRender()
     end
-end)
+end
+
+UpdateMouseWatcher = function()
+    local db = GetDB()
+    local shouldRun = db.enabled and db.hideOnMouseClick
+
+    if shouldRun and not mouseWatcherActive then
+        mouseWatcher:SetScript("OnUpdate", MouseWatcherOnUpdate)
+        mouseWatcherActive = true
+    elseif not shouldRun and mouseWatcherActive then
+        mouseWatcher:SetScript("OnUpdate", nil)
+        state.isRightMouseDown = false
+        mouseWatcherActive = false
+    end
+end
 
 -- Main event handler
 local events = CreateFrame("Frame")
