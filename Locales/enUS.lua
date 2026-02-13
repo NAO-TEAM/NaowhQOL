@@ -753,6 +753,15 @@ ns:RegisterLocale("enUS", {
     TIME_SPIRAL_TTS_ON = "Play TTS on Activation",
     TIME_SPIRAL_TTS_MESSAGE = "TTS Message:",
     TIME_SPIRAL_TTS_VOLUME = "TTS Volume",
+    -- Gateway Shard
+    GATEWAY_SHARD_ENABLE = "Enable Gateway Shard Tracker",
+    GATEWAY_SHARD_SETTINGS = "GATEWAY SHARD SETTINGS",
+    GATEWAY_SHARD_TEXT = "Display Text:",
+    GATEWAY_SHARD_COLOR = "Text Color",
+    GATEWAY_SHARD_SOUND_ON = "Play Sound when Available",
+    GATEWAY_SHARD_TTS_ON = "Play TTS when Available",
+    GATEWAY_SHARD_TTS_MESSAGE = "TTS Message:",
+    GATEWAY_SHARD_TTS_VOLUME = "TTS Volume",
 
     ---------------------------------------------------------------------------
     -- CORE

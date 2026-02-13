@@ -714,6 +714,25 @@ local function InitializeDB()
     if ma.tsTtsMessage   == nil then ma.tsTtsMessage   = "Free movement" end
     if ma.tsTtsVolume    == nil then ma.tsTtsVolume    = 50              end
     if ma.tsTtsRate      == nil then ma.tsTtsRate      = 0               end
+    -- Gateway Shard
+    if ma.gwEnabled      == nil then ma.gwEnabled      = false           end
+    if ma.gwUnlock       == nil then ma.gwUnlock       = false           end
+    if ma.gwCombatOnly   == nil then ma.gwCombatOnly   = true            end
+    if ma.gwText         == nil then ma.gwText         = "GATEWAY READY" end
+    if ma.gwColorR       == nil then ma.gwColorR       = 0.5             end
+    if ma.gwColorG       == nil then ma.gwColorG       = 0               end
+    if ma.gwColorB       == nil then ma.gwColorB       = 0.8             end
+    if ma.gwColorUseClassColor == nil then ma.gwColorUseClassColor = false end
+    if ma.gwPoint        == nil then ma.gwPoint        = "CENTER"        end
+    if ma.gwX            == nil then ma.gwX            = 0               end
+    if ma.gwY            == nil then ma.gwY            = 150             end
+    if ma.gwWidth        == nil then ma.gwWidth        = 200             end
+    if ma.gwHeight       == nil then ma.gwHeight       = 40              end
+    if ma.gwSoundEnabled == nil then ma.gwSoundEnabled = true            end
+    if ma.gwSoundID      == nil then ma.gwSoundID      = 8959            end
+    if ma.gwTtsEnabled   == nil then ma.gwTtsEnabled   = false           end
+    if ma.gwTtsMessage   == nil then ma.gwTtsMessage   = "Gateway ready" end
+    if ma.gwTtsVolume    == nil then ma.gwTtsVolume    = 50              end
 
     -- Range Check
     NaowhQOL.rangeCheck = NaowhQOL.rangeCheck or {}

@@ -151,6 +151,25 @@ local timeSpiralResizeHandle
 local timeSpiralActiveTime = nil
 
 -- ----------------------------------------------------------------
+-- Gateway Shard Frame
+-- ----------------------------------------------------------------
+
+local GATEWAY_SHARD_ITEM_ID = 188152
+
+local gatewayFrame = CreateFrame("Frame", "NaowhQOL_GatewayShard", UIParent, "BackdropTemplate")
+gatewayFrame:SetSize(200, 40)
+gatewayFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 150)
+gatewayFrame:Hide()
+
+local gatewayText = gatewayFrame:CreateFontString(nil, "OVERLAY")
+gatewayText:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", 24, "OUTLINE")
+gatewayText:SetPoint("CENTER")
+
+local gatewayResizeHandle
+local lastGatewayUsable = false
+local gatewayPollTicker = nil
+
+-- ----------------------------------------------------------------
 -- Helper Functions
 -- ----------------------------------------------------------------
 
@@ -213,6 +232,19 @@ local function PlayTimeSpiralAlert(db)
         end
     elseif db.tsTtsEnabled and db.tsTtsMessage then
         C_VoiceChat.SpeakText(0, db.tsTtsMessage, 1, db.tsTtsVolume or 50, true)
+    end
+end
+
+local function PlayGatewayAlert(db)
+    if db.gwSoundEnabled and db.gwSoundID then
+        local sound = db.gwSoundID
+        if type(sound) == "table" then
+            ns.SoundList.Play(sound)
+        else
+            PlaySound(sound)
+        end
+    elseif db.gwTtsEnabled and db.gwTtsMessage then
+        C_VoiceChat.SpeakText(0, db.gwTtsMessage, 1, db.gwTtsVolume or 50, true)
     end
 end
 
@@ -348,6 +380,49 @@ function timeSpiralFrame:UpdateDisplay()
     end
     local tsR, tsG, tsB = W.GetEffectiveColor(db, "tsColorR", "tsColorG", "tsColorB", "tsColorUseClassColor")
     timeSpiralText:SetTextColor(tsR, tsG, tsB)
+
+    -- Update event registration when display is refreshed
+    UpdateEventRegistration()
+end
+
+-- ----------------------------------------------------------------
+-- Gateway Shard Frame Display
+-- ----------------------------------------------------------------
+
+function gatewayFrame:UpdateDisplay()
+    local db = NaowhQOL.movementAlert
+    if not db then return end
+
+    gatewayFrame:EnableMouse(db.gwUnlock)
+    if db.gwUnlock and db.gwEnabled then
+        gatewayFrame:SetBackdrop(UNLOCK_BACKDROP)
+        gatewayFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+        gatewayFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+        if gatewayResizeHandle then gatewayResizeHandle:Show() end
+        gatewayFrame:Show()
+    else
+        gatewayFrame:SetBackdrop(nil)
+        if gatewayResizeHandle then gatewayResizeHandle:Hide() end
+    end
+
+    if not gatewayFrame.initialized then
+        gatewayFrame:ClearAllPoints()
+        local point = db.gwPoint or "CENTER"
+        local x = db.gwX or 0
+        local y = db.gwY or 150
+        gatewayFrame:SetPoint(point, UIParent, point, x, y)
+        gatewayFrame:SetSize(db.gwWidth or 200, db.gwHeight or 40)
+        gatewayFrame.initialized = true
+    end
+
+    local fontPath = db.font or "Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf"
+    local fontSize = math.max(10, math.min(72, math.floor(gatewayFrame:GetHeight() * 0.55)))
+    local success = gatewayText:SetFont(fontPath, fontSize, "OUTLINE")
+    if not success then
+        gatewayText:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", fontSize, "OUTLINE")
+    end
+    local gwR, gwG, gwB = W.GetEffectiveColor(db, "gwColorR", "gwColorG", "gwColorB", "gwColorUseClassColor")
+    gatewayText:SetTextColor(gwR, gwG, gwB)
 
     -- Update event registration when display is refreshed
     UpdateEventRegistration()
@@ -517,6 +592,77 @@ local function StartTimeSpiralCountdown()
 end
 
 -- ----------------------------------------------------------------
+-- Gateway Shard Polling
+-- ----------------------------------------------------------------
+
+local function StopGatewayPolling()
+    if gatewayPollTicker then
+        gatewayPollTicker:Cancel()
+        gatewayPollTicker = nil
+    end
+end
+
+local function CheckGatewayUsable()
+    local db = NaowhQOL.movementAlert
+    if not db or not db.gwEnabled then
+        if not (db and db.gwUnlock) then
+            gatewayFrame:Hide()
+        end
+        StopGatewayPolling()
+        return
+    end
+
+    -- Check if player has the item
+    local itemCount = C_Item.GetItemCount(GATEWAY_SHARD_ITEM_ID)
+    if itemCount == 0 then
+        if not db.gwUnlock then
+            gatewayFrame:Hide()
+        end
+        lastGatewayUsable = false
+        return
+    end
+
+    -- Check combat-only setting
+    if db.gwCombatOnly and not inCombat and not db.gwUnlock then
+        gatewayFrame:Hide()
+        lastGatewayUsable = false
+        return
+    end
+
+    -- Check if item is usable (gateway nearby)
+    local isUsable = C_Item.IsUsableItem(GATEWAY_SHARD_ITEM_ID)
+
+    -- Sound/TTS on transition from not usable to usable
+    if isUsable and not lastGatewayUsable then
+        PlayGatewayAlert(db)
+    end
+
+    lastGatewayUsable = isUsable
+
+    if isUsable then
+        local gwText = db.gwText or "GATEWAY READY"
+        gatewayText:SetText(gwText)
+        gatewayFrame:Show()
+    else
+        if not db.gwUnlock then
+            gatewayFrame:Hide()
+        end
+    end
+end
+
+local function StartGatewayPolling()
+    StopGatewayPolling()
+    local db = NaowhQOL.movementAlert
+    if not db or not db.gwEnabled then return end
+
+    -- Check immediately
+    CheckGatewayUsable()
+
+    -- Start polling ticker at 0.1s
+    gatewayPollTicker = C_Timer.NewTicker(0.1, CheckGatewayUsable)
+end
+
+-- ----------------------------------------------------------------
 -- Event Handler
 -- ----------------------------------------------------------------
 
@@ -568,6 +714,16 @@ UpdateEventRegistration = function()
         timeSpiralEventsRegistered = false
         CancelTimeSpiralCountdown()
     end
+
+    -- Gateway Shard polling (only when enabled)
+    if db.gwEnabled then
+        StartGatewayPolling()
+    else
+        StopGatewayPolling()
+        if not db.gwUnlock then
+            gatewayFrame:Hide()
+        end
+    end
 end
 
 loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self, event, ...)
@@ -609,10 +765,30 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
             onResize = function() timeSpiralFrame:UpdateDisplay() end,
         })
 
+        db.gwWidth = db.gwWidth or 200
+        db.gwHeight = db.gwHeight or 40
+        db.gwPoint = db.gwPoint or "CENTER"
+        db.gwX = db.gwX or 0
+        db.gwY = db.gwY or 150
+
+        W.MakeDraggable(gatewayFrame, {
+            db = db,
+            unlockKey = "gwUnlock",
+            pointKey = "gwPoint", xKey = "gwX", yKey = "gwY",
+        })
+        gatewayResizeHandle = W.CreateResizeHandle(gatewayFrame, {
+            db = db,
+            unlockKey = "gwUnlock",
+            widthKey = "gwWidth", heightKey = "gwHeight",
+            onResize = function() gatewayFrame:UpdateDisplay() end,
+        })
+
         movementFrame.initialized = false
         timeSpiralFrame.initialized = false
+        gatewayFrame.initialized = false
         movementFrame:UpdateDisplay()
         timeSpiralFrame:UpdateDisplay()
+        gatewayFrame:UpdateDisplay()
         UpdateEventRegistration()
 
         -- Re-evaluate on spec change
@@ -620,11 +796,14 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
             CacheMovementSpell()
             movementFrame:UpdateDisplay()
             timeSpiralFrame:UpdateDisplay()
+            gatewayFrame:UpdateDisplay()
             CheckMovementCooldown()
         end)
 
         -- Initial cooldown check
         CheckMovementCooldown()
+        -- Start gateway polling if enabled
+        StartGatewayPolling()
         return
     end
 
@@ -632,6 +811,7 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
         timeSpiralActiveTime = nil
         CancelMovementCountdown()
         CancelTimeSpiralCountdown()
+        StopGatewayPolling()
         return
     end
 
@@ -646,10 +826,12 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
     elseif event == "PLAYER_REGEN_DISABLED" then
         inCombat = true
         CheckMovementCooldown()
+        CheckGatewayUsable()
     elseif event == "PLAYER_REGEN_ENABLED" then
         inCombat = false
         CacheMovementSpell()
         CheckMovementCooldown()
+        CheckGatewayUsable()
     elseif event == "SPELL_UPDATE_USABLE" or event == "SPELL_UPDATE_COOLDOWN" or event == "SPELL_UPDATE_CHARGES" then
         if DEBUG_MODE then print("[MovementAlert] Event:", event) end
         CheckMovementCooldown()
@@ -683,8 +865,10 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
 
     movementFrame:UpdateDisplay()
     timeSpiralFrame:UpdateDisplay()
+    gatewayFrame:UpdateDisplay()
     UpdateEventRegistration()
 end))
 
 ns.MovementAlertDisplay = movementFrame
 ns.TimeSpiralDisplay = timeSpiralFrame
+ns.GatewayShardDisplay = gatewayFrame

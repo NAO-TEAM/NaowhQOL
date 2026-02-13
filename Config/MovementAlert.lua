@@ -249,11 +249,113 @@ function ns:InitMovementAlert()
         tsColWrap:RecalcHeight()
 
         -- ============================================================
+        -- GATEWAY SHARD
+        -- ============================================================
+
+        local gatewayDisplay = ns.GatewayShardDisplay
+        local function refreshGateway() if gatewayDisplay then gatewayDisplay:UpdateDisplay() end end
+
+        local gwKillArea = CreateFrame("Frame", nil, sc, "BackdropTemplate")
+        gwKillArea:SetSize(460, 90)
+        gwKillArea:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
+        gwKillArea:SetBackdropColor(0.5, 0, 0.8, 0.08)
+
+        local gwMasterCB = W:CreateCheckbox(gwKillArea, {
+            label = L["GATEWAY_SHARD_ENABLE"],
+            db = db, key = "gwEnabled",
+            x = 15, y = -8,
+            isMaster = true,
+        })
+
+        local gwUnlockCB = W:CreateCheckbox(gwKillArea, {
+            label = L["COMMON_UNLOCK"],
+            db = db, key = "gwUnlock",
+            x = 15, y = -38,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = refreshGateway
+        })
+        gwUnlockCB:SetShown(db.gwEnabled)
+
+        local gwCombatOnlyCB = W:CreateCheckbox(gwKillArea, {
+            label = L["GCD_COMBAT_ONLY"],
+            db = db, key = "gwCombatOnly",
+            x = 15, y = -63,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = refreshGateway
+        })
+        gwCombatOnlyCB:SetShown(db.gwEnabled)
+
+        -- Gateway sections container
+        local gwSections = CreateFrame("Frame", nil, sc)
+        gwSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
+        gwSections:SetHeight(200)
+
+        -- GATEWAY SHARD SETTINGS
+        local gwColWrap, gwColContent = W:CreateCollapsibleSection(gwSections, {
+            text = L["GATEWAY_SHARD_SETTINGS"],
+            startOpen = false,
+            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+        })
+
+        local LG = ns.Layout:New(2)
+
+        W:CreateTextInput(gwColContent, {
+            label = L["GATEWAY_SHARD_TEXT"], db = db, key = "gwText",
+            default = "GATEWAY READY", x = LG:Col(1), y = LG:Row(1) + 12, width = 180,
+            onChange = refreshGateway
+        })
+
+        W:CreateColorPicker(gwColContent, {
+            label = L["GATEWAY_SHARD_COLOR"], db = db,
+            rKey = "gwColorR", gKey = "gwColorG", bKey = "gwColorB",
+            x = LG:Col(2), y = LG:Row(1) + 6,
+            onChange = refreshGateway
+        })
+
+        W:CreateCheckbox(gwColContent, {
+            label = L["GATEWAY_SHARD_SOUND_ON"],
+            db = db, key = "gwSoundEnabled",
+            x = LG:Col(1), y = LG:Row(2) + 5,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = refreshGateway
+        })
+
+        W:CreateSoundPicker(gwColContent, LG:Col(2), LG:Row(2) + 11, db.gwSoundID and { id = db.gwSoundID } or { id = 8959 },
+            function(entry)
+                db.gwSoundID = entry.id or entry.path
+            end)
+
+        W:CreateCheckbox(gwColContent, {
+            label = L["GATEWAY_SHARD_TTS_ON"],
+            db = db, key = "gwTtsEnabled",
+            x = LG:Col(1), y = LG:Row(3) + 5,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = refreshGateway
+        })
+
+        W:CreateTextInput(gwColContent, {
+            label = L["GATEWAY_SHARD_TTS_MESSAGE"], db = db, key = "gwTtsMessage",
+            default = "Gateway ready", x = LG:Col(1), y = LG:Row(4) + 12, width = 180,
+        })
+
+        W:CreateSlider(gwColContent, {
+            label = L["GATEWAY_SHARD_TTS_VOLUME"],
+            min = 0, max = 100, step = 1,
+            x = LG:Col(2), y = LG:Row(4),
+            db = db, key = "gwTtsVolume",
+            onChange = function(val) db.gwTtsVolume = val end
+        })
+
+        gwColContent:SetHeight(LG:Height(5))
+        gwColWrap:RecalcHeight()
+
+        -- ============================================================
         -- Layout
         -- ============================================================
 
         local movementSectionList = { appWrap }
         local tsSectionList = { tsColWrap }
+        local gwSectionList = { gwColWrap }
 
         RelayoutAll = function()
             -- Movement sections
@@ -302,8 +404,35 @@ function ns:InitMovementAlert()
             end
             tsSections:SetHeight(math.max(tsH, 1))
 
+            -- Position Gateway Shard kill area below Time Spiral sections
+            gwKillArea:ClearAllPoints()
+            gwKillArea:SetPoint("TOPLEFT", tsSections, "BOTTOMLEFT", 0, -20)
+
+            gwSections:ClearAllPoints()
+            gwSections:SetPoint("TOPLEFT", gwKillArea, "BOTTOMLEFT", 0, -10)
+            gwSections:SetPoint("RIGHT", sc, "RIGHT", -10, 0)
+
+            -- Gateway Shard sections
+            for i, section in ipairs(gwSectionList) do
+                section:ClearAllPoints()
+                if i == 1 then
+                    section:SetPoint("TOPLEFT", gwSections, "TOPLEFT", 0, 0)
+                else
+                    section:SetPoint("TOPLEFT", gwSectionList[i - 1], "BOTTOMLEFT", 0, -12)
+                end
+                section:SetPoint("RIGHT", gwSections, "RIGHT", 0, 0)
+            end
+
+            local gwH = 0
+            if db.gwEnabled then
+                for _, s in ipairs(gwSectionList) do
+                    gwH = gwH + s:GetHeight() + 12
+                end
+            end
+            gwSections:SetHeight(math.max(gwH, 1))
+
             -- Total scroll height
-            local totalH = 75 + 90 + 10 + movementH + 20 + 62 + 10 + tsH + 40
+            local totalH = 75 + 90 + 10 + movementH + 20 + 62 + 10 + tsH + 20 + 90 + 10 + gwH + 40
             sc:SetHeight(math.max(totalH, 800))
         end
 
@@ -326,6 +455,16 @@ function ns:InitMovementAlert()
         end)
         tsSections:SetShown(db.tsEnabled)
 
+        gwMasterCB:HookScript("OnClick", function(self)
+            db.gwEnabled = self:GetChecked() and true or false
+            refreshGateway()
+            gwUnlockCB:SetShown(db.gwEnabled)
+            gwCombatOnlyCB:SetShown(db.gwEnabled)
+            gwSections:SetShown(db.gwEnabled)
+            RelayoutAll()
+        end)
+        gwSections:SetShown(db.gwEnabled)
+
         -- Restore defaults button
         local restoreBtn = W:CreateRestoreDefaultsButton({
             moduleName = "movementAlert",
@@ -339,6 +478,7 @@ function ns:InitMovementAlert()
                 end
                 if movementDisplay then movementDisplay:UpdateDisplay() end
                 if timeSpiralDisplay then timeSpiralDisplay:UpdateDisplay() end
+                if gatewayDisplay then gatewayDisplay:UpdateDisplay() end
             end
         })
         restoreBtn:SetPoint("BOTTOMLEFT", sc, "BOTTOMLEFT", 10, 20)
