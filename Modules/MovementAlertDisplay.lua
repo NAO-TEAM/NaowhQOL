@@ -55,6 +55,22 @@ local TIME_SPIRAL_ABILITIES = {
     [6544] = true,    -- Heroic Leap
 }
 
+-- Talents that trigger false positive glow events on movement abilities
+-- Structure: CLASS[talentSpellId][triggerSpellId] = discardDelay
+local TS_FALSE_POSITIVE_TALENTS = {
+    DEMONHUNTER = {
+        [427640] = { [198793] = 0.1, [370965] = 1.1 },  -- Inertia: Vengeful Retreat, The Hunt
+        [427794] = { [195072] = 0.1 },                   -- Dash of Chaos: Fel Rush
+    },
+    WARLOCK = {
+        [385899] = { [385899] = 0.1 },                   -- Soulburn
+    },
+}
+
+local activeFalsePositives = {}
+local tsMultiGlowBlock = false
+local tsDiscardActive = false
+
 -- ----------------------------------------------------------------
 -- Movement Cooldown Frame
 -- ----------------------------------------------------------------
@@ -113,8 +129,9 @@ local cachedMovementSpellIcon = nil
 local movementCountdownTimer = nil
 local timeSpiralCountdownTimer = nil
 
--- Forward declaration for self-referencing timer
+-- Forward declarations for self-referencing functions
 local CheckMovementCooldown
+local UpdateEventRegistration
 
 -- ----------------------------------------------------------------
 -- Time Spiral Frame
@@ -198,6 +215,21 @@ local function PlayTimeSpiralAlert(db)
     end
 end
 
+local function RebuildFalsePositiveList()
+    activeFalsePositives = {}
+    local class = select(2, UnitClass("player"))
+    local classTalents = TS_FALSE_POSITIVE_TALENTS[class]
+    if not classTalents then return end
+
+    for talentId, spells in pairs(classTalents) do
+        if C_SpellBook.IsSpellKnown(talentId) then
+            for spellId, delay in pairs(spells) do
+                activeFalsePositives[spellId] = delay
+            end
+        end
+    end
+end
+
 local function CancelMovementCountdown()
     if movementCountdownTimer then
         movementCountdownTimer:Cancel()
@@ -268,6 +300,12 @@ function movementFrame:UpdateDisplay()
     movementIcon:SetSize(iconSize, iconSize)
     movementIcon.tex:SetPoint("TOPLEFT", 2, -2)
     movementIcon.tex:SetPoint("BOTTOMRIGHT", -2, 2)
+
+    -- Update event registration when display is refreshed (enables/disables events)
+    UpdateEventRegistration()
+    if db.enabled and not db.unlock then
+        CheckMovementCooldown()
+    end
 end
 
 -- ----------------------------------------------------------------
@@ -307,6 +345,9 @@ function timeSpiralFrame:UpdateDisplay()
         timeSpiralText:SetFont("Interface\\AddOns\\NaowhQOL\\Assets\\Fonts\\Naowh.ttf", fontSize, "OUTLINE")
     end
     timeSpiralText:SetTextColor(db.tsColorR or 0.53, db.tsColorG or 1, db.tsColorB or 0)
+
+    -- Update event registration when display is refreshed
+    UpdateEventRegistration()
 end
 
 -- ----------------------------------------------------------------
@@ -386,7 +427,7 @@ local function ShowMovementDisplay(cdInfo)
     movementFrame:Show()
 end
 
-local function CheckMovementCooldown()
+CheckMovementCooldown = function()
     local db = NaowhQOL.movementAlert
     if not db then return end
 
@@ -489,7 +530,7 @@ local movementEventsRegistered = false
 local timeSpiralEventsRegistered = false
 
 -- Register/unregister events based on feature enabled state
-local function UpdateEventRegistration()
+UpdateEventRegistration = function()
     local db = NaowhQOL.movementAlert
     if not db then return end
 
@@ -511,10 +552,15 @@ local function UpdateEventRegistration()
     if db.tsEnabled and not timeSpiralEventsRegistered then
         loader:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
         loader:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+        loader:RegisterEvent("UNIT_SPELLCAST_SENT")
+        loader:RegisterEvent("LOADING_SCREEN_DISABLED")
         timeSpiralEventsRegistered = true
+        RebuildFalsePositiveList()
     elseif not db.tsEnabled and timeSpiralEventsRegistered then
         loader:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
         loader:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+        loader:UnregisterEvent("UNIT_SPELLCAST_SENT")
+        loader:UnregisterEvent("LOADING_SCREEN_DISABLED")
         timeSpiralEventsRegistered = false
         CancelTimeSpiralCountdown()
     end
@@ -589,7 +635,10 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
         if not InCombatLockdown() then
             CacheMovementSpell()
             CheckMovementCooldown()
+            RebuildFalsePositiveList()
         end
+    elseif event == "LOADING_SCREEN_DISABLED" then
+        RebuildFalsePositiveList()
     elseif event == "PLAYER_REGEN_DISABLED" then
         inCombat = true
         CheckMovementCooldown()
@@ -600,9 +649,19 @@ loader:SetScript("OnEvent", ns.PerfMonitor:Wrap("Movement Alert", function(self,
     elseif event == "SPELL_UPDATE_USABLE" or event == "SPELL_UPDATE_COOLDOWN" or event == "SPELL_UPDATE_CHARGES" then
         if DEBUG_MODE then print("[MovementAlert] Event:", event) end
         CheckMovementCooldown()
+    elseif event == "UNIT_SPELLCAST_SENT" then
+        local _, _, _, spellId = ...
+        local delay = activeFalsePositives[spellId]
+        if delay then
+            tsDiscardActive = true
+            C_Timer.After(delay, function() tsDiscardActive = false end)
+        end
     elseif event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW" then
         local spellId = ...
-        if db.tsEnabled and TIME_SPIRAL_ABILITIES[spellId] then
+        if db.tsEnabled and TIME_SPIRAL_ABILITIES[spellId]
+           and not tsDiscardActive and not tsMultiGlowBlock then
+            tsMultiGlowBlock = true
+            C_Timer.After(0.1, function() tsMultiGlowBlock = false end)
             timeSpiralActiveTime = GetTime()
             PlayTimeSpiralAlert(db)
             StartTimeSpiralCountdown()
