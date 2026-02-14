@@ -203,7 +203,7 @@ function Scanner:CheckSelfBuffSpells(spellIDs, minRequired)
         end
     end
 
-    -- minRequired 0 means all spells required
+    -- minRequired: 0 = all spells required, 1+ = at least N spells must be active
     local needed = (minRequired == 0) and #spellIDs or minRequired
     return count >= needed
 end
@@ -232,7 +232,7 @@ function Scanner:CheckWeaponEnchantIDs(enchantIDs, minRequired)
         end
     end
 
-    -- minRequired 0 means all enchants required
+    -- minRequired: 0 = all enchants required, 1+ = at least N enchants must be active
     local needed = (minRequired == 0) and #enchantIDs or minRequired
     return count >= needed
 end

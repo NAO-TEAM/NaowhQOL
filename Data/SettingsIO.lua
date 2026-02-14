@@ -183,6 +183,19 @@ local TYPE_SCHEMAS = {
         missingText = "string", passiveText = "string", wrongPetText = "string",
         colorR = "number", colorG = "number", colorB = "number",
     },
+    buffWatcherV2 = {
+        enabled = "boolean",
+        userEntries = "table",
+        categoryEnabled = "table",
+        thresholds = "table",
+        talentMods = "table",
+        disabledDefaults = "table",
+        consumableGroupEnabled = "table",
+        inventoryGroupEnabled = "table",
+        classBuffs = "table",
+        lastSection = "string",
+        reportCardPosition = "table",
+    },
 }
 
 -- Validate imported data against schema
@@ -734,3 +747,4 @@ ns.SettingsIO:RegisterSimple("focusCastBar",     "Focus Cast Bar")
 ns.SettingsIO:RegisterSimple("slashCommands",    "Slash Commands")
 ns.SettingsIO:RegisterSimple("cRez",             "Combat Rez")
 ns.SettingsIO:RegisterSimple("petTracker",       "Pet Tracker")
+ns.SettingsIO:RegisterSimple("buffWatcherV2",    "Buff Watcher V2")

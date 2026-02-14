@@ -13,51 +13,6 @@ local Core = ns.BWV2Core
 local ROW_HEIGHT = 28
 local ICON_SIZE = 22
 
--- Helper: Get all talents from player's current spec tree
-local function GetPlayerTalents()
-    local talents = {}
-    local configID = C_ClassTalents.GetActiveConfigID()
-    if not configID then return talents end
-
-    local specIndex = GetSpecialization()
-    if not specIndex then return talents end
-    local specID = GetSpecializationInfo(specIndex)
-    if not specID then return talents end
-
-    local treeID = C_ClassTalents.GetTraitTreeForSpec(specID)
-    if not treeID then return talents end
-
-    local nodeIDs = C_Traits.GetTreeNodes(treeID)
-    if not nodeIDs then return talents end
-
-    local seen = {}
-    for _, nodeID in ipairs(nodeIDs) do
-        local nodeInfo = C_Traits.GetNodeInfo(configID, nodeID)
-        if nodeInfo and nodeInfo.entryIDs then
-            for _, entryID in ipairs(nodeInfo.entryIDs) do
-                local entryInfo = C_Traits.GetEntryInfo(configID, entryID)
-                if entryInfo and entryInfo.definitionID then
-                    local defInfo = C_Traits.GetDefinitionInfo(entryInfo.definitionID)
-                    if defInfo and defInfo.spellID and not seen[defInfo.spellID] then
-                        seen[defInfo.spellID] = true
-                        local spellInfo = C_Spell.GetSpellInfo(defInfo.spellID)
-                        if spellInfo then
-                            table.insert(talents, {
-                                spellID = defInfo.spellID,
-                                name = defInfo.overrideName or spellInfo.name,
-                                icon = defInfo.overrideIcon or spellInfo.iconID,
-                            })
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    table.sort(talents, function(a, b) return a.name < b.name end)
-    return talents
-end
-
 -- Create a single spell row with icon, name, and delete button
 local function CreateSpellRow(parent, spellID, isDefault, onDelete, yOffset)
     local row = CreateFrame("Frame", nil, parent, "BackdropTemplate")
@@ -81,7 +36,7 @@ local function CreateSpellRow(parent, spellID, isDefault, onDelete, yOffset)
 
     -- Spell name and ID
     local info = C_Spell.GetSpellInfo(spellID)
-    local spellName = info and info.name or "Unknown"
+    local spellName = info and info.name or L["BWV2_UNKNOWN"]
 
     local nameText = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     nameText:SetPoint("LEFT", icon, "RIGHT", 8, 0)
@@ -95,7 +50,7 @@ local function CreateSpellRow(parent, spellID, isDefault, onDelete, yOffset)
     if isDefault then
         local defaultTag = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         defaultTag:SetPoint("RIGHT", -30, 0)
-        defaultTag:SetText(W.Colorize("[Default]", C.GRAY))
+        defaultTag:SetText(W.Colorize(L["BWV2_DEFAULT_TAG"], C.GRAY))
     end
 
     -- Delete button (for both defaults and user entries)
@@ -182,7 +137,7 @@ local function CreateSpellListContent(contentFrame, defaultSpells, categoryKey, 
 
         local inputLabel = inputRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         inputLabel:SetPoint("LEFT", 0, 0)
-        inputLabel:SetText("Add Spell ID:")
+        inputLabel:SetText(L["BWV2_ADD_SPELL_ID"])
 
         local inputBox = CreateFrame("EditBox", nil, inputRow, "InputBoxTemplate")
         inputBox:SetSize(100, 20)
@@ -191,7 +146,7 @@ local function CreateSpellListContent(contentFrame, defaultSpells, categoryKey, 
         inputBox:SetAutoFocus(false)
 
         local addBtn = W:CreateButton(inputRow, {
-            text = "Add",
+            text = L["COMMON_ADD"],
             width = 50,
             onClick = function()
                 local id = tonumber(inputBox:GetText())
@@ -216,7 +171,7 @@ local function CreateSpellListContent(contentFrame, defaultSpells, categoryKey, 
             allRows[#allRows + 1] = restoreRow
 
             local restoreBtn = W:CreateButton(restoreRow, {
-                text = "Restore Defaults",
+                text = L["BWV2_RESTORE_DEFAULTS"],
                 width = 110,
                 onClick = function()
                     wipe(db.disabledDefaults[categoryKey])
@@ -227,7 +182,7 @@ local function CreateSpellListContent(contentFrame, defaultSpells, categoryKey, 
 
             local restoreHint = restoreRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             restoreHint:SetPoint("LEFT", restoreBtn, "RIGHT", 8, 0)
-            restoreHint:SetText(W.Colorize("(Some defaults hidden)", C.GRAY))
+            restoreHint:SetText(W.Colorize(L["BWV2_DEFAULTS_HIDDEN"], C.GRAY))
 
             extraHeight = extraHeight + 30
         end
@@ -265,7 +220,7 @@ local function CreateIDRow(parent, id, idType, isDefault, onDelete, yOffset)
     icon:SetPoint("LEFT", 4, 0)
     icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-    local displayName = "Unknown"
+    local displayName = L["BWV2_UNKNOWN"]
     local displayIcon = "Interface\\Icons\\INV_Misc_QuestionMark"
 
     if idType == "spell" then
@@ -292,7 +247,7 @@ local function CreateIDRow(parent, id, idType, isDefault, onDelete, yOffset)
     if isDefault then
         local defaultTag = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         defaultTag:SetPoint("RIGHT", -28, 0)
-        defaultTag:SetText(W.Colorize("[D]", C.GRAY))
+        defaultTag:SetText(W.Colorize(L["BWV2_DEFAULT_TAG"], C.GRAY))
     end
 
     local deleteBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
@@ -372,13 +327,13 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
             if isGroupEnabled then
                 headerText:SetText(W.Colorize(group.name, C.ORANGE))
             else
-                headerText:SetText(W.Colorize(group.name .. " (disabled)", C.GRAY))
+                headerText:SetText(W.Colorize(group.name .. " " .. L["BWV2_DISABLED"], C.GRAY))
             end
 
             local exclusiveTag = header:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             exclusiveTag:SetPoint("LEFT", headerText, "RIGHT", 8, 0)
             if isGroupEnabled then
-                exclusiveTag:SetText(W.Colorize("(exclusive - one required)", C.GRAY))
+                exclusiveTag:SetText(W.Colorize(L["BWV2_EXCLUSIVE_ONE"], C.GRAY))
             end
 
             yOffset = yOffset - 26
@@ -413,14 +368,14 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
             if group.checkType == "icon" then
                 local iconNote = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                 iconNote:SetPoint("TOPLEFT", 25, yOffset)
-                iconNote:SetText(W.Colorize("Detected by buff icon (all food buffs)", C.GRAY))
+                iconNote:SetText(W.Colorize(L["BWV2_FOOD_BUFF_DETECT"], C.GRAY))
                 allElements[#allElements + 1] = iconNote
                 yOffset = yOffset - 18
                 totalHeight = totalHeight + 18
             elseif group.checkType == "weaponEnchant" then
                 local enchantNote = contentFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                 enchantNote:SetPoint("TOPLEFT", 25, yOffset)
-                enchantNote:SetText(W.Colorize("Detected via weapon enchant check", C.GRAY))
+                enchantNote:SetText(W.Colorize(L["BWV2_WEAPON_ENCHANT_DETECT"], C.GRAY))
                 allElements[#allElements + 1] = enchantNote
                 yOffset = yOffset - 18
                 totalHeight = totalHeight + 18
@@ -452,7 +407,7 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
 
             local inputLabel = inputRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             inputLabel:SetPoint("LEFT", 0, 0)
-            inputLabel:SetText("Add " .. (idType == "item" and "Item" or "Spell") .. " ID:")
+            inputLabel:SetText(idType == "item" and L["BWV2_ADD_ITEM_ID"] or L["BWV2_ADD_SPELL_ID"])
 
             local inputBox = CreateFrame("EditBox", nil, inputRow, "InputBoxTemplate")
             inputBox:SetSize(80, 18)
@@ -463,7 +418,7 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
             local capturedGroupKey = groupKey
             local capturedIdType = idType
             local addBtn = W:CreateButton(inputRow, {
-                text = "Add",
+                text = L["COMMON_ADD"],
                 width = 45,
                 onClick = function()
                     local id = tonumber(inputBox:GetText())
@@ -483,7 +438,7 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
             -- Restore defaults button if needed
             if hasDisabledDefaults then
                 local restoreBtn = W:CreateButton(inputRow, {
-                    text = "Restore",
+                    text = L["BWV2_RESTORE"],
                     width = 60,
                     onClick = function()
                         wipe(db.disabledDefaults[capturedGroupKey])
@@ -542,7 +497,7 @@ local function CreateInventoryGroupsContent(contentFrame, db, wrapperFrame, layo
         desc:SetPoint("TOPLEFT", 10, yOffset)
         desc:SetWidth(420)
         desc:SetJustifyH("LEFT")
-        desc:SetText(W.Colorize("Checks if you have these items in your bags. Some items only checked when required class is in group.", C.GRAY))
+        desc:SetText(W.Colorize(L["BWV2_INVENTORY_DESC"], C.GRAY))
         allElements[#allElements + 1] = desc
         yOffset = yOffset - 32
         totalHeight = totalHeight + 32
@@ -589,14 +544,14 @@ local function CreateInventoryGroupsContent(contentFrame, db, wrapperFrame, layo
             if isGroupEnabled then
                 headerText:SetText(W.Colorize(group.name, C.ORANGE))
             else
-                headerText:SetText(W.Colorize(group.name .. " (disabled)", C.GRAY))
+                headerText:SetText(W.Colorize(group.name .. " " .. L["BWV2_DISABLED"], C.GRAY))
             end
 
             -- Show exclusive tag and requireClass if applicable
             if isGroupEnabled then
-                local tagText = "(exclusive - one required)"
+                local tagText = L["BWV2_EXCLUSIVE_ONE"]
                 if group.requireClass then
-                    tagText = "(exclusive, requires " .. group.requireClass .. ")"
+                    tagText = string.format(L["BWV2_EXCLUSIVE_REQUIRES"], group.requireClass)
                 end
                 local exclusiveTag = header:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                 exclusiveTag:SetPoint("LEFT", headerText, "RIGHT", 8, 0)
@@ -651,7 +606,7 @@ local function CreateInventoryGroupsContent(contentFrame, db, wrapperFrame, layo
 
                 local inputLabel = inputRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                 inputLabel:SetPoint("LEFT", 0, 0)
-                inputLabel:SetText("Add Item ID:")
+                inputLabel:SetText(L["BWV2_ADD_ITEM_ID"])
 
                 local inputBox = CreateFrame("EditBox", nil, inputRow, "InputBoxTemplate")
                 inputBox:SetSize(80, 18)
@@ -661,7 +616,7 @@ local function CreateInventoryGroupsContent(contentFrame, db, wrapperFrame, layo
 
                 local capturedGroupKey = groupKey
                 local addBtn = W:CreateButton(inputRow, {
-                    text = "Add",
+                    text = L["COMMON_ADD"],
                     width = 45,
                     onClick = function()
                         local id = tonumber(inputBox:GetText())
@@ -677,7 +632,7 @@ local function CreateInventoryGroupsContent(contentFrame, db, wrapperFrame, layo
                 -- Restore defaults button if needed
                 if hasDisabledDefaults then
                     local restoreBtn = W:CreateButton(inputRow, {
-                        text = "Restore",
+                        text = L["BWV2_RESTORE"],
                         width = 60,
                         onClick = function()
                             wipe(db.disabledDefaults[capturedGroupKey])
@@ -709,680 +664,6 @@ local function CreateInventoryGroupsContent(contentFrame, db, wrapperFrame, layo
 
     RebuildContent()
     return RebuildContent
-end
-
--- Modal for adding/editing class buff groups
-local classBuffModal = nil
-
-local function ShowClassBuffModal(initialClassName, groupData, onSave, onDelete, db)
-    -- Create modal if not exists
-    if not classBuffModal then
-        classBuffModal = CreateFrame("Frame", "NaowhQOL_ClassBuffModal", UIParent, "BackdropTemplate")
-        classBuffModal:SetSize(520, 435)
-        classBuffModal:SetPoint("CENTER")
-        classBuffModal:SetFrameStrata("DIALOG")
-        classBuffModal:SetBackdrop({
-            bgFile = [[Interface\Buttons\WHITE8x8]],
-            edgeFile = [[Interface\Buttons\WHITE8x8]],
-            edgeSize = 2,
-        })
-        classBuffModal:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
-        classBuffModal:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
-        classBuffModal:EnableMouse(true)
-        classBuffModal:SetMovable(true)
-        classBuffModal:RegisterForDrag("LeftButton")
-        classBuffModal:SetScript("OnDragStart", classBuffModal.StartMoving)
-        classBuffModal:SetScript("OnDragStop", classBuffModal.StopMovingOrSizing)
-        classBuffModal:Hide()
-
-        -- Title
-        classBuffModal.title = classBuffModal:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-        classBuffModal.title:SetPoint("TOP", 0, -10)
-
-        -- Close button
-        local closeBtn = CreateFrame("Button", nil, classBuffModal, "UIPanelCloseButton")
-        closeBtn:SetPoint("TOPRIGHT", -2, -2)
-        closeBtn:SetScript("OnClick", function() classBuffModal:Hide() end)
-    end
-
-    local modal = classBuffModal
-    local isEdit = groupData ~= nil
-    modal.title:SetText(isEdit and "Edit Buff Group" or "Add Buff Group")
-
-    -- Clear old content completely (orphan frames to prevent stale closures)
-    if modal.leftContent then
-        modal.leftContent:Hide()
-        modal.leftContent:SetParent(nil)
-    end
-    if modal.rightContent then
-        modal.rightContent:Hide()
-        modal.rightContent:SetParent(nil)
-    end
-    if modal.saveBtn then
-        modal.saveBtn:Hide()
-        modal.saveBtn:SetParent(nil)
-    end
-    if modal.cancelBtn then
-        modal.cancelBtn:Hide()
-        modal.cancelBtn:SetParent(nil)
-    end
-    if modal.deleteBtn then
-        modal.deleteBtn:Hide()
-        modal.deleteBtn:SetParent(nil)
-        modal.deleteBtn = nil
-    end
-
-    -- Left side - settings
-    local leftContent = CreateFrame("Frame", nil, modal)
-    leftContent:SetPoint("TOPLEFT", 15, -40)
-    leftContent:SetSize(250, 345)
-    modal.leftContent = leftContent
-
-    -- Right side - spell IDs
-    local rightContent = CreateFrame("Frame", nil, modal)
-    rightContent:SetPoint("TOPRIGHT", -15, -40)
-    rightContent:SetSize(230, 345)
-    modal.rightContent = rightContent
-
-    -- Editing state
-    local editState = {
-        className = initialClassName,
-        name = groupData and groupData.name or "",
-        checkType = groupData and groupData.checkType or "self",
-        minRequired = groupData and groupData.minRequired or 1,
-        specFilter = groupData and groupData.specFilter and {unpack(groupData.specFilter)} or {},
-        spellIDs = groupData and groupData.spellIDs and {unpack(groupData.spellIDs)} or {},
-        enchantIDs = groupData and groupData.enchantIDs and {unpack(groupData.enchantIDs)} or {},
-        talentCondition = groupData and groupData.talentCondition and {
-            talentID = groupData.talentCondition.talentID,
-            mode = groupData.talentCondition.mode,
-        } or nil,
-    }
-
-    -- Store spec UI elements for proper cleanup (container created later after specLabel)
-    local specElements = {}
-    local specContainer = nil
-
-    local function RebuildSpecCheckboxes()
-        -- Clear old elements (both frames and font strings)
-        for _, elem in ipairs(specElements) do
-            elem:Hide()
-            elem:SetParent(nil)
-        end
-        wipe(specElements)
-
-        if not specContainer then return end
-
-        local classInfo = Categories.CLASS_INFO[editState.className]
-        if not classInfo or not classInfo.specs then return end
-
-        local yOffset = 0
-
-        local allSpecsCB = CreateFrame("CheckButton", nil, specContainer, "ChatConfigCheckButtonTemplate")
-        allSpecsCB:SetPoint("TOPLEFT", 10, yOffset)
-        allSpecsCB:SetChecked(#editState.specFilter == 0)
-        specElements[#specElements + 1] = allSpecsCB
-
-        local allLabel = specContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        allLabel:SetPoint("LEFT", allSpecsCB, "RIGHT", 2, 0)
-        allLabel:SetText("All specs")
-        specElements[#specElements + 1] = allLabel
-
-        yOffset = yOffset - 18
-
-        local specCBs = {}
-        for _, specData in ipairs(classInfo.specs) do
-            local specID, specName = specData[1], specData[2]
-            local specCB = CreateFrame("CheckButton", nil, specContainer, "ChatConfigCheckButtonTemplate")
-            specCB:SetPoint("TOPLEFT", 10, yOffset)
-            specElements[#specElements + 1] = specCB
-
-            local hasSpec = false
-            for _, id in ipairs(editState.specFilter) do
-                if id == specID then hasSpec = true break end
-            end
-            specCB:SetChecked(hasSpec)
-
-            local specLbl = specContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            specLbl:SetPoint("LEFT", specCB, "RIGHT", 2, 0)
-            specLbl:SetText(specName)
-            specElements[#specElements + 1] = specLbl
-
-            specCB:SetScript("OnClick", function(self)
-                if self:GetChecked() then
-                    table.insert(editState.specFilter, specID)
-                    allSpecsCB:SetChecked(false)
-                else
-                    for i, id in ipairs(editState.specFilter) do
-                        if id == specID then
-                            table.remove(editState.specFilter, i)
-                            break
-                        end
-                    end
-                    if #editState.specFilter == 0 then
-                        allSpecsCB:SetChecked(true)
-                    end
-                end
-            end)
-
-            specCBs[specID] = specCB
-            yOffset = yOffset - 18
-        end
-
-        allSpecsCB:SetScript("OnClick", function(self)
-            if self:GetChecked() then
-                wipe(editState.specFilter)
-                for _, cb in pairs(specCBs) do
-                    cb:SetChecked(false)
-                end
-            else
-                self:SetChecked(true)
-            end
-        end)
-    end
-
-    -- === LEFT SIDE ===
-    local yOffset = 0
-
-    -- Class Selection (disabled during edit)
-    local classLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    classLabel:SetPoint("TOPLEFT", 0, yOffset)
-    classLabel:SetText("Class:")
-
-    local classDropdown = CreateFrame("Frame", nil, leftContent, "UIDropDownMenuTemplate")
-    classDropdown:SetPoint("LEFT", classLabel, "RIGHT", -5, -2)
-    UIDropDownMenu_SetWidth(classDropdown, 130)
-
-    local function UpdateClassDropdownText()
-        local classInfo = Categories.CLASS_INFO[editState.className]
-        UIDropDownMenu_SetText(classDropdown, classInfo and classInfo.name or "Select Class")
-    end
-
-    UIDropDownMenu_Initialize(classDropdown, function(self, level)
-        for _, className in ipairs(Categories.CLASS_ORDER) do
-            local classInfo = Categories.CLASS_INFO[className]
-            local info = UIDropDownMenu_CreateInfo()
-            info.text = classInfo.name
-            info.func = function()
-                editState.className = className
-                wipe(editState.specFilter)  -- Reset spec filter on class change
-                UpdateClassDropdownText()
-                RebuildSpecCheckboxes()
-            end
-            info.checked = (editState.className == className)
-            UIDropDownMenu_AddButton(info, level)
-        end
-    end)
-
-    UpdateClassDropdownText()
-
-    if isEdit then
-        UIDropDownMenu_DisableDropDown(classDropdown)
-    end
-
-    yOffset = yOffset - 30
-
-    -- Group Name
-    local nameLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    nameLabel:SetPoint("TOPLEFT", 0, yOffset)
-    nameLabel:SetText("Group Name:")
-
-    local nameInput = CreateFrame("EditBox", nil, leftContent, "InputBoxTemplate")
-    nameInput:SetSize(120, 20)
-    nameInput:SetPoint("LEFT", nameLabel, "RIGHT", 8, 0)
-    nameInput:SetAutoFocus(false)
-    nameInput:SetText(editState.name)
-    nameInput:SetScript("OnTextChanged", function(self)
-        editState.name = self:GetText()
-    end)
-
-    yOffset = yOffset - 28
-
-    -- Check Type
-    local typeLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    typeLabel:SetPoint("TOPLEFT", 0, yOffset)
-    typeLabel:SetText("Check Type:")
-
-    yOffset = yOffset - 18
-
-    local checkTypes = {
-        { key = "self", label = "Self Buff" },
-        { key = "targeted", label = "Targeted (on others)" },
-        { key = "weaponEnchant", label = "Weapon Enchant" },
-    }
-
-    for _, ct in ipairs(checkTypes) do
-        local radio = CreateFrame("CheckButton", nil, leftContent, "UIRadioButtonTemplate")
-        radio:SetPoint("TOPLEFT", 10, yOffset)
-        radio:SetChecked(editState.checkType == ct.key)
-
-        local radioLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        radioLabel:SetPoint("LEFT", radio, "RIGHT", 2, 0)
-        radioLabel:SetText(ct.label)
-
-        radio:SetScript("OnClick", function()
-            editState.checkType = ct.key
-            for _, child in ipairs({leftContent:GetChildren()}) do
-                if child:GetObjectType() == "CheckButton" and child.isRadio then
-                    child:SetChecked(child.radioKey == ct.key)
-                end
-            end
-        end)
-        radio.isRadio = true
-        radio.radioKey = ct.key
-
-        yOffset = yOffset - 18
-    end
-
-    yOffset = yOffset - 6
-
-    -- Min Required input
-    local minReqLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    minReqLabel:SetPoint("TOPLEFT", 0, yOffset)
-    minReqLabel:SetText("Min Required:")
-
-    local minReqInput = CreateFrame("EditBox", nil, leftContent, "InputBoxTemplate")
-    minReqInput:SetSize(40, 20)
-    minReqInput:SetPoint("LEFT", minReqLabel, "RIGHT", 8, 0)
-    minReqInput:SetNumeric(true)
-    minReqInput:SetAutoFocus(false)
-    minReqInput:SetText(tostring(editState.minRequired))
-    minReqInput:SetScript("OnTextChanged", function(self)
-        local val = tonumber(self:GetText()) or 1
-        editState.minRequired = val
-    end)
-
-    local minReqHint = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    minReqHint:SetPoint("LEFT", minReqInput, "RIGHT", 5, 0)
-    minReqHint:SetText("(0 = all, 1+ = min)")
-    minReqHint:SetTextColor(0.6, 0.6, 0.6)
-
-    yOffset = yOffset - 28
-
-    -- Talent Condition section
-    local talentLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    talentLabel:SetPoint("TOPLEFT", 0, yOffset)
-    talentLabel:SetText("Talent Condition:")
-
-    yOffset = yOffset - 22
-
-    -- Cache talents for this modal session
-    local cachedTalents = GetPlayerTalents()
-
-    -- Dropdown button (shows current selection)
-    local dropdownBtn = CreateFrame("Button", nil, leftContent, "BackdropTemplate")
-    dropdownBtn:SetSize(190, 22)
-    dropdownBtn:SetPoint("TOPLEFT", 10, yOffset)
-    dropdownBtn:SetBackdrop({
-        bgFile = [[Interface\Buttons\WHITE8x8]],
-        edgeFile = [[Interface\Buttons\WHITE8x8]],
-        edgeSize = 1,
-    })
-    dropdownBtn:SetBackdropColor(0.1, 0.1, 0.1, 1)
-    dropdownBtn:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
-
-    local dropdownIcon = dropdownBtn:CreateTexture(nil, "ARTWORK")
-    dropdownIcon:SetSize(16, 16)
-    dropdownIcon:SetPoint("LEFT", 4, 0)
-    dropdownIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    dropdownIcon:Hide()
-
-    local dropdownText = dropdownBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    dropdownText:SetPoint("LEFT", 24, 0)
-    dropdownText:SetPoint("RIGHT", -18, 0)
-    dropdownText:SetJustifyH("LEFT")
-    dropdownText:SetText("Select talent...")
-    dropdownText:SetTextColor(0.5, 0.5, 0.5)
-
-    local dropdownArrow = dropdownBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    dropdownArrow:SetPoint("RIGHT", -4, 0)
-    dropdownArrow:SetText("v")
-
-    -- Clear button
-    local clearBtn = CreateFrame("Button", nil, leftContent, "UIPanelButtonTemplate")
-    clearBtn:SetSize(22, 22)
-    clearBtn:SetPoint("LEFT", dropdownBtn, "RIGHT", 2, 0)
-    clearBtn:SetText("X")
-
-    -- Dropdown panel (appears below button)
-    local dropdownPanel = CreateFrame("Frame", nil, modal, "BackdropTemplate")
-    dropdownPanel:SetSize(190, 150)
-    dropdownPanel:SetPoint("TOPLEFT", dropdownBtn, "BOTTOMLEFT", 0, -2)
-    dropdownPanel:SetBackdrop({
-        bgFile = [[Interface\Buttons\WHITE8x8]],
-        edgeFile = [[Interface\Buttons\WHITE8x8]],
-        edgeSize = 1,
-    })
-    dropdownPanel:SetBackdropColor(0.1, 0.1, 0.1, 0.98)
-    dropdownPanel:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
-    dropdownPanel:SetFrameStrata("TOOLTIP")
-    dropdownPanel:Hide()
-
-    -- Search box inside dropdown
-    local searchBox = CreateFrame("EditBox", nil, dropdownPanel, "InputBoxTemplate")
-    searchBox:SetSize(170, 18)
-    searchBox:SetPoint("TOP", 0, -8)
-    searchBox:SetAutoFocus(false)
-    searchBox:SetText("")
-
-    local searchPlaceholder = searchBox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    searchPlaceholder:SetPoint("LEFT", 5, 0)
-    searchPlaceholder:SetText("Type to filter...")
-    searchPlaceholder:SetTextColor(0.4, 0.4, 0.4)
-
-    -- Results scroll area
-    local resultsScroll = CreateFrame("ScrollFrame", nil, dropdownPanel, "UIPanelScrollFrameTemplate")
-    resultsScroll:SetPoint("TOPLEFT", 4, -30)
-    resultsScroll:SetPoint("BOTTOMRIGHT", -22, 4)
-
-    local resultsContent = CreateFrame("Frame", nil, resultsScroll)
-    resultsContent:SetSize(160, 1)
-    resultsScroll:SetScrollChild(resultsContent)
-
-    local resultRows = {}
-    local MAX_VISIBLE = 6
-
-    local function UpdateDropdownDisplay()
-        if editState.talentCondition and editState.talentCondition.talentID then
-            local info = C_Spell.GetSpellInfo(editState.talentCondition.talentID)
-            if info then
-                dropdownIcon:SetTexture(info.iconID)
-                dropdownIcon:Show()
-                dropdownText:SetText(info.name)
-                dropdownText:SetTextColor(0.4, 0.8, 0.4)
-                return
-            end
-        end
-        dropdownIcon:Hide()
-        dropdownText:SetText("Select talent...")
-        dropdownText:SetTextColor(0.5, 0.5, 0.5)
-    end
-
-    local function FilterTalents(searchText)
-        if not searchText or searchText == "" then
-            return cachedTalents
-        end
-        local lower = searchText:lower()
-        local results = {}
-        for _, t in ipairs(cachedTalents) do
-            if t.name:lower():find(lower, 1, true) then
-                table.insert(results, t)
-            end
-        end
-        return results
-    end
-
-    local function RebuildResultsList(filtered)
-        -- Clear old rows
-        for _, row in ipairs(resultRows) do
-            row:Hide()
-        end
-
-        resultsContent:SetHeight(math.max(1, #filtered * 20))
-
-        for i, talent in ipairs(filtered) do
-            local row = resultRows[i]
-            if not row then
-                row = CreateFrame("Button", nil, resultsContent)
-                row:SetSize(160, 20)
-                row:SetPoint("TOPLEFT", 0, -(i - 1) * 20)
-
-                row.bg = row:CreateTexture(nil, "BACKGROUND")
-                row.bg:SetAllPoints()
-                row.bg:SetColorTexture(0.3, 0.3, 0.3, 0)
-
-                row.icon = row:CreateTexture(nil, "ARTWORK")
-                row.icon:SetSize(16, 16)
-                row.icon:SetPoint("LEFT", 2, 0)
-                row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-
-                row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-                row.text:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
-                row.text:SetPoint("RIGHT", -2, 0)
-                row.text:SetJustifyH("LEFT")
-
-                row:SetScript("OnEnter", function(self)
-                    self.bg:SetColorTexture(0.3, 0.3, 0.3, 0.8)
-                end)
-                row:SetScript("OnLeave", function(self)
-                    self.bg:SetColorTexture(0.3, 0.3, 0.3, 0)
-                end)
-
-                resultRows[i] = row
-            end
-
-            row:SetPoint("TOPLEFT", 0, -(i - 1) * 20)
-            row.icon:SetTexture(talent.icon)
-            row.text:SetText(talent.name)
-
-            row:SetScript("OnClick", function()
-                editState.talentCondition = editState.talentCondition or { mode = "activate" }
-                editState.talentCondition.talentID = talent.spellID
-                UpdateDropdownDisplay()
-                dropdownPanel:Hide()
-                searchBox:SetText("")
-            end)
-
-            row:Show()
-        end
-    end
-
-    searchBox:SetScript("OnTextChanged", function(self)
-        local text = self:GetText()
-        searchPlaceholder:SetShown(text == "")
-        local filtered = FilterTalents(text)
-        RebuildResultsList(filtered)
-    end)
-
-    dropdownBtn:SetScript("OnClick", function()
-        if dropdownPanel:IsShown() then
-            dropdownPanel:Hide()
-        else
-            RebuildResultsList(cachedTalents)
-            dropdownPanel:Show()
-            searchBox:SetFocus()
-        end
-    end)
-
-    clearBtn:SetScript("OnClick", function()
-        editState.talentCondition = nil
-        UpdateDropdownDisplay()
-        dropdownPanel:Hide()
-        searchBox:SetText("")
-    end)
-
-    -- Close dropdown when clicking elsewhere
-    dropdownPanel:SetScript("OnShow", function()
-        dropdownPanel:SetPropagateKeyboardInput(true)
-    end)
-
-    -- Initialize display
-    UpdateDropdownDisplay()
-    RebuildResultsList(cachedTalents)
-
-    yOffset = yOffset - 24
-
-    -- Talent mode radio buttons
-    local talentModes = {
-        { key = "activate", label = "Activate when talented" },
-        { key = "skip", label = "Skip when talented" },
-    }
-
-    local talentModeRadios = {}
-    for _, tm in ipairs(talentModes) do
-        local radio = CreateFrame("CheckButton", nil, leftContent, "UIRadioButtonTemplate")
-        radio:SetPoint("TOPLEFT", 10, yOffset)
-        local isChecked = editState.talentCondition and editState.talentCondition.mode == tm.key
-        radio:SetChecked(isChecked or (tm.key == "activate" and not editState.talentCondition))
-
-        local radioLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        radioLabel:SetPoint("LEFT", radio, "RIGHT", 2, 0)
-        radioLabel:SetText(tm.label)
-
-        radio:SetScript("OnClick", function()
-            for _, r in ipairs(talentModeRadios) do
-                r:SetChecked(r.modeKey == tm.key)
-            end
-            if editState.talentCondition then
-                editState.talentCondition.mode = tm.key
-            else
-                editState.talentCondition = { mode = tm.key }
-            end
-        end)
-        radio.modeKey = tm.key
-        table.insert(talentModeRadios, radio)
-
-        yOffset = yOffset - 18
-    end
-
-    yOffset = yOffset - 6
-
-    -- Spec Filter label
-    local specLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    specLabel:SetPoint("TOPLEFT", 0, yOffset)
-    specLabel:SetText("Specs:")
-
-    -- Create spec container anchored below the label
-    specContainer = CreateFrame("Frame", nil, leftContent)
-    specContainer:SetPoint("TOPLEFT", specLabel, "BOTTOMLEFT", 0, -2)
-    specContainer:SetSize(240, 100)
-
-    -- Build initial spec checkboxes
-    RebuildSpecCheckboxes()
-
-    -- === RIGHT SIDE ===
-    local idLabel = rightContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    idLabel:SetPoint("TOPLEFT", 0, 0)
-    idLabel:SetText("Spell/Enchant IDs:")
-
-    -- ID list display
-    local idListFrame = CreateFrame("Frame", nil, rightContent, "BackdropTemplate")
-    idListFrame:SetPoint("TOPLEFT", 0, -20)
-    idListFrame:SetSize(230, 180)
-    idListFrame:SetBackdrop({ bgFile = [[Interface\Buttons\WHITE8x8]] })
-    idListFrame:SetBackdropColor(0.05, 0.05, 0.05, 0.8)
-
-    local function RefreshIDList()
-        for _, child in ipairs({idListFrame:GetChildren()}) do
-            child:Hide()
-        end
-
-        local ids = editState.checkType == "weaponEnchant" and editState.enchantIDs or editState.spellIDs
-        local listY = -3
-        for i, id in ipairs(ids) do
-            local row = CreateFrame("Frame", nil, idListFrame)
-            row:SetSize(220, 18)
-            row:SetPoint("TOPLEFT", 5, listY)
-
-            local idText = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            idText:SetPoint("LEFT", 0, 0)
-
-            local info = C_Spell.GetSpellInfo(id)
-            local name = info and info.name or "Unknown"
-            idText:SetText(id .. " - " .. name)
-
-            local delBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-            delBtn:SetSize(18, 16)
-            delBtn:SetPoint("RIGHT", -2, 0)
-            delBtn:SetText("X")
-            delBtn:SetScript("OnClick", function()
-                table.remove(ids, i)
-                RefreshIDList()
-            end)
-
-            listY = listY - 18
-        end
-    end
-
-    RefreshIDList()
-
-    -- Add ID input
-    local addIDInput = CreateFrame("EditBox", nil, rightContent, "InputBoxTemplate")
-    addIDInput:SetSize(150, 20)
-    addIDInput:SetPoint("TOPLEFT", 0, -205)
-    addIDInput:SetNumeric(true)
-    addIDInput:SetAutoFocus(false)
-
-    local addIDBtn = W:CreateButton(rightContent, {
-        text = "+",
-        width = 30,
-        onClick = function()
-            local id = tonumber(addIDInput:GetText())
-            if id and id > 0 then
-                local ids = editState.checkType == "weaponEnchant" and editState.enchantIDs or editState.spellIDs
-                table.insert(ids, id)
-                addIDInput:SetText("")
-                RefreshIDList()
-            end
-        end,
-    })
-    addIDBtn:SetPoint("LEFT", addIDInput, "RIGHT", 5, 0)
-
-    -- Bottom buttons (stored on modal for cleanup on next open)
-    modal.saveBtn = W:CreateButton(modal, {
-        text = "Save",
-        width = 80,
-        onClick = function()
-            if not editState.className then
-                print("|cffff0000[BuffWatcher]|r Please select a class")
-                return
-            end
-
-            if editState.name == "" then
-                print("|cffff0000[BuffWatcher]|r Group name is required")
-                return
-            end
-
-            local ids = editState.checkType == "weaponEnchant" and editState.enchantIDs or editState.spellIDs
-            if #ids == 0 then
-                print("|cffff0000[BuffWatcher]|r At least one spell/enchant ID is required")
-                return
-            end
-
-            local key = editState.name:lower():gsub("%s+", "_"):gsub("[^%w_]", "")
-            if groupData and groupData.key then
-                key = groupData.key
-            end
-
-            local newGroup = {
-                key = key,
-                name = editState.name,
-                checkType = editState.checkType,
-                minRequired = editState.minRequired,
-                specFilter = editState.specFilter,
-                spellIDs = editState.checkType ~= "weaponEnchant" and editState.spellIDs or nil,
-                enchantIDs = editState.checkType == "weaponEnchant" and editState.enchantIDs or nil,
-                talentCondition = editState.talentCondition,
-            }
-
-            if onSave then onSave(editState.className, newGroup) end
-            modal:Hide()
-        end,
-    })
-    modal.saveBtn:SetPoint("BOTTOMLEFT", 15, 15)
-
-    modal.cancelBtn = W:CreateButton(modal, {
-        text = "Cancel",
-        width = 80,
-        onClick = function()
-            modal:Hide()
-        end,
-    })
-    modal.cancelBtn:SetPoint("LEFT", modal.saveBtn, "RIGHT", 10, 0)
-
-    if isEdit and onDelete then
-        modal.deleteBtn = W:CreateButton(modal, {
-            text = "Delete",
-            width = 80,
-            onClick = function()
-                onDelete()
-                modal:Hide()
-            end,
-        })
-        modal.deleteBtn:SetPoint("BOTTOMRIGHT", -15, 15)
-    end
-
-    modal:Show()
 end
 
 -- Create class buffs section content
@@ -1441,14 +722,14 @@ local function CreateClassBuffsContent(contentFrame, db, wrapperFrame, layoutRef
             headerText:SetPoint("LEFT", enableCB, "RIGHT", 2, 0)
             headerText:SetText(classInfo.name)
             if isPlayerClass then
-                headerText:SetText(W.Colorize(classInfo.name .. " (You)", C.ORANGE))
+                headerText:SetText(W.Colorize(classInfo.name .. " " .. L["BWV2_YOU"], C.ORANGE))
             end
 
             -- Group count
             local groupCount = #(classData.groups or {})
             local countText = header:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
             countText:SetPoint("LEFT", headerText, "RIGHT", 8, 0)
-            countText:SetText(W.Colorize("(" .. groupCount .. " groups)", C.GRAY))
+            countText:SetText(W.Colorize(string.format(L["BWV2_GROUPS_COUNT"], groupCount), C.GRAY))
 
             -- Expand/collapse button
             local expandBtn = CreateFrame("Button", nil, header)
@@ -1505,20 +786,20 @@ local function CreateClassBuffsContent(contentFrame, db, wrapperFrame, layoutRef
                     groupName:SetPoint("LEFT", 8, 0)
 
                     local typeTag = ""
-                    if group.checkType == "targeted" then typeTag = " [targeted]"
-                    elseif group.checkType == "weaponEnchant" then typeTag = " [weapon]"
+                    if group.checkType == "targeted" then typeTag = " " .. L["BWV2_TAG_TARGETED"]
+                    elseif group.checkType == "weaponEnchant" then typeTag = " " .. L["BWV2_TAG_WEAPON"]
                     end
 
-                    local exclusiveTag = group.exclusive and " (exclusive)" or ""
+                    local exclusiveTag = group.exclusive and " " .. L["BWV2_EXCLUSIVE"] or ""
                     groupName:SetText(group.name .. W.Colorize(typeTag .. exclusiveTag, C.GRAY))
 
                     -- Edit button
                     local editBtn = CreateFrame("Button", nil, groupRow, "UIPanelButtonTemplate")
                     editBtn:SetSize(40, 18)
                     editBtn:SetPoint("RIGHT", -30, 0)
-                    editBtn:SetText("Edit")
+                    editBtn:SetText(L["COMMON_EDIT"])
                     editBtn:SetScript("OnClick", function()
-                        ShowClassBuffModal(className, group, function(selectedClass, newGroup)
+                        ns.ShowClassBuffModal(className, group, function(selectedClass, newGroup)
                             -- Update group (class cannot change during edit)
                             for k, v in pairs(newGroup) do
                                 group[k] = v
@@ -1547,10 +828,10 @@ local function CreateClassBuffsContent(contentFrame, db, wrapperFrame, layoutRef
 
                 -- Add Group button
                 local addBtn = W:CreateButton(classContent, {
-                    text = "+ Add Group",
+                    text = L["BWV2_ADD_GROUP"],
                     width = 100,
                     onClick = function()
-                        ShowClassBuffModal(className, nil, function(selectedClass, newGroup)
+                        ns.ShowClassBuffModal(className, nil, function(selectedClass, newGroup)
                             -- Add to the selected class (user can change class in modal)
                             local targetClassData = db.classBuffs[selectedClass]
                             if not targetClassData then
@@ -1600,7 +881,7 @@ function ns:InitBuffWatcherV2()
 
         W:CreatePageHeader(sc,
             {{"BUFF ", C.BLUE}, {"WATCHER", C.ORANGE}},
-            W.Colorize("Raid buff scanner triggered on ready check", C.GRAY))
+            W.Colorize(L["BWV2_SUBTITLE"], C.GRAY))
 
         -- Master enable area (killswitch)
         local killArea = CreateFrame("Frame", nil, sc, "BackdropTemplate")
@@ -1610,7 +891,7 @@ function ns:InitBuffWatcherV2()
         killArea:SetBackdropColor(0.01, 0.56, 0.91, 0.08)
 
         local masterCB = W:CreateCheckbox(killArea, {
-            label = "Enable Buff Watcher",
+            label = L["BWV2_ENABLE"],
             db = db, key = "enabled",
             x = 15, y = -8,
             isMaster = true,
@@ -1618,7 +899,7 @@ function ns:InitBuffWatcherV2()
 
         -- Scan button (secondary control, like unlock checkbox)
         local scanBtn = W:CreateButton(killArea, {
-            text = "Scan Now",
+            text = L["BWV2_SCAN_NOW"],
             width = 100,
             onClick = function()
                 if Core then
@@ -1630,7 +911,7 @@ function ns:InitBuffWatcherV2()
 
         local scanHint = killArea:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         scanHint:SetPoint("LEFT", scanBtn, "RIGHT", 8, 0)
-        scanHint:SetText(W.Colorize("or use /nscan", C.GRAY))
+        scanHint:SetText(W.Colorize(L["BWV2_SCAN_HINT"], C.GRAY))
 
         -- Sections container
         local sectionContainer = CreateFrame("Frame", nil, sc)
@@ -1642,27 +923,33 @@ function ns:InitBuffWatcherV2()
         local layoutRef = { func = nil }
         local RelayoutAll
 
+        -- Section memory: restore last expanded section
+        local lastSection = db.lastSection or "classBuffs"
+
         ---------------------------------------------------------------
         -- THRESHOLDS SECTION
         ---------------------------------------------------------------
         local threshWrap, threshContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = "DURATION THRESHOLDS",
-            startOpen = false,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+            text = L["BWV2_SECTION_THRESHOLDS"],
+            startOpen = (lastSection == "thresholds"),
+            onCollapse = function(isOpen)
+                if isOpen then db.lastSection = "thresholds" end
+                if RelayoutAll then RelayoutAll() end
+            end,
         })
 
         local threshDesc = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         threshDesc:SetPoint("TOPLEFT", 10, -5)
         threshDesc:SetWidth(420)
         threshDesc:SetJustifyH("LEFT")
-        threshDesc:SetText(W.Colorize("Minimum remaining duration (minutes) for buffs to be considered active.", C.GRAY))
+        threshDesc:SetText(W.Colorize(L["BWV2_THRESHOLD_DESC"], C.GRAY))
 
         -- Threshold inputs (display in minutes, store in seconds)
         local threshY = -30
 
         local dungeonLabel = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         dungeonLabel:SetPoint("TOPLEFT", 10, threshY)
-        dungeonLabel:SetText("Dungeon:")
+        dungeonLabel:SetText(L["BWV2_DUNGEON"])
 
         local dungeonInput = CreateFrame("EditBox", nil, threshContent, "InputBoxTemplate")
         dungeonInput:SetSize(40, 20)
@@ -1677,11 +964,11 @@ function ns:InitBuffWatcherV2()
 
         local dungeonMin = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         dungeonMin:SetPoint("LEFT", dungeonInput, "RIGHT", 4, 0)
-        dungeonMin:SetText("min")
+        dungeonMin:SetText(L["BWV2_MIN"])
 
         local raidLabel = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         raidLabel:SetPoint("LEFT", dungeonMin, "RIGHT", 15, 0)
-        raidLabel:SetText("Raid:")
+        raidLabel:SetText(L["BWV2_RAID"])
 
         local raidInput = CreateFrame("EditBox", nil, threshContent, "InputBoxTemplate")
         raidInput:SetSize(40, 20)
@@ -1696,11 +983,11 @@ function ns:InitBuffWatcherV2()
 
         local raidMin = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         raidMin:SetPoint("LEFT", raidInput, "RIGHT", 4, 0)
-        raidMin:SetText("min")
+        raidMin:SetText(L["BWV2_MIN"])
 
         local otherLabel = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         otherLabel:SetPoint("LEFT", raidMin, "RIGHT", 15, 0)
-        otherLabel:SetText("Other:")
+        otherLabel:SetText(L["BWV2_OTHER"])
 
         local otherInput = CreateFrame("EditBox", nil, threshContent, "InputBoxTemplate")
         otherInput:SetSize(40, 20)
@@ -1715,7 +1002,7 @@ function ns:InitBuffWatcherV2()
 
         local otherMin = threshContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
         otherMin:SetPoint("LEFT", otherInput, "RIGHT", 4, 0)
-        otherMin:SetText("min")
+        otherMin:SetText(L["BWV2_MIN"])
 
         threshContent:SetHeight(70)
         threshWrap:RecalcHeight()
@@ -1724,9 +1011,12 @@ function ns:InitBuffWatcherV2()
         -- RAID BUFFS SECTION
         ---------------------------------------------------------------
         local raidWrap, raidContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = "RAID BUFFS",
-            startOpen = true,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+            text = L["BWV2_SECTION_RAID"],
+            startOpen = (lastSection == "raidBuffs"),
+            onCollapse = function(isOpen)
+                if isOpen then db.lastSection = "raidBuffs" end
+                if RelayoutAll then RelayoutAll() end
+            end,
         })
 
         CreateSpellListContent(raidContent, Categories.RAID, "raidBuffs", db, raidWrap, layoutRef)
@@ -1735,9 +1025,12 @@ function ns:InitBuffWatcherV2()
         -- CONSUMABLES SECTION (with subgroups)
         ---------------------------------------------------------------
         local consWrap, consContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = "CONSUMABLES",
-            startOpen = false,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+            text = L["BWV2_SECTION_CONSUMABLES"],
+            startOpen = (lastSection == "consumables"),
+            onCollapse = function(isOpen)
+                if isOpen then db.lastSection = "consumables" end
+                if RelayoutAll then RelayoutAll() end
+            end,
         })
 
         CreateConsumableGroupsContent(consContent, db, consWrap, layoutRef)
@@ -1746,9 +1039,12 @@ function ns:InitBuffWatcherV2()
         -- INVENTORY CHECK SECTION
         ---------------------------------------------------------------
         local invWrap, invContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = "INVENTORY CHECK",
-            startOpen = false,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+            text = L["BWV2_SECTION_INVENTORY"],
+            startOpen = (lastSection == "inventory"),
+            onCollapse = function(isOpen)
+                if isOpen then db.lastSection = "inventory" end
+                if RelayoutAll then RelayoutAll() end
+            end,
         })
 
         CreateInventoryGroupsContent(invContent, db, invWrap, layoutRef)
@@ -1757,55 +1053,15 @@ function ns:InitBuffWatcherV2()
         -- CLASS BUFFS SECTION
         ---------------------------------------------------------------
         local classBuffsWrap, classBuffsContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = "CLASS BUFFS",
-            startOpen = true,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
+            text = L["BWV2_SECTION_CLASS"],
+            startOpen = (lastSection == "classBuffs"),
+            onCollapse = function(isOpen)
+                if isOpen then db.lastSection = "classBuffs" end
+                if RelayoutAll then RelayoutAll() end
+            end,
         })
 
         CreateClassBuffsContent(classBuffsContent, db, classBuffsWrap, layoutRef)
-
-        ---------------------------------------------------------------
-        -- TALENT MODIFICATIONS SECTION
-        ---------------------------------------------------------------
-        local talentWrap, talentContent = W:CreateCollapsibleSection(sectionContainer, {
-            text = "TALENT MODIFICATIONS",
-            startOpen = false,
-            onCollapse = function() if RelayoutAll then RelayoutAll() end end,
-        })
-
-        local talentDesc = talentContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        talentDesc:SetPoint("TOPLEFT", 10, -5)
-        talentDesc:SetWidth(420)
-        talentDesc:SetJustifyH("LEFT")
-        talentDesc:SetText(W.Colorize("Define rules that modify requirements when talents are active.\nTypes: requireCount, requireSpellID, skipIfTalent", C.GRAY))
-
-        -- Show existing talent mods
-        local talentY = -45
-        local talentMods = db.talentMods or {}
-
-        for catKey, rules in pairs(talentMods) do
-            if type(rules) == "table" and #rules > 0 then
-                local catLabel = talentContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-                catLabel:SetPoint("TOPLEFT", 10, talentY)
-                catLabel:SetText(W.Colorize(catKey .. ":", C.ORANGE))
-                talentY = talentY - 20
-
-                for _, rule in ipairs(rules) do
-                    local info = C_Spell.GetSpellInfo(rule.talentID)
-                    local talentName = info and info.name or "Unknown"
-                    local ruleText = string.format("  %s (%d) - %s", talentName, rule.talentID, rule.type)
-                    if rule.count then ruleText = ruleText .. " = " .. rule.count end
-
-                    local ruleLabel = talentContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-                    ruleLabel:SetPoint("TOPLEFT", 20, talentY)
-                    ruleLabel:SetText(ruleText)
-                    talentY = talentY - 18
-                end
-            end
-        end
-
-        talentContent:SetHeight(math.abs(talentY) + 10)
-        talentWrap:RecalcHeight()
 
         ---------------------------------------------------------------
         -- LAYOUT FUNCTION
@@ -1832,10 +1088,6 @@ function ns:InitBuffWatcherV2()
             classBuffsWrap:ClearAllPoints()
             classBuffsWrap:SetPoint("TOPLEFT", sectionContainer, "TOPLEFT", 0, yOffset)
             yOffset = yOffset - classBuffsWrap:GetHeight() - 5
-
-            talentWrap:ClearAllPoints()
-            talentWrap:SetPoint("TOPLEFT", sectionContainer, "TOPLEFT", 0, yOffset)
-            yOffset = yOffset - talentWrap:GetHeight() - 5
 
             sectionContainer:SetHeight(math.abs(yOffset) + 20)
             sc:SetHeight(math.abs(yOffset) + 180)

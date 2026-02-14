@@ -157,6 +157,8 @@ function BWV2:InitSavedVars()
             },
             -- Report card frame position
             reportCardPosition = nil,  -- { point, x, y }
+            -- Last expanded config section (for tab memory)
+            lastSection = "classBuffs",
         }
     end
 
