@@ -554,7 +554,11 @@ local function BuildUI()
     surgeIcon:SetTexture(icon)
 
     surgeCooldown = CreateFrame("Cooldown", nil, surgeFrame, "CooldownFrameTemplate")
-    surgeCooldown:SetAllPoints()
+    surgeCooldown:SetPoint("TOPLEFT", surgeFrame, "TOPLEFT", 0, 1)
+    surgeCooldown:SetPoint("BOTTOMRIGHT", surgeFrame, "BOTTOMRIGHT", 0, 0)
+    surgeCooldown:SetDrawEdge(false)
+    surgeCooldown:SetDrawBling(false)
+    surgeCooldown:SetSwipeColor(0, 0, 0, 0.8)
     surgeCooldown:SetHideCountdownNumbers(false)
 
     surgeBorder = CreateFrame("Frame", nil, surgeFrame, "BackdropTemplate")
