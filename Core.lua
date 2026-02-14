@@ -107,25 +107,6 @@ local BUFF_TRACKER_DEFAULTS = {
     point = "TOP", posX = 0, posY = -100, width = 450, height = 60,
 }
 
-local BUFF_MONITOR_DEFAULTS = {
-    enabled = true, unlock = false, soundID = 8959, soundEnabled = true,
-    colorR = 1, colorG = 0.2, colorB = 0.8, iconPoint = "CENTER", iconX = 0, iconY = 100, iconSize = 40,
-    raidBuffsEnabled = true, raidIconSize = 40, raidIconPoint = "TOP", raidIconX = 0, raidIconY = -100, unlockRaid = false,
-    raidLabelFontSize = 9, raidTimerFontSize = 11, raidLabelColorR = 0.7, raidLabelColorG = 0.7, raidLabelColorB = 0.7, raidLabelAlpha = 1.0, raidTimerAlpha = 1.0,
-    customLabelFontSize = 9, customTimerFontSize = 11,
-    customLabelColorR = 0.7, customLabelColorG = 0.7, customLabelColorB = 0.7, customLabelAlpha = 1.0, customTimerAlpha = 1.0,
-}
-
-local CONSUMABLE_CHECKER_DEFAULTS = {
-    enabled = true, unlock = false, iconSize = 40, iconPoint = "TOP", iconX = 0, iconY = -140,
-    normalDungeon = true, heroicDungeon = true, mythicDungeon = true, mythicPlus = false,
-    lfr = true, normalRaid = true, heroicRaid = true, mythicRaid = true,
-    soundEnabled = true, soundID = 8959, colorR = 1, colorG = 0.2, colorB = 0.8,
-    labelFontSize = 9, labelColorR = 0.7, labelColorG = 0.7, labelColorB = 0.7, labelAlpha = 1.0,
-    timerFontSize = 11, timerAlpha = 1.0,
-    stackFontSize = 11, stackColorR = 1, stackColorG = 1, stackColorB = 1, stackAlpha = 1.0,
-}
-
 local GCD_TRACKER_DEFAULTS = {
     enabled = false, unlock = false, duration = 5, iconSize = 32,
     direction = "RIGHT", spacing = 4, fadeStart = 0.5, stackOverlapping = true,
@@ -290,8 +271,6 @@ ns.ModuleDefaults = {
     combatLogger = COMBAT_LOGGER_DEFAULTS,
     dragonriding = DRAGONRIDING_DEFAULTS,
     buffTracker = BUFF_TRACKER_DEFAULTS,
-    buffMonitor = BUFF_MONITOR_DEFAULTS,
-    consumableChecker = CONSUMABLE_CHECKER_DEFAULTS,
     gcdTracker = GCD_TRACKER_DEFAULTS,
     stealthReminder = STEALTH_REMINDER_DEFAULTS,
     movementAlert = MOVEMENT_ALERT_DEFAULTS,
@@ -443,182 +422,6 @@ local function InitializeDB()
     if misc.skipQueueConfirm == nil then misc.skipQueueConfirm = false end
     if misc.deathReleaseProtection == nil then misc.deathReleaseProtection = false end
     if misc.ahCurrentExpansion == nil then misc.ahCurrentExpansion = false end
-
-    -- Buff Monitor
-    NaowhQOL.buffMonitor = NaowhQOL.buffMonitor or {}
-    local bm = NaowhQOL.buffMonitor
-    if bm.enabled      == nil then bm.enabled      = true     end
-    if bm.unlock       == nil then bm.unlock       = false    end
-    if bm.soundID      == nil then bm.soundID      = 8959     end
-    if bm.soundEnabled == nil then bm.soundEnabled = true     end
-    if bm.colorR       == nil then bm.colorR       = 1        end
-    if bm.colorG       == nil then bm.colorG       = 0.2      end
-    if bm.colorB       == nil then bm.colorB       = 0.8      end
-    if bm.iconPoint    == nil then bm.iconPoint    = "CENTER" end
-    if bm.iconX        == nil then bm.iconX        = 0        end
-    if bm.iconY        == nil then bm.iconY        = 100      end
-    if bm.iconSize     == nil then bm.iconSize     = 40       end
-    if bm.trackers     == nil then bm.trackers     = {}       end
-
-    -- Migrate old buffTracker position BEFORE setting raid strip defaults
-    local old = NaowhQOL.buffTracker
-    if old and bm.raidIconPoint == nil and old.point then
-        bm.raidIconPoint = old.point
-        bm.raidIconX = old.posX or 0
-        bm.raidIconY = old.posY or -100
-    end
-
-    if bm.raidBuffsEnabled == nil then bm.raidBuffsEnabled = true  end
-    if bm.raidIconSize == nil then bm.raidIconSize = 40       end
-    if bm.raidIconPoint == nil then bm.raidIconPoint = "TOP"  end
-    if bm.raidIconX    == nil then bm.raidIconX    = 0        end
-    if bm.raidIconY    == nil then bm.raidIconY    = -100     end
-    if bm.unlockRaid   == nil then bm.unlockRaid   = false    end
-    -- Raid buff font settings
-    if bm.raidLabelFontSize == nil then bm.raidLabelFontSize = 9     end
-    if bm.raidTimerFontSize == nil then bm.raidTimerFontSize = 11    end
-    if bm.raidLabelColorR   == nil then bm.raidLabelColorR   = 0.7   end
-    if bm.raidLabelColorG   == nil then bm.raidLabelColorG   = 0.7   end
-    if bm.raidLabelColorB   == nil then bm.raidLabelColorB   = 0.7   end
-    if bm.raidLabelAlpha    == nil then bm.raidLabelAlpha    = 1.0   end
-    if bm.raidTimerAlpha    == nil then bm.raidTimerAlpha    = 1.0   end
-    -- Custom tracker font settings
-    if bm.customLabelFontSize == nil then bm.customLabelFontSize = 9   end
-    if bm.customTimerFontSize == nil then bm.customTimerFontSize = 11  end
-    if bm.customLabelColorR   == nil then bm.customLabelColorR   = 0.7 end
-    if bm.customLabelColorG   == nil then bm.customLabelColorG   = 0.7 end
-    if bm.customLabelColorB   == nil then bm.customLabelColorB   = 0.7 end
-    if bm.customLabelAlpha    == nil then bm.customLabelAlpha    = 1.0 end
-    if bm.customTimerAlpha    == nil then bm.customTimerAlpha    = 1.0 end
-
-    -- Migrate consumable data from buffMonitor to standalone consumableChecker
-    if bm.ccEnabled ~= nil and NaowhQOL.consumableChecker == nil then
-        local migrated = {}
-        local keyMap = {
-            ccEnabled = "enabled", ccUnlock = "unlock", ccIconSize = "iconSize",
-            ccIconPoint = "iconPoint", ccIconX = "iconX", ccIconY = "iconY",
-            ccNormalDungeon = "normalDungeon", ccHeroicDungeon = "heroicDungeon",
-            ccMythicDungeon = "mythicDungeon", ccMythicPlus = "mythicPlus",
-            ccLFR = "lfr", ccNormalRaid = "normalRaid",
-            ccHeroicRaid = "heroicRaid", ccMythicRaid = "mythicRaid",
-            ccSoundEnabled = "soundEnabled", ccSoundID = "soundID",
-            ccColorR = "colorR", ccColorG = "colorG", ccColorB = "colorB",
-        }
-        for oldKey, newKey in pairs(keyMap) do
-            if bm[oldKey] ~= nil then
-                migrated[newKey] = bm[oldKey]
-                bm[oldKey] = nil
-            end
-        end
-        if bm.ccCategories then
-            migrated.categories = bm.ccCategories
-            bm.ccCategories = nil
-        end
-        NaowhQOL.consumableChecker = migrated
-    end
-
-    -- Consumable Checker (standalone module)
-    NaowhQOL.consumableChecker = NaowhQOL.consumableChecker or {}
-    local cc = NaowhQOL.consumableChecker
-    if cc.enabled          == nil then cc.enabled          = true     end
-    if cc.unlock           == nil then cc.unlock           = false    end
-    if cc.iconSize         == nil then cc.iconSize         = 40       end
-    if cc.iconPoint        == nil then cc.iconPoint        = "TOP"    end
-    if cc.iconX            == nil then cc.iconX            = 0        end
-    if cc.iconY            == nil then cc.iconY            = -140     end
-    if cc.normalDungeon    == nil then cc.normalDungeon    = true     end
-    if cc.heroicDungeon    == nil then cc.heroicDungeon    = true     end
-    if cc.mythicDungeon    == nil then cc.mythicDungeon    = true     end
-    if cc.mythicPlus       == nil then cc.mythicPlus       = false    end
-    if cc.lfr              == nil then cc.lfr              = true     end
-    if cc.normalRaid       == nil then cc.normalRaid       = true     end
-    if cc.heroicRaid       == nil then cc.heroicRaid       = true     end
-    if cc.mythicRaid       == nil then cc.mythicRaid       = true     end
-    if cc.soundEnabled     == nil then cc.soundEnabled     = true     end
-    if cc.soundID          == nil then cc.soundID          = 8959     end
-    if cc.colorR           == nil then cc.colorR           = 1        end
-    if cc.colorG           == nil then cc.colorG           = 0.2      end
-    if cc.colorB           == nil then cc.colorB           = 0.8      end
-    if cc.labelFontSize    == nil then cc.labelFontSize    = 9        end
-    if cc.labelColorR      == nil then cc.labelColorR      = 0.7      end
-    if cc.labelColorG      == nil then cc.labelColorG      = 0.7      end
-    if cc.labelColorB      == nil then cc.labelColorB      = 0.7      end
-    if cc.labelAlpha       == nil then cc.labelAlpha       = 1.0      end
-    if cc.timerFontSize    == nil then cc.timerFontSize    = 11       end
-    if cc.timerAlpha       == nil then cc.timerAlpha       = 1.0      end
-    if cc.stackFontSize    == nil then cc.stackFontSize    = 11       end
-    if cc.stackColorR      == nil then cc.stackColorR      = 1        end
-    if cc.stackColorG      == nil then cc.stackColorG      = 1        end
-    if cc.stackColorB      == nil then cc.stackColorB      = 1        end
-    if cc.stackAlpha       == nil then cc.stackAlpha       = 1.0      end
-    if cc.categories == nil then
-        cc.categories = {
-            { name = "Flask", matchType = "spellId",
-              entries = {432021, 432473, 431971, 431972, 431974, 431973, 432430, 432403, 432452},
-              customItems = {212283, 212282, 212281, 212301, 212300, 212299, 212271, 212270, 212269,
-                             212274, 212273, 212272, 212280, 212279, 212278, 212277, 212276, 212275},
-              enabled = true, icon = 967532 },
-            { name = "Food", matchType = "name",
-              entries = {"Well Fed", "Hearty Well Fed"},
-              customItems = {222732, 222733, 222734, 222735, 222709, 222710, 222711, 222712,
-                             222717, 222718, 222719, 222720, 222725, 222726, 222727, 222728},
-              enabled = true, icon = 134062 },
-            { name = "Augment Rune", matchType = "spellId",
-              entries = {},
-              customItems = {224572, 243191},
-              enabled = false, icon = 1392955 },
-            { name = "Weapon Oil (MH)", matchType = "weaponEnchant",
-              weaponSlot = 16,
-              customItems = {224107, 224108, 224109, 224110, 224105, 224106, 224111, 224112, 224113,
-                             222504, 222503, 222502, 222507, 222506, 222505},
-              enabled = true, icon = 134722 },
-            { name = "Weapon Oil (OH)", matchType = "weaponEnchant",
-              weaponSlot = 17,
-              customItems = {224107, 224108, 224109, 224110, 224105, 224106, 224111, 224112, 224113,
-                             222504, 222503, 222502, 222507, 222506, 222505},
-              enabled = true, icon = 134722 },
-        }
-    end
-    -- Migrate old single "Weapon Oil" category into MH + OH
-    for i, cat in ipairs(cc.categories) do
-        if cat.name == "Weapon Oil" and cat.matchType == "weaponEnchant" then
-            cc.categories[i] = { name = "Weapon Oil (MH)", matchType = "weaponEnchant",
-                weaponSlot = 16, enabled = cat.enabled, icon = cat.icon or 134722,
-                itemId = cat.itemId }
-            table.insert(cc.categories, i + 1, { name = "Weapon Oil (OH)",
-                matchType = "weaponEnchant", weaponSlot = 17,
-                enabled = cat.enabled, icon = cat.icon or 134722,
-                itemId = cat.itemId })
-            break
-        end
-        -- Also catch the old name-based "Oil" detection
-        if cat.name == "Weapon Oil" and cat.matchType == "name" then
-            cc.categories[i] = { name = "Weapon Oil (MH)", matchType = "weaponEnchant",
-                weaponSlot = 16, enabled = cat.enabled, icon = 134722 }
-            table.insert(cc.categories, i + 1, { name = "Weapon Oil (OH)",
-                matchType = "weaponEnchant", weaponSlot = 17,
-                enabled = cat.enabled, icon = 134722 })
-            break
-        end
-    end
-
-    -- Migrate: Add customItems to existing categories that don't have them
-    local defaultItems = {
-        Flask = {212283, 212282, 212281, 212301, 212300, 212299, 212271, 212270, 212269,
-                 212274, 212273, 212272, 212280, 212279, 212278, 212277, 212276, 212275},
-        Food = {222732, 222733, 222734, 222735, 222709, 222710, 222711, 222712,
-                222717, 222718, 222719, 222720, 222725, 222726, 222727, 222728},
-        ["Augment Rune"] = {224572, 243191},
-        ["Weapon Oil (MH)"] = {224107, 224108, 224109, 224110, 224105, 224106, 224111, 224112, 224113,
-                              222504, 222503, 222502, 222507, 222506, 222505},
-        ["Weapon Oil (OH)"] = {224107, 224108, 224109, 224110, 224105, 224106, 224111, 224112, 224113,
-                              222504, 222503, 222502, 222507, 222506, 222505},
-    }
-    for _, cat in ipairs(cc.categories) do
-        if cat.customItems == nil then
-            cat.customItems = defaultItems[cat.name] or {}
-        end
-    end
 
     -- GCD Tracker uses a defaults table since it has a lot of keys
     NaowhQOL.gcdTracker = NaowhQOL.gcdTracker or {}
@@ -964,11 +767,7 @@ SlashCmdList["NAOWHQOLSUP"] = function()
     ns.notificationsSuppressed = not ns.notificationsSuppressed
     if ns.notificationsSuppressed then
         print("|cff00ff00NaowhQOL:|r Notifications suppressed until reload")
-        if ns.DisableConsumableChecker then ns:DisableConsumableChecker() end
-        if ns.DisableBuffMonitor then ns:DisableBuffMonitor() end
     else
         print("|cff00ff00NaowhQOL:|r Notifications re-enabled")
-        if ns.EnableConsumableChecker then ns:EnableConsumableChecker() end
-        if ns.RefreshBuffMonitor then ns:RefreshBuffMonitor() end
     end
 end

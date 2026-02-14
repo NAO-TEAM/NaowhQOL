@@ -39,8 +39,6 @@ Modules/HideUIClutter.lua
 Modules/Dragonriding.lua
 Modules/CrosshairDisplay.lua
 Modules/MouseRingDisplay.lua
-Modules/BuffMonitorDisplay.lua
-Modules/ConsumableCheckerDisplay.lua
 Modules/CombatLoggerDisplay.lua
 Modules/GcdTrackerDisplay.lua
 Modules/StealthReminderDisplay.lua
@@ -71,10 +69,8 @@ Config/Optimizations.lua
 Config/CombatTimer.lua
 Config/CombatAlert.lua
 Config/Crosshair.lua
-Config/BuffMonitor.lua
 Config/BuffWatcherV2ClassBuffsModal.lua
 Config/BuffWatcherV2.lua
-Config/ConsumableChecker.lua
 Config/Dragonriding.lua
 Config/CombatLogger.lua
 Config/GcdTracker.lua

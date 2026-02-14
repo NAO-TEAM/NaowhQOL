@@ -274,9 +274,7 @@ CreateGroup("hud", L["SIDEBAR_GROUP_HUD"], {
 
 -- TRACKING group
 CreateGroup("tracking", L["SIDEBAR_GROUP_TRACKING"], {
-    { key = "buff_monitor", label = L["SIDEBAR_TAB_BUFF_MONITOR"], onClick = function() if ns.InitBuffMonitor then ns:InitBuffMonitor() end end },
     { key = "buff_watcher", label = "Buff Watcher", onClick = function() if ns.InitBuffWatcherV2 then ns:InitBuffWatcherV2() end end },
-    { key = "consumables", label = L["SIDEBAR_TAB_CONSUMABLES"], onClick = function() if ns.InitConsumableChecker then ns:InitConsumableChecker() end end },
     { key = "stealth", label = L["SIDEBAR_TAB_STEALTH"], onClick = function() if ns.InitStealthReminder then ns:InitStealthReminder() end end },
     { key = "range_check", label = L["SIDEBAR_TAB_RANGE_CHECK"], onClick = function() if ns.InitRangeCheck then ns:InitRangeCheck() end end },
     { key = "pet_tracker", label = L["SIDEBAR_TAB_PET_TRACKER"], onClick = function() if ns.InitPetTracker then ns:InitPetTracker() end end },

@@ -77,31 +77,6 @@ local TYPE_SCHEMAS = {
         durabilityWarning = "boolean", durabilityThreshold = "number",
         autoSlotKeystone = "boolean", skipQueueConfirm = "boolean",
     },
-    buffMonitor = {
-        enabled = "boolean", unlock = "boolean", soundID = "number",
-        soundEnabled = "boolean", colorR = "number", colorG = "number", colorB = "number",
-        iconPoint = "string", iconX = "number", iconY = "number", iconSize = "number",
-        trackers = "table", raidBuffsEnabled = "boolean", raidIconSize = "number",
-        raidIconPoint = "string", raidIconX = "number", raidIconY = "number",
-        unlockRaid = "boolean",
-        raidLabelFontSize = "number", raidLabelColorR = "number",
-        raidLabelColorG = "number", raidLabelColorB = "number",
-        customLabelFontSize = "number", customTimerFontSize = "number",
-        customLabelColorR = "number", customLabelColorG = "number", customLabelColorB = "number",
-    },
-    consumableChecker = {
-        enabled = "boolean", unlock = "boolean", iconSize = "number",
-        iconPoint = "string", iconX = "number", iconY = "number",
-        soundEnabled = "boolean", soundID = "number",
-        colorR = "number", colorG = "number", colorB = "number",
-        categories = "table",
-        labelFontSize = "number", timerFontSize = "number",
-        labelColorR = "number", labelColorG = "number", labelColorB = "number",
-        normalDungeon = "boolean", heroicDungeon = "boolean",
-        mythicDungeon = "boolean", mythicPlus = "boolean",
-        lfr = "boolean", normalRaid = "boolean",
-        heroicRaid = "boolean", mythicRaid = "boolean",
-    },
     gcdTracker = {
         enabled = "boolean", unlock = "boolean", duration = "number",
         iconSize = "number", direction = "string", spacing = "number",
@@ -738,8 +713,6 @@ ns.SettingsIO:RegisterSimple("combatLogger",  "Combat Logger")
 ns.SettingsIO:RegisterSimple("mouseRing",     "Mouse Ring")
 ns.SettingsIO:RegisterSimple("dragonriding",  "Dragonriding")
 ns.SettingsIO:RegisterSimple("misc",          "Misc Toggles")
-ns.SettingsIO:RegisterSimple("buffMonitor",   "Buff Monitor")
-ns.SettingsIO:RegisterSimple("consumableChecker", "Consumable Checker")
 ns.SettingsIO:RegisterSimple("gcdTracker",       "GCD Tracker")
 ns.SettingsIO:RegisterSimple("stealthReminder",  "Stealth Reminder")
 ns.SettingsIO:RegisterSimple("emoteDetection",   "Emote Detection")
