@@ -283,6 +283,7 @@ ns:RegisterLocale("enUS", {
     FOCUS_SECTION_NONINT = "NON-INTERRUPTIBLE DISPLAY",
     FOCUS_SHOW_SHIELD = "Show Shield Icon",
     FOCUS_CHANGE_COLOR = "Recolor Uninterruptible",
+    FOCUS_HIDE_ON_CD = "Hide When Interrupt on CD",
     FOCUS_NONINT_COLOR = "Non-Interruptible",
     FOCUS_SOUND_START = "Play Sound on Cast Start",
     FOCUS_USE_TTS = "Use Text-to-Speech (TTS)",

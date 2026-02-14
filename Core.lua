@@ -172,6 +172,7 @@ local FOCUS_CAST_BAR_DEFAULTS = {
     showEmpowerStages = true, showShieldIcon = true, colorNonInterrupt = true,
     nonIntColorR = 0.8, nonIntColorG = 0.2, nonIntColorB = 0.2,
     soundEnabled = false, soundID = 8959, ttsEnabled = false, ttsMessage = "Interrupt", ttsVolume = 50, ttsRate = 0,
+    hideOnCooldown = false,
 }
 
 local TALENT_REMINDER_DEFAULTS = {
@@ -626,6 +627,7 @@ local function InitializeDB()
     if fcb.ttsEnabled        == nil then fcb.ttsEnabled        = false              end
     if fcb.ttsMessage        == nil then fcb.ttsMessage        = "Interrupt"        end
     if fcb.ttsVolume         == nil then fcb.ttsVolume         = 50                 end
+    if fcb.hideOnCooldown    == nil then fcb.hideOnCooldown    = false              end
 
     -- Talent Reminder
     NaowhQOL.talentReminder = NaowhQOL.talentReminder or {}

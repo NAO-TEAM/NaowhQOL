@@ -145,6 +145,11 @@ local function UpdateBarColor()
     local cdColor = CreateColor(cdcR, cdcG, cdcB, 1)
 
     barTexture:SetVertexColorFromBoolean(isReady, readyColor, cdColor)
+
+    -- Hide bar when interrupt is on cooldown
+    if db.hideOnCooldown then
+        castBarFrame:SetAlphaFromBoolean(isReady)
+    end
 end
 
 -- Update visual indicators for interruptible state

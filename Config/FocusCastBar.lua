@@ -235,7 +235,15 @@ function ns:InitFocusCastBar()
             onChange = onUpdate
         })
 
-        behContent:SetHeight(108)
+        W:CreateCheckbox(behContent, {
+            label = L["FOCUS_HIDE_ON_CD"],
+            db = db, key = "hideOnCooldown",
+            x = 10, y = -101,
+            template = "ChatConfigCheckButtonTemplate",
+            onChange = onUpdate
+        })
+
+        behContent:SetHeight(132)
         behWrap:RecalcHeight()
 
         -- AUDIO section
