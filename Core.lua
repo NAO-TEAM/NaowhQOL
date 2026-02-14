@@ -330,8 +330,8 @@ local function InitializeDB()
     NaowhQOL.locale = NaowhQOL.locale or "enUS"
     ns:SetLocale(NaowhQOL.locale)
 
-    ns.DB.config = ns.DB.config or {}
-    ApplyDefaults(ns.DB.config, ns.DefaultConfig.config)
+    NaowhQOL.config = NaowhQOL.config or {}
+    ApplyDefaults(NaowhQOL.config, ns.DefaultConfig.config)
 
     NaowhQOL.combatTimer = NaowhQOL.combatTimer or {}
     ApplyDefaults(NaowhQOL.combatTimer, COMBAT_TIMER_DEFAULTS)
@@ -725,7 +725,7 @@ function ns:ApplyFPSOptimization()
     SetCVar("WorldTextScale", 1)
     SetCVar("nameplateMaxDistance", 41)
 
-    ns.DB.config.optimized = true
+    NaowhQOL.config.optimized = true
 
     ns:LogSuccess("FPS optimization applied.")
     StaticPopup_Show("NAOWH_QOL_RELOAD")

@@ -34,6 +34,11 @@ local function TriggerScan()
         return
     end
 
+    if ns.ZoneUtil.IsInMythicPlus() then
+        print("|cffff6600[BuffWatcher]|r Disabled in M+.")
+        return
+    end
+
     BWV2.scanInProgress = true
     print("|cff00ff00[BuffWatcher]|r Scanning raid buffs...")
 

@@ -16,6 +16,22 @@ alertFrame:SetSize(200, 60)
 alertFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 alertFrame:Hide()
 
+-- Animation groups for hold -> fade out
+local holdAnim = alertFrame:CreateAnimationGroup()
+local hold = holdAnim:CreateAnimation("Alpha")
+hold:SetFromAlpha(1)
+hold:SetToAlpha(1)
+hold:SetDuration(4)
+
+local fadeOutAnim = alertFrame:CreateAnimationGroup()
+local fadeOut = fadeOutAnim:CreateAnimation("Alpha")
+fadeOut:SetFromAlpha(1)
+fadeOut:SetToAlpha(0)
+fadeOut:SetDuration(1)
+
+holdAnim:SetScript("OnFinished", function() fadeOutAnim:Play() end)
+fadeOutAnim:SetScript("OnFinished", function() alertFrame:Hide() end)
+
 local iconTex = alertFrame:CreateTexture(nil, "ARTWORK")
 iconTex:SetSize(48, 48)
 iconTex:SetPoint("LEFT", alertFrame, "LEFT", 6, 0)
@@ -30,46 +46,12 @@ alertLabel:SetWordWrap(true)
 
 local resizeHandle
 
-------------------------------------------------------------
--- Fade logic
-------------------------------------------------------------
-local FADE_DISPLAY = 4
-local FADE_OUT = 1
-local fadeTimer = nil
-local fadeStart = 0
-local fading = false
-
-local function StopFade()
-    if fadeTimer then fadeTimer:Cancel(); fadeTimer = nil end
-    fading = false
-    fadeStart = 0
-end
-
-local function BeginFadeOut()
-    fading = true
-    fadeStart = GetTime()
-    if fadeTimer then fadeTimer:Cancel() end
-    fadeTimer = C_Timer.NewTicker(0.03, function()
-        local elapsed = GetTime() - fadeStart
-        local alpha = 1 - (elapsed / FADE_OUT)
-        if alpha <= 0 then
-            alertFrame:SetAlpha(0)
-            alertFrame:Hide()
-            StopFade()
-        else
-            alertFrame:SetAlpha(alpha)
-        end
-    end)
-end
-
-local displayTimer = nil
-
 local function ShowAlert(text)
     local db = NaowhQOL.emoteDetection
     if not db then return end
 
-    StopFade()
-    if displayTimer then displayTimer:Cancel(); displayTimer = nil end
+    holdAnim:Stop()
+    fadeOutAnim:Stop()
 
     iconTex:SetTexture("Interface\\Icons\\INV_Misc_Food_164_Fish_Feast")
     iconTex:Show()
@@ -99,10 +81,7 @@ local function ShowAlert(text)
     alertFrame:SetAlpha(1)
     alertFrame:Show()
 
-    displayTimer = C_Timer.After(FADE_DISPLAY, function()
-        displayTimer = nil
-        BeginFadeOut()
-    end)
+    holdAnim:Play()
 end
 
 ------------------------------------------------------------

@@ -7,6 +7,29 @@ alertFrame:SetSize(300, 80)
 alertFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
 alertFrame:Hide()
 
+-- Animation groups for fade in -> hold -> fade out
+local fadeInAnim = alertFrame:CreateAnimationGroup()
+local fadeIn = fadeInAnim:CreateAnimation("Alpha")
+fadeIn:SetFromAlpha(0)
+fadeIn:SetToAlpha(1)
+fadeIn:SetDuration(0.4)
+
+local holdAnim = alertFrame:CreateAnimationGroup()
+local hold = holdAnim:CreateAnimation("Alpha")
+hold:SetFromAlpha(1)
+hold:SetToAlpha(1)
+hold:SetDuration(1.7)
+
+local fadeOutAnim = alertFrame:CreateAnimationGroup()
+local fadeOut = fadeOutAnim:CreateAnimation("Alpha")
+fadeOut:SetFromAlpha(1)
+fadeOut:SetToAlpha(0)
+fadeOut:SetDuration(0.4)
+
+fadeInAnim:SetScript("OnFinished", function() holdAnim:Play() end)
+holdAnim:SetScript("OnFinished", function() fadeOutAnim:Play() end)
+fadeOutAnim:SetScript("OnFinished", function() alertFrame:Hide() end)
+
 local alertText = alertFrame:CreateFontString(nil, "OVERLAY")
 alertText:SetPoint("CENTER", alertFrame, "CENTER", 0, 0)
 alertText:SetJustifyH("CENTER")
@@ -123,68 +146,28 @@ function alertFrame:UpdateDisplay()
     self:UpdateTextSize()
 end
 
--- Fade: fadingIn (0.4s) -> waiting (1.7s) -> fadingOut (0.4s) = 2.5s total
-local fadeFrame = CreateFrame("Frame")
-fadeFrame:Hide()
-
-local fadeElapsed = 0
-local fadeState = "idle"
-local FADE_IN  = 0.4
-local VISIBLE  = 1.7
-local FADE_OUT = 0.4
-
 local function ShowAlert(text, r, g, b)
     local db = NaowhQOL.combatAlert
-    if not db or not db.enabled then return end
-    if db.unlock then return end
+    if not db or not db.enabled or db.unlock then return end
 
     alertFrame:ClearAllPoints()
     local point = db.point or "CENTER"
     alertFrame:SetPoint(point, UIParent, point, db.x or 0, db.y or 200)
     alertFrame:SetSize(db.width or 300, db.height or 80)
 
-    -- Set text/color before scaling
     alertText:SetText(text)
     txtColor.r, txtColor.g, txtColor.b = r, g, b
     ApplyColor()
+
+    fadeInAnim:Stop()
+    holdAnim:Stop()
+    fadeOutAnim:Stop()
 
     alertFrame:SetAlpha(0)
     alertFrame:Show()
     alertFrame:UpdateTextSize()
 
-    fadeElapsed = 0
-    fadeState = "fadingIn"
-
-    fadeFrame:SetScript("OnUpdate", ns.PerfMonitor:Wrap("Combat Alert", function(self, dt)
-        fadeElapsed = fadeElapsed + dt
-
-        if fadeState == "fadingIn" then
-            local a = fadeElapsed / FADE_IN
-            if a >= 1 then
-                a = 1
-                fadeState = "waiting"
-                fadeElapsed = 0
-            end
-            alertFrame:SetAlpha(a)
-
-        elseif fadeState == "waiting" then
-            if fadeElapsed >= VISIBLE then
-                fadeState = "fadingOut"
-                fadeElapsed = 0
-            end
-
-        elseif fadeState == "fadingOut" then
-            local a = 1 - (fadeElapsed / FADE_OUT)
-            if a <= 0 then
-                alertFrame:Hide()
-                fadeState = "idle"
-                self:SetScript("OnUpdate", nil)
-            else
-                alertFrame:SetAlpha(a)
-            end
-        end
-    end))
-    fadeFrame:Show()
+    fadeInAnim:Play()
 end
 
 local loader = CreateFrame("Frame")
