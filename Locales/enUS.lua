@@ -361,6 +361,8 @@ ns:RegisterLocale("enUS", {
     MODULES_AUTO_GOSSIP = "Auto Select Gossip Quests (Alt to bypass)",
     MODULES_INTERACT_RANGE = "Enhanced Interact Range",
     MODULES_INTERACT_RANGE_DESC = "Increase NPC/object interact range",
+    MODULES_ADVANCED_TOOLTIPS = "Advanced Tooltips",
+    MODULES_ADVANCED_TOOLTIPS_DESC = "Display all tooltip fields",
 
     ---------------------------------------------------------------------------
     -- OPTIMIZATIONS

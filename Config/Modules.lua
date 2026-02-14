@@ -62,8 +62,14 @@ function ns:InitModuleOptions()
             description = L["MODULES_AH_EXPANSION_DESC"],
             descWidth = 350,
         })
+        W:CreateCheckbox(itemsContent, {
+            label = L["MODULES_ADVANCED_TOOLTIPS"], db = db, key = "advancedTooltips",
+            x = 10, y = -155, template = "ChatConfigCheckButtonTemplate",
+            description = L["MODULES_ADVANCED_TOOLTIPS_DESC"],
+            descWidth = 350,
+        })
 
-        itemsContent:SetHeight(155)
+        itemsContent:SetHeight(185)
         itemsWrap:RecalcHeight()
 
         -- ============================================================

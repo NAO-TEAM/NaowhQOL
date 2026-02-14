@@ -422,6 +422,7 @@ local function InitializeDB()
     if misc.skipQueueConfirm == nil then misc.skipQueueConfirm = false end
     if misc.deathReleaseProtection == nil then misc.deathReleaseProtection = false end
     if misc.ahCurrentExpansion == nil then misc.ahCurrentExpansion = false end
+    if misc.advancedTooltips == nil then misc.advancedTooltips = false end
 
     -- GCD Tracker uses a defaults table since it has a lot of keys
     NaowhQOL.gcdTracker = NaowhQOL.gcdTracker or {}

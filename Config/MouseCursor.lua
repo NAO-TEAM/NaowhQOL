@@ -330,6 +330,15 @@ function ns.InitMouseOptions()
         local restoreBtn = W:CreateRestoreDefaultsButton({
             moduleName = "mouseRing",
             parent = sc,
+            initFunc = function() ns.InitMouseOptions() end,
+            onRestore = function()
+                if cache.cursorPanel then
+                    cache.cursorPanel:Hide()
+                    cache.cursorPanel:SetParent(nil)
+                    cache.cursorPanel = nil
+                end
+                if display then display:UpdateDisplay() end
+            end
         })
         restoreBtn:SetPoint("BOTTOMLEFT", sc, "BOTTOMLEFT", 10, 20)
 

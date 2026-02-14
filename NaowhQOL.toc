@@ -52,6 +52,7 @@ Modules/SkipQueueConfirm.lua
 Modules/QuestAutomation.lua
 Modules/DeathReleaseProtection.lua
 Modules/AuctionHouseFilter.lua
+Modules/AdvancedTooltips.lua
 Modules/TalentReminder.lua
 Modules/EquipmentReminder.lua
 Modules/CRezDisplay.lua
