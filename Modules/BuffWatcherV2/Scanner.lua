@@ -193,26 +193,19 @@ function Scanner:ScanPresenceBuffs()
 end
 
 -- Helper: Check if player has any of the given spell IDs as a self buff
-function Scanner:CheckSelfBuffSpells(spellIDs, exclusive)
+function Scanner:CheckSelfBuffSpells(spellIDs, minRequired)
     local playerBuffs = BWV2.raidResults["player"] and BWV2.raidResults["player"].buffs or {}
 
-    if exclusive then
-        -- Any one = pass
-        for _, spellID in ipairs(spellIDs) do
-            if playerBuffs[spellID] then
-                return true
-            end
+    local count = 0
+    for _, spellID in ipairs(spellIDs) do
+        if playerBuffs[spellID] then
+            count = count + 1
         end
-        return false
-    else
-        -- All required
-        for _, spellID in ipairs(spellIDs) do
-            if not playerBuffs[spellID] then
-                return false
-            end
-        end
-        return true
     end
+
+    -- minRequired 0 means all spells required
+    local needed = (minRequired == 0) and #spellIDs or minRequired
+    return count >= needed
 end
 
 -- Helper: Check if player has cast any of the given spell IDs on someone in the raid
@@ -229,27 +222,19 @@ function Scanner:CheckTargetedBuffSpells(spellIDs)
 end
 
 -- Helper: Check if player has any of the given weapon enchant IDs
-function Scanner:CheckWeaponEnchantIDs(enchantIDs, exclusive)
+function Scanner:CheckWeaponEnchantIDs(enchantIDs, minRequired)
     local hasMain, _, _, mainID, hasOff, _, _, offID = GetWeaponEnchantInfo()
 
-    if exclusive then
-        -- Any one = pass
-        for _, enchantID in ipairs(enchantIDs) do
-            if (hasMain and mainID == enchantID) or (hasOff and offID == enchantID) then
-                return true
-            end
+    local count = 0
+    for _, enchantID in ipairs(enchantIDs) do
+        if (hasMain and mainID == enchantID) or (hasOff and offID == enchantID) then
+            count = count + 1
         end
-        return false
-    else
-        -- All required (probably not common, but supported)
-        for _, enchantID in ipairs(enchantIDs) do
-            local found = (hasMain and mainID == enchantID) or (hasOff and offID == enchantID)
-            if not found then
-                return false
-            end
-        end
-        return true
     end
+
+    -- minRequired 0 means all enchants required
+    local needed = (minRequired == 0) and #enchantIDs or minRequired
+    return count >= needed
 end
 
 -- Scan class-specific buff groups (user-defined)
@@ -286,6 +271,22 @@ function Scanner:ScanClassBuffs()
             end
         end
 
+        -- Check talent condition
+        if shouldCheck and group.talentCondition then
+            local hasTalent = BWV2:PlayerHasTalent(group.talentCondition.talentID)
+            if group.talentCondition.mode == "activate" then
+                -- Only check if player has the talent
+                if not hasTalent then
+                    shouldCheck = false
+                end
+            elseif group.talentCondition.mode == "skip" then
+                -- Skip this check if player has the talent
+                if hasTalent then
+                    shouldCheck = false
+                end
+            end
+        end
+
         if shouldCheck then
             local hasBuff = false
             local foundSpellID = nil
@@ -294,7 +295,7 @@ function Scanner:ScanClassBuffs()
             if group.checkType == "self" then
                 local spellIDs = group.spellIDs or {}
                 if #spellIDs > 0 then
-                    hasBuff = self:CheckSelfBuffSpells(spellIDs, group.exclusive)
+                    hasBuff = self:CheckSelfBuffSpells(spellIDs, group.minRequired or 1)
                     -- Find which spell is active for icon
                     for _, spellID in ipairs(spellIDs) do
                         if playerBuffs[spellID] then
@@ -334,7 +335,7 @@ function Scanner:ScanClassBuffs()
             elseif group.checkType == "weaponEnchant" then
                 local enchantIDs = group.enchantIDs or {}
                 if #enchantIDs > 0 then
-                    hasBuff = self:CheckWeaponEnchantIDs(enchantIDs, group.exclusive)
+                    hasBuff = self:CheckWeaponEnchantIDs(enchantIDs, group.minRequired or 1)
                     -- Use a generic weapon enchant icon
                     foundIcon = 136241
                 end

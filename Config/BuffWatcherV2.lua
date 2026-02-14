@@ -13,6 +13,51 @@ local Core = ns.BWV2Core
 local ROW_HEIGHT = 28
 local ICON_SIZE = 22
 
+-- Helper: Get all talents from player's current spec tree
+local function GetPlayerTalents()
+    local talents = {}
+    local configID = C_ClassTalents.GetActiveConfigID()
+    if not configID then return talents end
+
+    local specIndex = GetSpecialization()
+    if not specIndex then return talents end
+    local specID = GetSpecializationInfo(specIndex)
+    if not specID then return talents end
+
+    local treeID = C_ClassTalents.GetTraitTreeForSpec(specID)
+    if not treeID then return talents end
+
+    local nodeIDs = C_Traits.GetTreeNodes(treeID)
+    if not nodeIDs then return talents end
+
+    local seen = {}
+    for _, nodeID in ipairs(nodeIDs) do
+        local nodeInfo = C_Traits.GetNodeInfo(configID, nodeID)
+        if nodeInfo and nodeInfo.entryIDs then
+            for _, entryID in ipairs(nodeInfo.entryIDs) do
+                local entryInfo = C_Traits.GetEntryInfo(configID, entryID)
+                if entryInfo and entryInfo.definitionID then
+                    local defInfo = C_Traits.GetDefinitionInfo(entryInfo.definitionID)
+                    if defInfo and defInfo.spellID and not seen[defInfo.spellID] then
+                        seen[defInfo.spellID] = true
+                        local spellInfo = C_Spell.GetSpellInfo(defInfo.spellID)
+                        if spellInfo then
+                            table.insert(talents, {
+                                spellID = defInfo.spellID,
+                                name = defInfo.overrideName or spellInfo.name,
+                                icon = defInfo.overrideIcon or spellInfo.iconID,
+                            })
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    table.sort(talents, function(a, b) return a.name < b.name end)
+    return talents
+end
+
 -- Create a single spell row with icon, name, and delete button
 local function CreateSpellRow(parent, spellID, isDefault, onDelete, yOffset)
     local row = CreateFrame("Frame", nil, parent, "BackdropTemplate")
@@ -673,7 +718,7 @@ local function ShowClassBuffModal(initialClassName, groupData, onSave, onDelete,
     -- Create modal if not exists
     if not classBuffModal then
         classBuffModal = CreateFrame("Frame", "NaowhQOL_ClassBuffModal", UIParent, "BackdropTemplate")
-        classBuffModal:SetSize(520, 355)
+        classBuffModal:SetSize(520, 435)
         classBuffModal:SetPoint("CENTER")
         classBuffModal:SetFrameStrata("DIALOG")
         classBuffModal:SetBackdrop({
@@ -730,13 +775,13 @@ local function ShowClassBuffModal(initialClassName, groupData, onSave, onDelete,
     -- Left side - settings
     local leftContent = CreateFrame("Frame", nil, modal)
     leftContent:SetPoint("TOPLEFT", 15, -40)
-    leftContent:SetSize(250, 265)
+    leftContent:SetSize(250, 345)
     modal.leftContent = leftContent
 
     -- Right side - spell IDs
     local rightContent = CreateFrame("Frame", nil, modal)
     rightContent:SetPoint("TOPRIGHT", -15, -40)
-    rightContent:SetSize(230, 265)
+    rightContent:SetSize(230, 345)
     modal.rightContent = rightContent
 
     -- Editing state
@@ -744,10 +789,14 @@ local function ShowClassBuffModal(initialClassName, groupData, onSave, onDelete,
         className = initialClassName,
         name = groupData and groupData.name or "",
         checkType = groupData and groupData.checkType or "self",
-        exclusive = groupData and groupData.exclusive ~= false,
+        minRequired = groupData and groupData.minRequired or 1,
         specFilter = groupData and groupData.specFilter and {unpack(groupData.specFilter)} or {},
         spellIDs = groupData and groupData.spellIDs and {unpack(groupData.spellIDs)} or {},
         enchantIDs = groupData and groupData.enchantIDs and {unpack(groupData.enchantIDs)} or {},
+        talentCondition = groupData and groupData.talentCondition and {
+            talentID = groupData.talentCondition.talentID,
+            mode = groupData.talentCondition.mode,
+        } or nil,
     }
 
     -- Store spec UI elements for proper cleanup (container created later after specLabel)
@@ -927,19 +976,266 @@ local function ShowClassBuffModal(initialClassName, groupData, onSave, onDelete,
 
     yOffset = yOffset - 6
 
-    -- Exclusive checkbox
-    local exclusiveCB = CreateFrame("CheckButton", nil, leftContent, "ChatConfigCheckButtonTemplate")
-    exclusiveCB:SetPoint("TOPLEFT", 0, yOffset)
-    exclusiveCB:SetChecked(editState.exclusive)
-    exclusiveCB:SetScript("OnClick", function(self)
-        editState.exclusive = self:GetChecked()
+    -- Min Required input
+    local minReqLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    minReqLabel:SetPoint("TOPLEFT", 0, yOffset)
+    minReqLabel:SetText("Min Required:")
+
+    local minReqInput = CreateFrame("EditBox", nil, leftContent, "InputBoxTemplate")
+    minReqInput:SetSize(40, 20)
+    minReqInput:SetPoint("LEFT", minReqLabel, "RIGHT", 8, 0)
+    minReqInput:SetNumeric(true)
+    minReqInput:SetAutoFocus(false)
+    minReqInput:SetText(tostring(editState.minRequired))
+    minReqInput:SetScript("OnTextChanged", function(self)
+        local val = tonumber(self:GetText()) or 1
+        editState.minRequired = val
     end)
 
-    local exclusiveLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    exclusiveLabel:SetPoint("LEFT", exclusiveCB, "RIGHT", 2, 0)
-    exclusiveLabel:SetText("Exclusive (any one = pass)")
+    local minReqHint = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    minReqHint:SetPoint("LEFT", minReqInput, "RIGHT", 5, 0)
+    minReqHint:SetText("(0 = all, 1+ = min)")
+    minReqHint:SetTextColor(0.6, 0.6, 0.6)
 
-    yOffset = yOffset - 25
+    yOffset = yOffset - 28
+
+    -- Talent Condition section
+    local talentLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    talentLabel:SetPoint("TOPLEFT", 0, yOffset)
+    talentLabel:SetText("Talent Condition:")
+
+    yOffset = yOffset - 22
+
+    -- Cache talents for this modal session
+    local cachedTalents = GetPlayerTalents()
+
+    -- Dropdown button (shows current selection)
+    local dropdownBtn = CreateFrame("Button", nil, leftContent, "BackdropTemplate")
+    dropdownBtn:SetSize(190, 22)
+    dropdownBtn:SetPoint("TOPLEFT", 10, yOffset)
+    dropdownBtn:SetBackdrop({
+        bgFile = [[Interface\Buttons\WHITE8x8]],
+        edgeFile = [[Interface\Buttons\WHITE8x8]],
+        edgeSize = 1,
+    })
+    dropdownBtn:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    dropdownBtn:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+
+    local dropdownIcon = dropdownBtn:CreateTexture(nil, "ARTWORK")
+    dropdownIcon:SetSize(16, 16)
+    dropdownIcon:SetPoint("LEFT", 4, 0)
+    dropdownIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    dropdownIcon:Hide()
+
+    local dropdownText = dropdownBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    dropdownText:SetPoint("LEFT", 24, 0)
+    dropdownText:SetPoint("RIGHT", -18, 0)
+    dropdownText:SetJustifyH("LEFT")
+    dropdownText:SetText("Select talent...")
+    dropdownText:SetTextColor(0.5, 0.5, 0.5)
+
+    local dropdownArrow = dropdownBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    dropdownArrow:SetPoint("RIGHT", -4, 0)
+    dropdownArrow:SetText("v")
+
+    -- Clear button
+    local clearBtn = CreateFrame("Button", nil, leftContent, "UIPanelButtonTemplate")
+    clearBtn:SetSize(22, 22)
+    clearBtn:SetPoint("LEFT", dropdownBtn, "RIGHT", 2, 0)
+    clearBtn:SetText("X")
+
+    -- Dropdown panel (appears below button)
+    local dropdownPanel = CreateFrame("Frame", nil, modal, "BackdropTemplate")
+    dropdownPanel:SetSize(190, 150)
+    dropdownPanel:SetPoint("TOPLEFT", dropdownBtn, "BOTTOMLEFT", 0, -2)
+    dropdownPanel:SetBackdrop({
+        bgFile = [[Interface\Buttons\WHITE8x8]],
+        edgeFile = [[Interface\Buttons\WHITE8x8]],
+        edgeSize = 1,
+    })
+    dropdownPanel:SetBackdropColor(0.1, 0.1, 0.1, 0.98)
+    dropdownPanel:SetBackdropBorderColor(0.4, 0.4, 0.4, 1)
+    dropdownPanel:SetFrameStrata("TOOLTIP")
+    dropdownPanel:Hide()
+
+    -- Search box inside dropdown
+    local searchBox = CreateFrame("EditBox", nil, dropdownPanel, "InputBoxTemplate")
+    searchBox:SetSize(170, 18)
+    searchBox:SetPoint("TOP", 0, -8)
+    searchBox:SetAutoFocus(false)
+    searchBox:SetText("")
+
+    local searchPlaceholder = searchBox:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    searchPlaceholder:SetPoint("LEFT", 5, 0)
+    searchPlaceholder:SetText("Type to filter...")
+    searchPlaceholder:SetTextColor(0.4, 0.4, 0.4)
+
+    -- Results scroll area
+    local resultsScroll = CreateFrame("ScrollFrame", nil, dropdownPanel, "UIPanelScrollFrameTemplate")
+    resultsScroll:SetPoint("TOPLEFT", 4, -30)
+    resultsScroll:SetPoint("BOTTOMRIGHT", -22, 4)
+
+    local resultsContent = CreateFrame("Frame", nil, resultsScroll)
+    resultsContent:SetSize(160, 1)
+    resultsScroll:SetScrollChild(resultsContent)
+
+    local resultRows = {}
+    local MAX_VISIBLE = 6
+
+    local function UpdateDropdownDisplay()
+        if editState.talentCondition and editState.talentCondition.talentID then
+            local info = C_Spell.GetSpellInfo(editState.talentCondition.talentID)
+            if info then
+                dropdownIcon:SetTexture(info.iconID)
+                dropdownIcon:Show()
+                dropdownText:SetText(info.name)
+                dropdownText:SetTextColor(0.4, 0.8, 0.4)
+                return
+            end
+        end
+        dropdownIcon:Hide()
+        dropdownText:SetText("Select talent...")
+        dropdownText:SetTextColor(0.5, 0.5, 0.5)
+    end
+
+    local function FilterTalents(searchText)
+        if not searchText or searchText == "" then
+            return cachedTalents
+        end
+        local lower = searchText:lower()
+        local results = {}
+        for _, t in ipairs(cachedTalents) do
+            if t.name:lower():find(lower, 1, true) then
+                table.insert(results, t)
+            end
+        end
+        return results
+    end
+
+    local function RebuildResultsList(filtered)
+        -- Clear old rows
+        for _, row in ipairs(resultRows) do
+            row:Hide()
+        end
+
+        resultsContent:SetHeight(math.max(1, #filtered * 20))
+
+        for i, talent in ipairs(filtered) do
+            local row = resultRows[i]
+            if not row then
+                row = CreateFrame("Button", nil, resultsContent)
+                row:SetSize(160, 20)
+                row:SetPoint("TOPLEFT", 0, -(i - 1) * 20)
+
+                row.bg = row:CreateTexture(nil, "BACKGROUND")
+                row.bg:SetAllPoints()
+                row.bg:SetColorTexture(0.3, 0.3, 0.3, 0)
+
+                row.icon = row:CreateTexture(nil, "ARTWORK")
+                row.icon:SetSize(16, 16)
+                row.icon:SetPoint("LEFT", 2, 0)
+                row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+                row.text = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                row.text:SetPoint("LEFT", row.icon, "RIGHT", 4, 0)
+                row.text:SetPoint("RIGHT", -2, 0)
+                row.text:SetJustifyH("LEFT")
+
+                row:SetScript("OnEnter", function(self)
+                    self.bg:SetColorTexture(0.3, 0.3, 0.3, 0.8)
+                end)
+                row:SetScript("OnLeave", function(self)
+                    self.bg:SetColorTexture(0.3, 0.3, 0.3, 0)
+                end)
+
+                resultRows[i] = row
+            end
+
+            row:SetPoint("TOPLEFT", 0, -(i - 1) * 20)
+            row.icon:SetTexture(talent.icon)
+            row.text:SetText(talent.name)
+
+            row:SetScript("OnClick", function()
+                editState.talentCondition = editState.talentCondition or { mode = "activate" }
+                editState.talentCondition.talentID = talent.spellID
+                UpdateDropdownDisplay()
+                dropdownPanel:Hide()
+                searchBox:SetText("")
+            end)
+
+            row:Show()
+        end
+    end
+
+    searchBox:SetScript("OnTextChanged", function(self)
+        local text = self:GetText()
+        searchPlaceholder:SetShown(text == "")
+        local filtered = FilterTalents(text)
+        RebuildResultsList(filtered)
+    end)
+
+    dropdownBtn:SetScript("OnClick", function()
+        if dropdownPanel:IsShown() then
+            dropdownPanel:Hide()
+        else
+            RebuildResultsList(cachedTalents)
+            dropdownPanel:Show()
+            searchBox:SetFocus()
+        end
+    end)
+
+    clearBtn:SetScript("OnClick", function()
+        editState.talentCondition = nil
+        UpdateDropdownDisplay()
+        dropdownPanel:Hide()
+        searchBox:SetText("")
+    end)
+
+    -- Close dropdown when clicking elsewhere
+    dropdownPanel:SetScript("OnShow", function()
+        dropdownPanel:SetPropagateKeyboardInput(true)
+    end)
+
+    -- Initialize display
+    UpdateDropdownDisplay()
+    RebuildResultsList(cachedTalents)
+
+    yOffset = yOffset - 24
+
+    -- Talent mode radio buttons
+    local talentModes = {
+        { key = "activate", label = "Activate when talented" },
+        { key = "skip", label = "Skip when talented" },
+    }
+
+    local talentModeRadios = {}
+    for _, tm in ipairs(talentModes) do
+        local radio = CreateFrame("CheckButton", nil, leftContent, "UIRadioButtonTemplate")
+        radio:SetPoint("TOPLEFT", 10, yOffset)
+        local isChecked = editState.talentCondition and editState.talentCondition.mode == tm.key
+        radio:SetChecked(isChecked or (tm.key == "activate" and not editState.talentCondition))
+
+        local radioLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        radioLabel:SetPoint("LEFT", radio, "RIGHT", 2, 0)
+        radioLabel:SetText(tm.label)
+
+        radio:SetScript("OnClick", function()
+            for _, r in ipairs(talentModeRadios) do
+                r:SetChecked(r.modeKey == tm.key)
+            end
+            if editState.talentCondition then
+                editState.talentCondition.mode = tm.key
+            else
+                editState.talentCondition = { mode = tm.key }
+            end
+        end)
+        radio.modeKey = tm.key
+        table.insert(talentModeRadios, radio)
+
+        yOffset = yOffset - 18
+    end
+
+    yOffset = yOffset - 6
 
     -- Spec Filter label
     local specLabel = leftContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -1052,10 +1348,11 @@ local function ShowClassBuffModal(initialClassName, groupData, onSave, onDelete,
                 key = key,
                 name = editState.name,
                 checkType = editState.checkType,
-                exclusive = editState.exclusive,
+                minRequired = editState.minRequired,
                 specFilter = editState.specFilter,
                 spellIDs = editState.checkType ~= "weaponEnchant" and editState.spellIDs or nil,
                 enchantIDs = editState.checkType == "weaponEnchant" and editState.enchantIDs or nil,
+                talentCondition = editState.talentCondition,
             }
 
             if onSave then onSave(editState.className, newGroup) end
