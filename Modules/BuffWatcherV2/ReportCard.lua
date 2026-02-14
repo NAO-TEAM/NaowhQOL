@@ -34,9 +34,12 @@ local BACKDROP_COLOR = {0.08, 0.08, 0.08, 0.95}
 local BACKDROP_BORDER_COLOR = {0.3, 0.3, 0.3, 1}
 local PASS_BORDER_COLOR = {0.3, 0.8, 0.3, 1}
 local FAIL_BORDER_COLOR = {0.8, 0.2, 0.2, 1}
+local UNCONFIGURED_BORDER_COLOR = {0.9, 0.8, 0.2, 1}
 local FAIL_ICON_TINT = {1, 0.3, 0.3}
+local UNCONFIGURED_ICON_TINT = {1, 0.9, 0.4}
 local PASS_TEXT_COLOR = {0.3, 1, 0.3}
 local FAIL_TEXT_COLOR = {1, 0.3, 0.3}
+local UNCONFIGURED_TEXT_COLOR = {0.9, 0.8, 0.2}
 local EXPIRING_TEXT_COLOR = {1, 0.6, 0.2}
 local HEADER_TEXT_COLOR = {1, 0.82, 0}
 
@@ -302,8 +305,11 @@ local function ConfigureCell(cell, data, cellType)
         icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     end
 
-    -- Tint and border based on pass/fail
-    if not data.pass then
+    -- Tint and border based on pass/fail/unconfigured
+    if data.unconfigured then
+        icon:SetVertexColor(unpack(UNCONFIGURED_ICON_TINT))
+        iconFrame:SetBackdropBorderColor(unpack(UNCONFIGURED_BORDER_COLOR))
+    elseif not data.pass then
         icon:SetVertexColor(unpack(FAIL_ICON_TINT))
         iconFrame:SetBackdropBorderColor(unpack(FAIL_BORDER_COLOR))
     else
@@ -327,7 +333,10 @@ local function ConfigureCell(cell, data, cellType)
             text:SetTextColor(unpack(PASS_TEXT_COLOR))
         end
     elseif cellType == "consumable" then
-        if not data.pass and data.remaining and data.remaining > 0 then
+        if data.unconfigured then
+            text:SetText(L["BWV2_NO_ID"] or "No ID")
+            text:SetTextColor(unpack(UNCONFIGURED_TEXT_COLOR))
+        elseif not data.pass and data.remaining and data.remaining > 0 then
             text:SetText(FormatDuration(data.remaining))
             text:SetTextColor(unpack(EXPIRING_TEXT_COLOR))
         elseif data.pass then
@@ -356,7 +365,9 @@ local function ConfigureCell(cell, data, cellType)
         elseif cellType == "consumable" and data.remaining and data.remaining > 0 then
             GameTooltip:AddLine("Expires in: " .. FormatDuration(data.remaining), unpack(EXPIRING_TEXT_COLOR))
         end
-        if not data.pass then
+        if data.unconfigured then
+            GameTooltip:AddLine(L["BWV2_NO_SPELL_ID_ADDED"] or "No spell ID added", unpack(UNCONFIGURED_TEXT_COLOR))
+        elseif not data.pass then
             GameTooltip:AddLine("Missing!", unpack(FAIL_TEXT_COLOR))
         end
         GameTooltip:Show()

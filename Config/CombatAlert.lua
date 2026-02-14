@@ -91,14 +91,14 @@ function ns:InitCombatAlerts()
 
         W:CreateTextInput(enterContent, {
             label = L["COMBATALERT_DISPLAY_TEXT"], db = db, key = "enterText",
-            default = "++ Combat", x = GE:Col(1), y = GE:Row(1) + 12, width = 200,
+            default = "++ Combat", x = GE:Col(1), y = GE:Row(1), width = 200,
             onChange = refresh
         })
 
         W:CreateColorPicker(enterContent, {
             label = L["COMMON_LABEL_TEXT_COLOR"], db = db,
             rKey = "enterR", gKey = "enterG", bKey = "enterB",
-            x = GE:Col(1), y = GE:Row(2) + 6,
+            x = GE:Col(1), y = GE:Row(2),
             onChange = refresh
         })
 
@@ -114,12 +114,12 @@ function ns:InitCombatAlerts()
             onChange = refresh
         })
 
-        W:CreateSoundPicker(enterContent, GE:Col(1), GE:Row(3) + 11, db.enterSound, function(entry)
+        W:CreateSoundPicker(enterContent, GE:Col(1), GE:Row(3), db.enterSound, function(entry)
             db.enterSound = entry.id and { id = entry.id } or { path = entry.path }
         end)
 
         local enterTtsLbl = enterContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        enterTtsLbl:SetPoint("TOPLEFT", GE:Col(1), GE:Row(4) + 6)
+        enterTtsLbl:SetPoint("TOPLEFT", GE:Col(1), GE:Row(4))
         enterTtsLbl:SetText(L["COMMON_TTS_MESSAGE"])
 
         local enterTtsBox = CreateFrame("EditBox", nil, enterContent, "BackdropTemplate")
@@ -143,10 +143,10 @@ function ns:InitCombatAlerts()
         end)
 
         local enterTtsVoiceLbl = enterContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        enterTtsVoiceLbl:SetPoint("TOPLEFT", GE:Col(1), GE:Row(5) + 6)
+        enterTtsVoiceLbl:SetPoint("TOPLEFT", GE:Col(1), GE:Row(5))
         enterTtsVoiceLbl:SetText(L["COMMON_TTS_VOICE"])
 
-        W:CreateTTSVoicePicker(enterContent, 80, GE:Row(5) + 9, db.enterTtsVoiceID or 0, function(voiceID)
+        W:CreateTTSVoicePicker(enterContent, 80, GE:Row(5), db.enterTtsVoiceID or 0, function(voiceID)
             db.enterTtsVoiceID = voiceID
         end)
 
@@ -176,14 +176,14 @@ function ns:InitCombatAlerts()
 
         W:CreateTextInput(leaveContent, {
             label = L["COMBATALERT_DISPLAY_TEXT"], db = db, key = "leaveText",
-            default = "-- Combat", x = GL:Col(1), y = GL:Row(1) + 12, width = 200,
+            default = "-- Combat", x = GL:Col(1), y = GL:Row(1), width = 200,
             onChange = refresh
         })
 
         W:CreateColorPicker(leaveContent, {
             label = L["COMMON_LABEL_TEXT_COLOR"], db = db,
             rKey = "leaveR", gKey = "leaveG", bKey = "leaveB",
-            x = GL:Col(1), y = GL:Row(2) + 6,
+            x = GL:Col(1), y = GL:Row(2),
             onChange = refresh
         })
 
@@ -199,12 +199,12 @@ function ns:InitCombatAlerts()
             onChange = refresh
         })
 
-        W:CreateSoundPicker(leaveContent, GL:Col(1), GL:Row(3) + 11, db.leaveSound, function(entry)
+        W:CreateSoundPicker(leaveContent, GL:Col(1), GL:Row(3), db.leaveSound, function(entry)
             db.leaveSound = entry.id and { id = entry.id } or { path = entry.path }
         end)
 
         local leaveTtsLbl = leaveContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        leaveTtsLbl:SetPoint("TOPLEFT", GL:Col(1), GL:Row(4) + 6)
+        leaveTtsLbl:SetPoint("TOPLEFT", GL:Col(1), GL:Row(4))
         leaveTtsLbl:SetText(L["COMMON_TTS_MESSAGE"])
 
         local leaveTtsBox = CreateFrame("EditBox", nil, leaveContent, "BackdropTemplate")
@@ -228,10 +228,10 @@ function ns:InitCombatAlerts()
         end)
 
         local leaveTtsVoiceLbl = leaveContent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        leaveTtsVoiceLbl:SetPoint("TOPLEFT", GL:Col(1), GL:Row(5) + 6)
+        leaveTtsVoiceLbl:SetPoint("TOPLEFT", GL:Col(1), GL:Row(5))
         leaveTtsVoiceLbl:SetText(L["COMMON_TTS_VOICE"])
 
-        W:CreateTTSVoicePicker(leaveContent, 80, GL:Row(5) + 9, db.leaveTtsVoiceID or 0, function(voiceID)
+        W:CreateTTSVoicePicker(leaveContent, 80, GL:Row(5), db.leaveTtsVoiceID or 0, function(voiceID)
             db.leaveTtsVoiceID = voiceID
         end)
 

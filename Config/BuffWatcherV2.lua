@@ -399,57 +399,59 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
                 totalHeight = totalHeight + ROW_HEIGHT
             end
 
-            -- Add input row
-            local inputRow = CreateFrame("Frame", nil, contentFrame)
-            inputRow:SetSize(400, 24)
-            inputRow:SetPoint("TOPLEFT", 20, yOffset - 2)
-            allElements[#allElements + 1] = inputRow
+            -- Add input row (skip for icon/weaponEnchant check types - those don't use spell IDs)
+            if group.checkType ~= "icon" and group.checkType ~= "weaponEnchant" then
+                local inputRow = CreateFrame("Frame", nil, contentFrame)
+                inputRow:SetSize(400, 24)
+                inputRow:SetPoint("TOPLEFT", 20, yOffset - 2)
+                allElements[#allElements + 1] = inputRow
 
-            local inputLabel = inputRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-            inputLabel:SetPoint("LEFT", 0, 0)
-            inputLabel:SetText(idType == "item" and L["BWV2_ADD_ITEM_ID"] or L["BWV2_ADD_SPELL_ID"])
+                local inputLabel = inputRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                inputLabel:SetPoint("LEFT", 0, 0)
+                inputLabel:SetText(idType == "item" and L["BWV2_ADD_ITEM_ID"] or L["BWV2_ADD_SPELL_ID"])
 
-            local inputBox = CreateFrame("EditBox", nil, inputRow, "InputBoxTemplate")
-            inputBox:SetSize(80, 18)
-            inputBox:SetPoint("LEFT", inputLabel, "RIGHT", 6, 0)
-            inputBox:SetNumeric(true)
-            inputBox:SetAutoFocus(false)
+                local inputBox = CreateFrame("EditBox", nil, inputRow, "InputBoxTemplate")
+                inputBox:SetSize(80, 18)
+                inputBox:SetPoint("LEFT", inputLabel, "RIGHT", 6, 0)
+                inputBox:SetNumeric(true)
+                inputBox:SetAutoFocus(false)
 
-            local capturedGroupKey = groupKey
-            local capturedIdType = idType
-            local addBtn = W:CreateButton(inputRow, {
-                text = L["COMMON_ADD"],
-                width = 45,
-                onClick = function()
-                    local id = tonumber(inputBox:GetText())
-                    if id and id > 0 then
-                        if capturedIdType == "item" then
-                            table.insert(db.userEntries[capturedGroupKey].itemIDs, id)
-                        else
-                            table.insert(db.userEntries[capturedGroupKey].spellIDs, id)
-                        end
-                        inputBox:SetText("")
-                        RebuildContent()
-                    end
-                end,
-            })
-            addBtn:SetPoint("LEFT", inputBox, "RIGHT", 4, 0)
-
-            -- Restore defaults button if needed
-            if hasDisabledDefaults then
-                local restoreBtn = W:CreateButton(inputRow, {
-                    text = L["BWV2_RESTORE"],
-                    width = 60,
+                local capturedGroupKey = groupKey
+                local capturedIdType = idType
+                local addBtn = W:CreateButton(inputRow, {
+                    text = L["COMMON_ADD"],
+                    width = 45,
                     onClick = function()
-                        wipe(db.disabledDefaults[capturedGroupKey])
-                        RebuildContent()
+                        local id = tonumber(inputBox:GetText())
+                        if id and id > 0 then
+                            if capturedIdType == "item" then
+                                table.insert(db.userEntries[capturedGroupKey].itemIDs, id)
+                            else
+                                table.insert(db.userEntries[capturedGroupKey].spellIDs, id)
+                            end
+                            inputBox:SetText("")
+                            RebuildContent()
+                        end
                     end,
                 })
-                restoreBtn:SetPoint("LEFT", addBtn, "RIGHT", 8, 0)
-            end
+                addBtn:SetPoint("LEFT", inputBox, "RIGHT", 4, 0)
+
+                -- Restore defaults button if needed
+                if hasDisabledDefaults then
+                    local restoreBtn = W:CreateButton(inputRow, {
+                        text = L["BWV2_RESTORE"],
+                        width = 60,
+                        onClick = function()
+                            wipe(db.disabledDefaults[capturedGroupKey])
+                            RebuildContent()
+                        end,
+                    })
+                    restoreBtn:SetPoint("LEFT", addBtn, "RIGHT", 8, 0)
+                end
 
                 yOffset = yOffset - 30
                 totalHeight = totalHeight + 32
+            end
 
             -- Auto-use item row (for click-to-use: flasks, food, runes, weapon oils/stones)
                 -- Ensure consumableAutoUse exists

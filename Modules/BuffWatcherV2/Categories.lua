@@ -50,7 +50,7 @@ Categories.CONSUMABLE_GROUPS = {
         key = "flask",
         name = "Flask",
         exclusive = true,
-        spellIDs = {432021, 431971, 431972, 431973, 431974},
+        spellIDs = {},
     },
     {
         key = "food",
@@ -58,20 +58,19 @@ Categories.CONSUMABLE_GROUPS = {
         exclusive = true,
         checkType = "icon",
         buffIconID = 136000,
-        spellIDs = {},  -- users can add specific food buff IDs
+        spellIDs = {},
     },
     {
         key = "rune",
         name = "Augment Rune",
         exclusive = true,
-        spellIDs = {1234969, 1242347, 453250, 393438},
+        spellIDs = {},
     },
     {
         key = "weaponBuff",
         name = "Weapon Buff",
         exclusive = true,
         checkType = "weaponEnchant",
-        excludeIfSpellKnown = {382021, 318038, 33757, 433583, 433568},
         spellIDs = {},
     },
 }
@@ -102,14 +101,6 @@ Categories.INVENTORY_GROUPS = {
     },
 }
 
--- Legacy format for backwards compatibility with existing code
-Categories.CONSUMABLE = {
-    { spellID = {432021, 431971, 431972, 431973, 431974}, key = "flask", name = "Flask" },
-    { buffIconID = 136000, key = "food", name = "Food" },
-    { spellID = {1234969, 1242347, 453250, 393438}, key = "rune", name = "Augment Rune" },
-    { checkWeaponEnchant = true, key = "weaponBuff", name = "Weapon Buff",
-      excludeIfSpellKnown = {382021, 318038, 33757, 433583, 433568} },
-}
 
 -- Exclusive groups - only ONE buff from group needed
 Categories.EXCLUSIVE_GROUPS = {
@@ -183,19 +174,21 @@ function Categories:GetSpellIDs(categoryKey)
     local userSpellIDs = userEntries and userEntries.spellIDs or {}
 
     -- Find the category definition
-    local allCategories = {self.RAID, self.PRESENCE, self.TARGETED, self.SELF, self.CONSUMABLE}
+    local allCategories = {self.RAID, self.PRESENCE, self.TARGETED, self.SELF, self.CONSUMABLE_GROUPS}
     for _, catList in ipairs(allCategories) do
-        for _, buff in ipairs(catList) do
-            if buff.key == categoryKey then
-                local baseIDs = type(buff.spellID) == "table" and buff.spellID or {buff.spellID}
-                local merged = {}
-                for _, id in ipairs(baseIDs) do
-                    merged[#merged + 1] = id
+        if catList then
+            for _, buff in ipairs(catList) do
+                if buff.key == categoryKey then
+                    local baseIDs = buff.spellIDs or (type(buff.spellID) == "table" and buff.spellID or {buff.spellID})
+                    local merged = {}
+                    for _, id in ipairs(baseIDs or {}) do
+                        merged[#merged + 1] = id
+                    end
+                    for _, id in ipairs(userSpellIDs) do
+                        merged[#merged + 1] = id
+                    end
+                    return merged
                 end
-                for _, id in ipairs(userSpellIDs) do
-                    merged[#merged + 1] = id
-                end
-                return merged
             end
         end
     end

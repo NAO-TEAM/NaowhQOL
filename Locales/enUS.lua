@@ -767,4 +767,6 @@ ns:RegisterLocale("enUS", {
     BWV2_AUTO_USE_ITEM = "Auto-use Items:",
     BWV2_REPORT_TITLE = "Buff Report",
     BWV2_REPORT_NO_DATA = "Buff Report (No Data)",
+    BWV2_NO_ID = "No ID",
+    BWV2_NO_SPELL_ID_ADDED = "No spell ID added",
 })

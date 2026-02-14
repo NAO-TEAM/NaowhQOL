@@ -11,15 +11,47 @@ local BWV2 = ns.BWV2
 -- Callback function set by Core.lua
 local onUnitAuraChangedCallback = nil
 
+-- Global events frame (for player-specific events like inventory, equipment)
+local globalWatcherFrame = nil
+
 -- Set the callback for when unit auras change
 function Watchers:SetCallback(callback)
     onUnitAuraChangedCallback = callback
+end
+
+-- Start watching global events (inventory, equipment, spell casts)
+function Watchers:StartGlobalEvents()
+    if globalWatcherFrame then return end
+
+    globalWatcherFrame = CreateFrame("Frame")
+    globalWatcherFrame:RegisterEvent("BAG_UPDATE_DELAYED")
+    globalWatcherFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+    globalWatcherFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+
+    globalWatcherFrame:SetScript("OnEvent", function(self, event, ...)
+        if onUnitAuraChangedCallback then
+            onUnitAuraChangedCallback("player", nil)
+        end
+    end)
+end
+
+-- Stop watching global events
+function Watchers:StopGlobalEvents()
+    if globalWatcherFrame then
+        globalWatcherFrame:UnregisterAllEvents()
+        globalWatcherFrame = nil
+    end
 end
 
 -- Set up a watcher for a specific unit
 function Watchers:SetupWatcher(unit)
     if BWV2.activeWatchers[unit] then
         return  -- Already watching this unit
+    end
+
+    -- Start global events on first watcher
+    if self:GetWatcherCount() == 0 then
+        self:StartGlobalEvents()
     end
 
     local frame = CreateFrame("Frame")
@@ -40,7 +72,6 @@ function Watchers:RemoveWatcher(unit)
     local frame = BWV2.activeWatchers[unit]
     if frame then
         frame:UnregisterAllEvents()
-        frame:SetScript("OnEvent", nil)
         BWV2.activeWatchers[unit] = nil
     end
 end
@@ -49,9 +80,9 @@ end
 function Watchers:RemoveAllWatchers()
     for unit, frame in pairs(BWV2.activeWatchers) do
         frame:UnregisterAllEvents()
-        frame:SetScript("OnEvent", nil)
     end
     wipe(BWV2.activeWatchers)
+    self:StopGlobalEvents()
 end
 
 -- Get count of active watchers

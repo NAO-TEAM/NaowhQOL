@@ -120,7 +120,7 @@ function Core:PrintSummary()
 
         -- Check consumables
         if not found then
-            for _, buff in ipairs(Categories.CONSUMABLE) do
+            for _, buff in ipairs(Categories.CONSUMABLE_GROUPS) do
                 if buff.key == key then
                     consumableMissing[key] = data
                     found = true

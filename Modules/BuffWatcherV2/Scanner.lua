@@ -386,12 +386,25 @@ function Scanner:ScanConsumables()
     -- Clear and rebuild scanResults.consumables
     wipe(BWV2.scanResults.consumables)
 
-    for _, buff in ipairs(Categories.CONSUMABLE) do
+    for _, buff in ipairs(Categories.CONSUMABLE_GROUPS) do
         -- Get primary spell ID to check if disabled
-        local primaryID = type(buff.spellID) == "table" and buff.spellID[1] or buff.spellID
+        local primaryID = nil
+        if buff.spellIDs and #buff.spellIDs > 0 then
+            primaryID = buff.spellIDs[1]
+        end
 
+        -- Skip if no check methods configured (no defaults set, user can add via config)
+        local hasCheckMethod = primaryID or buff.buffIconID or buff.checkType == "weaponEnchant" or buff.itemIDs
+        if not hasCheckMethod then
+            -- No IDs configured - show as unconfigured (yellow)
+            BWV2.scanResults.consumables[#BWV2.scanResults.consumables + 1] = {
+                key = buff.key,
+                name = buff.name,
+                pass = false,
+                unconfigured = true,
+            }
         -- Check if this consumable group is enabled
-        if not Categories:IsConsumableGroupEnabled(buff.key) then
+        elseif not Categories:IsConsumableGroupEnabled(buff.key) then
             -- Group disabled by user (e.g., augment runes disabled)
         elseif not Categories:IsCategoryEnabled(buff.key) then
             -- Category disabled
@@ -416,7 +429,7 @@ function Scanner:ScanConsumables()
                 local remaining = 0
 
                 -- Icon-based check (food)
-                if buff.buffIconID then
+                if buff.checkType == "icon" and buff.buffIconID then
                     for spellID, data in pairs(playerBuffs) do
                         if data.icon == buff.buffIconID then
                             remaining = (data.expiry or 0) - GetTime()
@@ -433,7 +446,7 @@ function Scanner:ScanConsumables()
                         end
                     end
                 -- Weapon enchant check (with detailed status)
-                elseif buff.checkWeaponEnchant then
+                elseif buff.checkType == "weaponEnchant" then
                     local success, errorCode = Categories:CheckWeaponBuffStatus()
                     if not success then
                         local errorNames = {
@@ -450,15 +463,13 @@ function Scanner:ScanConsumables()
                     hasBuff = success
                     -- Use a generic weapon icon
                     foundIcon = 136241  -- Weapon enchant icon
-                -- Inventory check (healthstone)
-                elseif buff.itemID then
-                    local itemIDs = type(buff.itemID) == "table" and buff.itemID or {buff.itemID}
-                    hasBuff = Categories:HasInventoryItem(itemIDs)
-                    foundIcon = GetCachedItemIcon(itemIDs[1])
+                -- Inventory check (if consumable has itemIDs)
+                elseif buff.itemIDs and #buff.itemIDs > 0 then
+                    hasBuff = Categories:HasInventoryItem(buff.itemIDs)
+                    foundIcon = GetCachedItemIcon(buff.itemIDs[1])
                 -- Normal spell check
-                elseif buff.spellID then
-                    local spellIDs = type(buff.spellID) == "table" and buff.spellID or {buff.spellID}
-                    for _, spellID in ipairs(spellIDs) do
+                elseif buff.spellIDs and #buff.spellIDs > 0 then
+                    for _, spellID in ipairs(buff.spellIDs) do
                         if playerBuffs[spellID] then
                             remaining = (playerBuffs[spellID].expiry or 0) - GetTime()
                             if playerBuffs[spellID].expiry == 0 or remaining > threshold then
@@ -474,8 +485,8 @@ function Scanner:ScanConsumables()
                         end
                     end
                     -- If no buff found, use first spell's icon
-                    if not foundIcon and spellIDs[1] then
-                        foundIcon = GetCachedSpellTexture(spellIDs[1])
+                    if not foundIcon and buff.spellIDs[1] then
+                        foundIcon = GetCachedSpellTexture(buff.spellIDs[1])
                     end
                 end
 
