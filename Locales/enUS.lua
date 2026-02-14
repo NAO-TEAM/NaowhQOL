@@ -19,6 +19,7 @@ ns:RegisterLocale("enUS", {
     COMMON_YES = "Yes",
     COMMON_NO = "No",
     COMMON_RESET_DEFAULTS = "Reset to Defaults",
+    COMMON_SET = "Set",
 
     ---------------------------------------------------------------------------
     -- COMMON: Section Headers
@@ -832,4 +833,7 @@ ns:RegisterLocale("enUS", {
     BWV2_ERR_NAME_REQUIRED = "Group name is required",
     BWV2_ERR_ID_REQUIRED = "At least one spell/enchant ID is required",
     BWV2_DELETE = "Delete",
+    BWV2_AUTO_USE_ITEM = "Auto-use Items:",
+    BWV2_REPORT_TITLE = "Buff Report",
+    BWV2_REPORT_NO_DATA = "Buff Report (No Data)",
 })

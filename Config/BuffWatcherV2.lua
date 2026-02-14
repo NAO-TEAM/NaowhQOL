@@ -451,6 +451,95 @@ local function CreateConsumableGroupsContent(contentFrame, db, wrapperFrame, lay
                 yOffset = yOffset - 30
                 totalHeight = totalHeight + 32
 
+            -- Auto-use item row (for click-to-use: flasks, food, runes, weapon oils/stones)
+                -- Ensure consumableAutoUse exists
+                if not db.consumableAutoUse then
+                    db.consumableAutoUse = {}
+                end
+
+                local autoUseRow = CreateFrame("Frame", nil, contentFrame)
+                autoUseRow:SetSize(400, 26)
+                autoUseRow:SetPoint("TOPLEFT", 20, yOffset - 2)
+                allElements[#allElements + 1] = autoUseRow
+
+                local autoLabel = autoUseRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                autoLabel:SetPoint("LEFT", 0, 0)
+                autoLabel:SetText(L["BWV2_AUTO_USE_ITEM"])
+
+                local currentItemID = db.consumableAutoUse[group.key]
+                local capturedKey = group.key
+
+                if currentItemID then
+                    -- Parse all IDs for display
+                    local itemIDs = {}
+                    for id in tostring(currentItemID):gmatch("%d+") do
+                        itemIDs[#itemIDs + 1] = tonumber(id)
+                    end
+
+                    -- Show first item's icon
+                    local firstID = itemIDs[1]
+                    local itemIcon = autoUseRow:CreateTexture(nil, "ARTWORK")
+                    itemIcon:SetSize(18, 18)
+                    itemIcon:SetPoint("LEFT", autoLabel, "RIGHT", 6, 0)
+                    itemIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+                    local itemName, _, _, _, _, _, _, _, _, itemTex = C_Item.GetItemInfo(firstID)
+                    if itemTex then
+                        itemIcon:SetTexture(itemTex)
+                    else
+                        itemIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+                    end
+
+                    -- Show name with count indicator if multiple
+                    local countText = #itemIDs > 1 and (" +" .. (#itemIDs - 1)) or ""
+                    local itemText = autoUseRow:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                    itemText:SetPoint("LEFT", itemIcon, "RIGHT", 4, 0)
+                    itemText:SetText(W.Colorize((itemName or tostring(firstID)) .. countText, C.GREEN))
+
+                    local clearBtn = W:CreateButton(autoUseRow, {
+                        text = "X",
+                        width = 22,
+                        onClick = function()
+                            db.consumableAutoUse[capturedKey] = nil
+                            RebuildContent()
+                        end,
+                    })
+                    clearBtn:SetPoint("LEFT", itemText, "RIGHT", 6, 0)
+                else
+                    -- Show input for setting item IDs (comma-separated)
+                    local autoInput = CreateFrame("EditBox", nil, autoUseRow, "InputBoxTemplate")
+                    autoInput:SetSize(140, 18)
+                    autoInput:SetPoint("LEFT", autoLabel, "RIGHT", 6, 0)
+                    autoInput:SetAutoFocus(false)
+
+                    local setBtn = W:CreateButton(autoUseRow, {
+                        text = L["COMMON_SET"],
+                        width = 40,
+                        onClick = function()
+                            local text = autoInput:GetText():gsub("%s+", "")
+                            if text ~= "" then
+                                -- Validate: must be comma-separated numbers
+                                local valid = true
+                                for part in text:gmatch("[^,]+") do
+                                    if not tonumber(part) then
+                                        valid = false
+                                        break
+                                    end
+                                end
+                                if valid then
+                                    db.consumableAutoUse[capturedKey] = text
+                                    autoInput:SetText("")
+                                    RebuildContent()
+                                end
+                            end
+                        end,
+                    })
+                    setBtn:SetPoint("LEFT", autoInput, "RIGHT", 4, 0)
+                end
+
+                yOffset = yOffset - 28
+                totalHeight = totalHeight + 28
+
                 -- Spacer between groups
                 yOffset = yOffset - 8
                 totalHeight = totalHeight + 8

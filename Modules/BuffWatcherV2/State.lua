@@ -132,6 +132,13 @@ function BWV2:InitSavedVars()
                 rune = true,
                 weaponBuff = true,
             },
+            -- Auto-use item IDs for consumables (click-to-use on report card)
+            consumableAutoUse = {
+                flask = nil,
+                food = nil,
+                rune = nil,
+                weaponBuff = nil,
+            },
             -- Per-inventory group enable/disable
             inventoryGroupEnabled = {
                 dpsPotion = true,
@@ -180,6 +187,9 @@ function BWV2:InitSavedVars()
             healthstone = true,
             gatewayControl = true,
         }
+    end
+    if not NaowhQOL.buffWatcherV2.consumableAutoUse then
+        NaowhQOL.buffWatcherV2.consumableAutoUse = {}
     end
     if not NaowhQOL.buffWatcherV2.classBuffs then
         NaowhQOL.buffWatcherV2.classBuffs = {

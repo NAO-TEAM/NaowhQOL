@@ -191,6 +191,7 @@ local TYPE_SCHEMAS = {
         talentMods = "table",
         disabledDefaults = "table",
         consumableGroupEnabled = "table",
+        consumableAutoUse = "table",
         inventoryGroupEnabled = "table",
         classBuffs = "table",
         lastSection = "string",

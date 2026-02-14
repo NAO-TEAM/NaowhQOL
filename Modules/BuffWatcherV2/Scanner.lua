@@ -32,6 +32,18 @@ local function GetCachedItemIcon(itemID)
     return textureCache[key]
 end
 
+-- Find first available item from comma-separated ID string
+local function FindFirstAvailableItem(itemIDString)
+    if not itemIDString then return nil end
+    for id in tostring(itemIDString):gmatch("%d+") do
+        local itemID = tonumber(id)
+        if itemID and GetItemCount(itemID) > 0 then
+            return itemID
+        end
+    end
+    return nil
+end
+
 -- Scan configuration
 local BATCH_SIZE = 5
 local BATCH_DELAY = 0.2  -- seconds
@@ -369,6 +381,7 @@ function Scanner:ScanConsumables()
     local missing = {}
     local threshold = BWV2:GetThreshold()
     local playerBuffs = BWV2.raidResults["player"] and BWV2.raidResults["player"].buffs or {}
+    local db = BWV2:GetDB()
 
     -- Clear and rebuild scanResults.consumables
     wipe(BWV2.scanResults.consumables)
@@ -467,10 +480,13 @@ function Scanner:ScanConsumables()
                 end
 
                 -- Add to scanResults for report card
+                -- Find first available item from comma-separated list (for click-to-use)
+                local autoUseItemID = FindFirstAvailableItem(db.consumableAutoUse and db.consumableAutoUse[buff.key])
                 BWV2.scanResults.consumables[#BWV2.scanResults.consumables + 1] = {
                     key = buff.key,
                     name = buff.name,
                     spellID = foundSpellID or primaryID,
+                    itemID = autoUseItemID,
                     icon = foundIcon or GetCachedSpellTexture(primaryID),
                     pass = hasBuff,
                     remaining = (not hasBuff and remaining > 0) and remaining or nil,

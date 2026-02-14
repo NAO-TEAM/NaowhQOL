@@ -6,6 +6,7 @@ local _, ns = ...
 local ReportCard = {}
 ns.BWV2ReportCard = ReportCard
 
+local L = ns.L
 local BWV2 = ns.BWV2
 local Watchers = ns.BWV2Watchers
 
@@ -23,6 +24,10 @@ local ICON_SPACING = 8
 local SECTION_SPACING = 12
 local HEADER_HEIGHT = 24
 local ROW_HEIGHT = 50  -- icon + text below
+
+-- Click-to-use state
+local cellCounter = 0
+local inCombat = InCombatLockdown()
 
 -- Color constants
 local BACKDROP_COLOR = {0.08, 0.08, 0.08, 0.95}
@@ -52,9 +57,11 @@ local function AcquireCell(parent)
         cell:SetParent(parent)
         cell:Show()
     else
-        -- Create new cell structure
-        cell = CreateFrame("Frame", nil, parent)
+        -- Create new cell structure using SecureActionButton for click-to-cast/use
+        cellCounter = cellCounter + 1
+        cell = CreateFrame("Button", "NaowhQOL_BWV2Cell" .. cellCounter, parent, "SecureActionButtonTemplate")
         cell:SetSize(ICON_SIZE + 4, ROW_HEIGHT)
+        cell:RegisterForClicks("AnyUp", "AnyDown")
 
         local iconFrame = CreateFrame("Frame", nil, cell, "BackdropTemplate")
         iconFrame:SetSize(ICON_SIZE, ICON_SIZE)
@@ -88,6 +95,16 @@ local function ReleaseCell(cell)
     cell:SetParent(nil)
     cell:SetScript("OnEnter", nil)
     cell:SetScript("OnLeave", nil)
+    -- Clear secure attributes
+    pcall(function()
+        cell:SetAttribute("type", nil)
+        cell:SetAttribute("spell", nil)
+        cell:SetAttribute("unit", nil)
+        cell:SetAttribute("macrotext1", nil)
+    end)
+    -- Clear stored data
+    cell.cellData = nil
+    cell.cellType = nil
     table.insert(cellPool, cell)
 end
 
@@ -141,6 +158,75 @@ local function FormatDuration(seconds)
     end
 end
 
+-- Configure click-to-use action on a cell
+local function ConfigureClickAction(cell, data, cellType)
+    if InCombatLockdown() then return end
+
+    pcall(function()
+        -- Clear previous attributes
+        cell:SetAttribute("type", nil)
+        cell:SetAttribute("spell", nil)
+        cell:SetAttribute("unit", nil)
+        cell:SetAttribute("macrotext1", nil)
+
+        if cellType == "raid" and data.spellID then
+            -- Only enable if player can cast this spell
+            if IsPlayerSpell(data.spellID) then
+                cell:SetAttribute("type", "spell")
+                cell:SetAttribute("spell", data.spellID)
+                cell:SetAttribute("unit", "player")
+            end
+        elseif cellType == "consumable" and data.itemID then
+            -- Use item from bags if available
+            local itemName = C_Item.GetItemInfo(data.itemID)
+            if itemName and GetItemCount(data.itemID) > 0 then
+                cell:SetAttribute("type", "macro")
+                cell:SetAttribute("macrotext1", "/use " .. itemName)
+            end
+        elseif cellType == "inventory" and data.itemID then
+            -- Use inventory item (healthstone, potion, etc.)
+            local itemName = C_Item.GetItemInfo(data.itemID)
+            if itemName and GetItemCount(data.itemID) > 0 then
+                cell:SetAttribute("type", "macro")
+                cell:SetAttribute("macrotext1", "/use " .. itemName)
+            end
+        elseif cellType == "classBuff" and data.spellID then
+            -- Only enable if player can cast this spell
+            if IsPlayerSpell(data.spellID) then
+                cell:SetAttribute("type", "spell")
+                cell:SetAttribute("spell", data.spellID)
+                cell:SetAttribute("unit", "player")
+            end
+        end
+    end)
+end
+
+-- Refresh click actions on all active cells (called after combat ends)
+function ReportCard:RefreshClickActions()
+    if InCombatLockdown() then return end
+    for _, cell in ipairs(self.activeCells) do
+        if cell.cellData and cell.cellType then
+            ConfigureClickAction(cell, cell.cellData, cell.cellType)
+        end
+    end
+end
+
+-- Combat event frame for tracking lockdown state
+local combatFrame = CreateFrame("Frame")
+combatFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+combatFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+combatFrame:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_REGEN_DISABLED" then
+        inCombat = true
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        inCombat = false
+        -- Re-configure all active cells after combat ends
+        C_Timer.After(0.1, function()
+            ReportCard:RefreshClickActions()
+        end)
+    end
+end)
+
 -- Create the main report card frame
 function ReportCard:CreateFrame()
     if self.frame then return self.frame end
@@ -175,7 +261,7 @@ function ReportCard:CreateFrame()
     -- Title
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 12, -8)
-    title:SetText("Buff Report")
+    title:SetText(L["BWV2_REPORT_TITLE"])
     frame.title = title
 
     -- Close button
@@ -247,14 +333,14 @@ local function ConfigureCell(cell, data, cellType)
         elseif data.pass then
             text:SetText("")
         else
-            text:SetText("Missing")
+            text:SetText(L["COMMON_MISSING"])
             text:SetTextColor(unpack(FAIL_TEXT_COLOR))
         end
     elseif cellType == "classBuff" then
         if data.pass then
             text:SetText("")
         else
-            text:SetText("Missing")
+            text:SetText(L["COMMON_MISSING"])
             text:SetTextColor(unpack(FAIL_TEXT_COLOR))
         end
     end
@@ -301,6 +387,10 @@ local function CreateIconRow(parent, items, cellType, yOffset, activeCells, acti
     for _, data in ipairs(items) do
         local cell = AcquireCell(row)
         ConfigureCell(cell, data, cellType)
+        ConfigureClickAction(cell, data, cellType)
+        -- Store data for post-combat refresh
+        cell.cellData = data
+        cell.cellType = cellType
         cell:SetPoint("TOPLEFT", xOffset, 0)
         xOffset = xOffset + ICON_SIZE + ICON_SPACING
         activeCells[#activeCells + 1] = cell
@@ -345,15 +435,15 @@ function ReportCard:Update()
     -- Nil guard for scan results
     local results = BWV2.scanResults
     if not results then
-        self.frame.title:SetText("Buff Report (No Data)")
+        self.frame.title:SetText(L["BWV2_REPORT_NO_DATA"])
         return
     end
 
-    self.frame.title:SetText("Buff Report")
+    self.frame.title:SetText(L["BWV2_REPORT_TITLE"])
 
     -- Raid Buffs section
     if results.raidBuffs and #results.raidBuffs > 0 then
-        CreateSectionHeader(content, "Raid Buffs", yOffset, self.activeHeaders)
+        CreateSectionHeader(content, L["BWV2_SECTION_RAID"], yOffset, self.activeHeaders)
         yOffset = yOffset - HEADER_HEIGHT
 
         local row, rowWidth = CreateIconRow(content, results.raidBuffs, "raid", yOffset, self.activeCells, self.activeRows)
@@ -363,7 +453,7 @@ function ReportCard:Update()
 
     -- Consumables section
     if results.consumables and #results.consumables > 0 then
-        CreateSectionHeader(content, "Consumables", yOffset, self.activeHeaders)
+        CreateSectionHeader(content, L["BWV2_SECTION_CONSUMABLES"], yOffset, self.activeHeaders)
         yOffset = yOffset - HEADER_HEIGHT
 
         local row, rowWidth = CreateIconRow(content, results.consumables, "consumable", yOffset, self.activeCells, self.activeRows)
@@ -373,7 +463,7 @@ function ReportCard:Update()
 
     -- Inventory section
     if results.inventory and #results.inventory > 0 then
-        CreateSectionHeader(content, "Inventory", yOffset, self.activeHeaders)
+        CreateSectionHeader(content, L["BWV2_SECTION_INVENTORY"], yOffset, self.activeHeaders)
         yOffset = yOffset - HEADER_HEIGHT
 
         local row, rowWidth = CreateIconRow(content, results.inventory, "inventory", yOffset, self.activeCells, self.activeRows)
@@ -383,7 +473,7 @@ function ReportCard:Update()
 
     -- Class Buffs section
     if results.classBuffs and #results.classBuffs > 0 then
-        CreateSectionHeader(content, "Class Buffs", yOffset, self.activeHeaders)
+        CreateSectionHeader(content, L["BWV2_SECTION_CLASS"], yOffset, self.activeHeaders)
         yOffset = yOffset - HEADER_HEIGHT
 
         local row, rowWidth = CreateIconRow(content, results.classBuffs, "classBuff", yOffset, self.activeCells, self.activeRows)
