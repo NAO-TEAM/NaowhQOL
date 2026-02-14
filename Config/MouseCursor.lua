@@ -180,9 +180,10 @@ function ns.InitMouseOptions()
             end
         })
 
-        local swipeBtn, swipePreview = W:CreateColorPicker(gcdContent, {
+        local swipeBtn, swipePreview, swipeToggle = W:CreateColorPicker(gcdContent, {
             label = L["MOUSE_COLOR_SWIPE"], db = db,
             rKey = "gcdR", gKey = "gcdG", bKey = "gcdB",
+            classColorKey = "gcdUseClassColor",
             x = GG:Col(1), y = GG:Row(2) - 10,
             onChange = function()
                 if display then display:RefreshGCD() end
@@ -240,6 +241,7 @@ function ns.InitMouseOptions()
         W:CreateColorPicker(gcdContent, {
             label = L["MOUSE_COLOR_CAST_SWIPE"] or "Cast Swipe", db = db,
             rKey = "castSwipeR", gKey = "castSwipeG", bKey = "castSwipeB",
+            classColorKey = "castSwipeUseClassColor",
             x = GG:Col(1), y = GG:Row(5) - 10,
             onChange = function() end
         })
@@ -269,6 +271,7 @@ function ns.InitMouseOptions()
         W:CreateColorPicker(trailContent, {
             label = L["MOUSE_TRAIL_COLOR"], db = db,
             rKey = "trailR", gKey = "trailG", bKey = "trailB",
+            classColorKey = "trailUseClassColor",
             x = GT:Col(2), y = GT:Row(1) - 10,
             onChange = function() end
         })

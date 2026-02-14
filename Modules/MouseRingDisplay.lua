@@ -121,21 +121,21 @@ local function UpdateRender()
 
         if db.castSwipeEnabled and state.isCasting and state.castStart > 0 and state.castSwipeAllowed then
             -- Cast swipe (only after delay period to avoid flicker from failed casts)
-            local r, g, b = db.castSwipeR or 1, db.castSwipeG or 0.66, db.castSwipeB or 0
+            local r, g, b = W.GetEffectiveColor(db, "castSwipeR", "castSwipeG", "castSwipeB", "castSwipeUseClassColor")
             gcdCooldown:SetSwipeColor(r, g, b, swipeAlpha)
             gcdCooldown:SetCooldown(state.castStart, state.castEnd - state.castStart)
             gcdCooldown:Show()
 
         elseif db.castSwipeEnabled and state.isChanneling and state.channelStart > 0 and state.castSwipeAllowed then
             -- Channel swipe (only after delay period to avoid flicker)
-            local r, g, b = db.castSwipeR or 1, db.castSwipeG or 0.66, db.castSwipeB or 0
+            local r, g, b = W.GetEffectiveColor(db, "castSwipeR", "castSwipeG", "castSwipeB", "castSwipeUseClassColor")
             gcdCooldown:SetSwipeColor(r, g, b, swipeAlpha)
             gcdCooldown:SetCooldown(state.channelStart, state.channelEnd - state.channelStart)
             gcdCooldown:Show()
 
         elseif db.gcdEnabled and not state.gcdReady and state.gcdInfo and state.gcdSwipeAllowed then
             -- GCD swipe (only after delay period to avoid flicker with cast swipe)
-            local r, g, b = db.gcdR or 0.004, db.gcdG or 0.56, db.gcdB or 0.91
+            local r, g, b = W.GetEffectiveColor(db, "gcdR", "gcdG", "gcdB", "gcdUseClassColor")
             gcdCooldown:SetSwipeColor(r, g, b, swipeAlpha)
             gcdCooldown:SetCooldown(state.gcdInfo.startTime, state.gcdInfo.duration, state.gcdInfo.modRate)
             gcdCooldown:Show()
@@ -304,7 +304,7 @@ local function CreateTrail()
         -- Update existing points (always, to let them fade out)
         if activeCount > 0 then
             local duration = max(db.trailDuration or 0.6, 0.1)
-            local tr, tg, tb = db.trailR or 1, db.trailG or 1, db.trailB or 1
+            local tr, tg, tb = W.GetEffectiveColor(db, "trailR", "trailG", "trailB", "trailUseClassColor")
             local opacity = GetOpacity()
 
             for i = 1, TRAIL_MAX do
