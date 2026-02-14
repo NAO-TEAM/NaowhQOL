@@ -59,6 +59,12 @@ Modules/EquipmentReminder.lua
 Modules/CRezDisplay.lua
 Modules/PetTrackerDisplay.lua
 Modules/SlashCommands.lua
+Modules/BuffWatcherV2/State.lua
+Modules/BuffWatcherV2/Categories.lua
+Modules/BuffWatcherV2/Watchers.lua
+Modules/BuffWatcherV2/Scanner.lua
+Modules/BuffWatcherV2/ReportCard.lua
+Modules/BuffWatcherV2/Core.lua
 Config/Profiler.lua
 Config/MouseCursor.lua
 Config/Optimizations.lua
@@ -66,6 +72,7 @@ Config/CombatTimer.lua
 Config/CombatAlert.lua
 Config/Crosshair.lua
 Config/BuffMonitor.lua
+Config/BuffWatcherV2.lua
 Config/ConsumableChecker.lua
 Config/Dragonriding.lua
 Config/CombatLogger.lua
