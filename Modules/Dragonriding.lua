@@ -71,6 +71,8 @@ local chargeDividers = {}
 local secondWindBars = {}
 local surgeFrame, surgeCooldown, surgeBorder
 local eventFrame
+local pendingCdmShow = false
+local pendingCdmHide = false
 
 local function IsEnabled()
     return NaowhQOL.dragonriding and NaowhQOL.dragonriding.enabled
@@ -369,20 +371,34 @@ end
 local cdmHidden = false
 local function HideCooldownManager()
     if cdmHidden then return end
-    StashPositionAndReanchor()
-    cdmHidden = true
-    if BuffIconCooldownViewer then BuffIconCooldownViewer:Hide() end
-    if EssentialCooldownViewer then EssentialCooldownViewer:Hide() end
-    if UtilityCooldownViewer then UtilityCooldownViewer:Hide() end
+    local success = pcall(function()
+        StashPositionAndReanchor()
+        cdmHidden = true
+        if BuffIconCooldownViewer then BuffIconCooldownViewer:Hide() end
+        if EssentialCooldownViewer then EssentialCooldownViewer:Hide() end
+        if UtilityCooldownViewer then UtilityCooldownViewer:Hide() end
+    end)
+    if not success and InCombatLockdown() then
+        cdmHidden = false
+        pendingCdmHide = true
+        pendingCdmShow = false
+    end
 end
 
 local function ShowCooldownManager()
     if not cdmHidden then return end
-    cdmHidden = false
-    if BuffIconCooldownViewer then BuffIconCooldownViewer:Show() end
-    if EssentialCooldownViewer then EssentialCooldownViewer:Show() end
-    if UtilityCooldownViewer then UtilityCooldownViewer:Show() end
-    RestoreOriginalAnchor()
+    local success = pcall(function()
+        cdmHidden = false
+        if BuffIconCooldownViewer then BuffIconCooldownViewer:Show() end
+        if EssentialCooldownViewer then EssentialCooldownViewer:Show() end
+        if UtilityCooldownViewer then UtilityCooldownViewer:Show() end
+        RestoreOriginalAnchor()
+    end)
+    if not success and InCombatLockdown() then
+        cdmHidden = true
+        pendingCdmShow = true
+        pendingCdmHide = false
+    end
 end
 
 local OnUpdate = ns.PerfMonitor:Wrap("Dragonriding", function(self, dt)
@@ -653,6 +669,7 @@ end
 eventFrame = CreateFrame("Frame", "NaowhQOL_DragonridingEvents")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:RegisterEvent("PLAYER_LOGOUT")
+eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 eventFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
@@ -668,6 +685,17 @@ eventFrame:SetScript("OnEvent", function(self, event)
 
     if event == "PLAYER_LOGOUT" then
         ShowCooldownManager()
+        return
+    end
+
+    if event == "PLAYER_REGEN_ENABLED" then
+        if pendingCdmShow then
+            pendingCdmShow = false
+            ShowCooldownManager()
+        elseif pendingCdmHide then
+            pendingCdmHide = false
+            HideCooldownManager()
+        end
         return
     end
 
