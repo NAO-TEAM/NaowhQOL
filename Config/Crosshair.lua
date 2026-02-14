@@ -245,6 +245,7 @@ function ns:InitCrosshair()
         W:CreateColorPicker(circContent, {
             label = L["CROSSHAIR_COLOR_CIRCLE"], db = db,
             rKey = "circleR", gKey = "circleG", bKey = "circleB",
+            classColorKey = "circleUseClassColor",
             x = 10, y = -35,
             onChange = refresh
         })

@@ -240,9 +240,12 @@ local function ApplyLayout()
         circleRing:SetSize(cs, cs)
         circleRing:ClearAllPoints()
         circleRing:SetPoint("CENTER", crosshairFrame, "BOTTOMLEFT", cx, cy)
-        local cR = db.circleR ~= nil and db.circleR or r1
-        local cG = db.circleG ~= nil and db.circleG or g1
-        local cB = db.circleB ~= nil and db.circleB or b1
+        local cR, cG, cB
+        if db.circleR ~= nil or db.circleUseClassColor then
+            cR, cG, cB = ns.Widgets.GetEffectiveColor(db, "circleR", "circleG", "circleB", "circleUseClassColor")
+        else
+            cR, cG, cB = r1, g1, b1
+        end
         if meleeOut and db.meleeRecolorCircle then
             cR, cG, cB = moR, moG, moB
         end
