@@ -141,6 +141,12 @@ local expectedForms = {
     PRIEST = {
         [3] = {1, 2},  -- Shadow → Shadowform or Voidform
     },
+    -- Paladin aura support contributed by Bazook
+    PALADIN = {
+        [1] = {2, 3},  -- Holy → Devotion/Concentration Aura
+        [2] = {2, 3},  -- Protection → Devotion/Concentration Aura
+        [3] = {2, 3},  -- Retribution → Devotion/Concentration Aura
+    },
 }
 
 local stanceFrame = CreateFrame("Frame", "NaowhQOL_StanceReminder", UIParent, "BackdropTemplate")
