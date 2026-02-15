@@ -24,6 +24,7 @@ local DEFAULT_MELEE_SPELLS = {
 
 local cachedMeleeSpellId = nil
 local meleeCheckSupported = false
+local hpalEnabled = false  -- Holy Paladin item-based fallback
 
 local function GetMeleeSpellKey()
     local classFile = ns.SpecUtil.GetClassName()
@@ -53,6 +54,8 @@ local function GetCurrentMeleeSpell()
 end
 
 local function CacheMeleeSpell()
+    if hpalEnabled then return end
+
     cachedMeleeSpellId = GetCurrentMeleeSpell()
     meleeCheckSupported = (cachedMeleeSpellId ~= nil)
 
@@ -287,12 +290,14 @@ local function RefreshVisibility()
     crosshairFrame:Show()
 end
 
--- Forward declaration for EvaluateMeleeTick (defined in tick section)
+-- Forward declarations (defined later in file)
 local EvaluateMeleeTick
+local EvaluateHpalMode
 
 function crosshairFrame:UpdateDisplay()
     ApplyLayout()
     RefreshVisibility()
+    if EvaluateHpalMode then EvaluateHpalMode() end
     if EvaluateMeleeTick then EvaluateMeleeTick() end
 end
 
@@ -338,6 +343,7 @@ local lastInRange = nil
 local tickFrame = CreateFrame("Frame")
 
 local function ShouldTickRun()
+    if hpalEnabled then return false end  -- Holy Paladin has its own tick
     local db = NaowhQOL and NaowhQOL.crosshair
     if not db or not db.enabled then return false end
     if not db.meleeRecolor then return false end
@@ -418,6 +424,83 @@ EvaluateMeleeTick = function()
 end
 
 ---------------------------------------------------------------------------
+-- Holy Paladin Melee Range (item-based fallback)
+---------------------------------------------------------------------------
+local HPAL_ITEM_ID = 129055  -- Shoe Shine Kit (4 yards)
+
+local function HpalCheckMeleeRange()
+    local db = NaowhQOL and NaowhQOL.crosshair
+    if not db or not db.enabled or not db.meleeRecolor then return end
+
+    local wasOut = isOutOfMelee
+
+    if not HasAttackableTarget() then
+        isOutOfMelee = false
+        StopMeleeSound()
+        lastInRange = nil
+    else
+        local inMelee = C_Item.IsItemInRange(HPAL_ITEM_ID, "target")
+        isOutOfMelee = not inMelee
+
+        if isOutOfMelee then
+            if db.meleeSoundEnabled and lastInRange == true then
+                StartMeleeSound(db)
+            end
+        else
+            StopMeleeSound()
+        end
+        lastInRange = inMelee
+    end
+
+    if isOutOfMelee ~= wasOut then
+        ApplyLayout()
+    end
+end
+
+local hpalTickAcc = 0
+local hpalTickFrame = CreateFrame("Frame")
+
+local hpalTickOnUpdate = ns.PerfMonitor:Wrap("Crosshair HPal", function(self, elapsed)
+    hpalTickAcc = hpalTickAcc + elapsed
+    if hpalTickAcc < TICK_RATE then return end
+    hpalTickAcc = 0
+    HpalCheckMeleeRange()
+end)
+
+local function StartHpalTick()
+    if not hpalTickFrame:GetScript("OnUpdate") then
+        hpalTickFrame:SetScript("OnUpdate", hpalTickOnUpdate)
+    end
+end
+
+local function StopHpalTick()
+    hpalTickFrame:SetScript("OnUpdate", nil)
+    hpalTickAcc = 0
+end
+
+EvaluateHpalMode = function()
+    local db = NaowhQOL and NaowhQOL.crosshair
+    local classFile = ns.SpecUtil.GetClassName()
+    local specIndex = ns.SpecUtil.GetSpecIndex()
+
+    -- Holy Paladin auto-enables item-based detection (no melee spell available)
+    local shouldEnable = classFile == "PALADIN"
+        and specIndex == 1
+        and db and db.enabled and db.meleeRecolor
+
+    if shouldEnable then
+        hpalEnabled = true
+        meleeCheckSupported = true
+        StartHpalTick()
+    else
+        hpalEnabled = false
+        StopHpalTick()
+    end
+end
+
+ns.EvaluateHpalMode = EvaluateHpalMode
+
+---------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
 local loader = CreateFrame("Frame")
@@ -432,6 +515,7 @@ loader:RegisterEvent("PLAYER_LEAVING_WORLD")
 loader:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" or event == "DISPLAY_SIZE_CHANGED" then
         isMounted = IsMounted()
+        EvaluateHpalMode()
         CacheMeleeSpell()
         crosshairFrame:UpdateDisplay()
     elseif event == "PLAYER_REGEN_DISABLED" then
@@ -451,10 +535,12 @@ loader:SetScript("OnEvent", function(self, event)
         EvaluateMeleeTick()
     elseif event == "PLAYER_LEAVING_WORLD" then
         StopMeleeTick()
+        StopHpalTick()
     end
 end)
 
 ns.SpecUtil.RegisterCallback("CrosshairDisplay", function()
+    EvaluateHpalMode()
     CacheMeleeSpell()
     EvaluateMeleeTick()
 end)
